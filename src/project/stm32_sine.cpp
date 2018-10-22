@@ -23,7 +23,6 @@
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/stm32/rtc.h>
 #include <libopencm3/stm32/iwdg.h>
-#include "stm32_sine.h"
 #include "stm32_can.h"
 #include "terminal.h"
 #include "params.h"
