@@ -1,5 +1,20 @@
 # stm32-sine
 Main firmware of the Huebner inverter project
+This firmware runs on any revision of the "Huebner" hardware https://github.com/jsphuebner/inverter-hardware as well as any derivatives as the Open Source Tesla controller https://github.com/damienmaguire
+
+# Goals
+The main goal of this firmware is well-drivable control of electric 3-phase motors with as little software complexity as possible. We do not rely on virtual control methods such as FOC (field oriented control) or DTC (direct torque control). This makes tuning more intuitive, as only real physical quantities are parametrized.
+The same principle is applied to the hardware design, keeping component count low and therefor minimize cost and failure modes.
+To fine tune the driving experience and adapt to different flavours of power stages, over 60 parameters can be customized.
+
+# General concept
+The idea is that the dynamics of any 3-phase asyncronous motor are controlled by the amplitude of the sythesized sine wave and it's frequency offset to the rotor speed (slip). For 3-phase synchronous motors the only relevant quantities are assumed to be the sine wave amplitude (again) and the phase shift between rotor and stator magnetic field.
+
+# Inverter charging
+A unique feature of this software is to re-purpose the drivetrain hardware as a programmable battery charger. One of the motor phase windings is being used as a high current capable inductor and one of the phase switches as a buck or boost converter. This has practically proven to replace a separate charing unit and further reduce complexity on electric vehicles.
+
+# Further reading
+A comprehensive guide to the Huebner inverter system can be found here: http://johanneshuebner.com/quickcms/index.html%3Fde_antriebsumrichter,20.html
 
 # Compiling
 The only external depedency if libopencm3 which I forked.
