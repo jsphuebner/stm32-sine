@@ -1,0 +1,9 @@
+#!/bin/bash
+
+git clone https://github.com/jsphuebner/libopencm3.git
+
+cd libopencm3
+make
+
+cp -r include/libopencm3 ${1}/include
+cp lib/libopencm3_stm32f1.a ${1}/lib

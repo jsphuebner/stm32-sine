@@ -69,7 +69,6 @@ images: $(BINARY)
 directories: ${OUT_DIR}
 
 ${OUT_DIR}:
-	printf $(OBJS)
 	$(Q)${MKDIR_P} ${OUT_DIR}
 
 $(BINARY): $(OBJS) $(LDSCRIPT)
@@ -110,6 +109,9 @@ flash: images
 		       -c "shutdown" $(NULL)
 
 .PHONY: directories images clean
+
+get-deps:
+	misc/getlibopencm3 $(TOOLCHAIN_DIR)
 
 Test:
 	cd test && $(MAKE)
