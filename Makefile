@@ -30,12 +30,14 @@ OBJCOPY		= $(PREFIX)-objcopy
 OBJDUMP		= $(PREFIX)-objdump
 MKDIR_P     = mkdir -p
 TOOLCHAIN_DIR = `dirname \`which $(CC)\``/../$(PREFIX)
-CFLAGS		= -Os -Wall -Wextra -Iinclude/generic -Iinclude/project -fno-common -fno-builtin -DSTM32F1  \
+CFLAGS		= -Os -Wall -Wextra -Iinclude/generic -Iinclude/project -Ilibopencm3/include \
+             -fno-common -fno-builtin -DSTM32F1  \
 		  -mcpu=cortex-m3 -mthumb -std=gnu99 -ffunction-sections -fdata-sections
-CPPFLAGS    = -Os -Wall -Wextra -Iinclude -Iinclude/generic -Iinclude/project -fno-common -DSTM32F1  \
+CPPFLAGS    = -Os -Wall -Wextra -Iinclude -Iinclude/generic -Iinclude/project -Ilibopencm3/include \
+            -fno-common -DSTM32F1  \
 		 -ffunction-sections -fdata-sections -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -mcpu=cortex-m3 -mthumb
 LDSCRIPT	= $(BINARY).ld
-LDFLAGS  = -L$(TOOLCHAIN_DIR)/lib -T$(LDSCRIPT) -nostartfiles -Wl,--gc-sections,-Map,linker.map
+LDFLAGS  = -Llibopencm3/lib -T$(LDSCRIPT) -nostartfiles -Wl,--gc-sections,-Map,linker.map
 OBJSL		= $(BINARY).o hwinit.o stm32scheduler.o params.o terminal.o terminal_prj.o \
            my_string.o digio.o sine_core.o my_fp.o fu.o inc_encoder.o printf.o anain.o \
            temp_meas.o param_save.o foc.o throttle.o errormessage.o stm32_can.o pwmgeneration.o
@@ -69,7 +71,6 @@ images: $(BINARY)
 directories: ${OUT_DIR}
 
 ${OUT_DIR}:
-	printf $(OBJS)
 	$(Q)${MKDIR_P} ${OUT_DIR}
 
 $(BINARY): $(OBJS) $(LDSCRIPT)
@@ -110,6 +111,9 @@ flash: images
 		       -c "shutdown" $(NULL)
 
 .PHONY: directories images clean
+
+get-deps:
+	misc/getlibopencm3 $(TOOLCHAIN_DIR)
 
 Test:
 	cd test && $(MAKE)
