@@ -18,7 +18,9 @@
 ##
 
 BINARY		= stm32_sine
-
+OUT_DIR  = obj
+space :=
+space +=
 PREFIX		?= arm-none-eabi
 SIZE  = $(PREFIX)-size
 CC		= $(PREFIX)-gcc
@@ -26,17 +28,20 @@ CPP	= $(PREFIX)-g++
 LD		= $(PREFIX)-gcc
 OBJCOPY		= $(PREFIX)-objcopy
 OBJDUMP		= $(PREFIX)-objdump
+MKDIR_P     = mkdir -p
 TOOLCHAIN_DIR = `dirname \`which $(CC)\``/../$(PREFIX)
 CFLAGS		= -Os -Wall -Wextra -Iinclude/generic -Iinclude/project -fno-common -fno-builtin -DSTM32F1  \
 		  -mcpu=cortex-m3 -mthumb -std=gnu99 -ffunction-sections -fdata-sections
 CPPFLAGS    = -Os -Wall -Wextra -Iinclude -Iinclude/generic -Iinclude/project -fno-common -DSTM32F1  \
 		 -ffunction-sections -fdata-sections -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -mcpu=cortex-m3 -mthumb
 LDSCRIPT	= $(BINARY).ld
-LDFLAGS         = -L$(TOOLCHAIN_DIR)/lib -T$(LDSCRIPT) -nostartfiles -Wl,--gc-sections,-Map,linker.map
-OBJS		= $(BINARY).o hwinit.o stm32scheduler.o params.o terminal.o terminal_prj.o \
+LDFLAGS  = -L$(TOOLCHAIN_DIR)/lib -T$(LDSCRIPT) -nostartfiles -Wl,--gc-sections,-Map,linker.map
+OBJSL		= $(BINARY).o hwinit.o stm32scheduler.o params.o terminal.o terminal_prj.o \
            my_string.o digio.o sine_core.o my_fp.o fu.o inc_encoder.o printf.o anain.o \
            temp_meas.o param_save.o foc.o throttle.o errormessage.o stm32_can.o pwmgeneration.o
-VPATH = src/project src/generic
+OBJS     = $(subst $(space),$(space)$(OUT_DIR)/, $(OBJSL))
+vpath %.c src/project src/generic
+vpath %.cpp src/project src/generic
 
 OPENOCD_BASE	= /usr
 OPENOCD		= $(OPENOCD_BASE)/bin/openocd
@@ -50,7 +55,7 @@ Q := @
 NULL := 2>/dev/null
 endif
 
-all: images
+all: directories images
 Debug:images
 Release: images
 cleanDebug:clean
@@ -61,21 +66,27 @@ images: $(BINARY)
 	$(Q)$(OBJCOPY) -Oihex $(BINARY) $(BINARY).hex
 	$(Q)$(SIZE) $(BINARY)
 
+directories: ${OUT_DIR}
+
+${OUT_DIR}:
+	printf $(OBJS)
+	$(Q)${MKDIR_P} ${OUT_DIR}
+
 $(BINARY): $(OBJS) $(LDSCRIPT)
 	@printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(LD) $(LDFLAGS) -o $(BINARY) $(OBJS) -lopencm3_stm32f1
 
-%.o: %.c Makefile
+$(OUT_DIR)/%.o: %.c Makefile
 	@printf "  CC      $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(CC) $(CFLAGS) -o $@ -c $<
 
-%.o: %.cpp Makefile
-	@printf "  CC      $(subst $(shell pwd)/,,$(@))\n"
+$(OUT_DIR)/%.o: %.cpp Makefile
+	@printf "  CPP     $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(CPP) $(CPPFLAGS) -o $@ -c $<
 
 clean:
-	@printf "  CLEAN   $(subst $(shell pwd)/,,$(OBJS))\n"
-	$(Q)rm -f *.o
+	@printf "  CLEAN   ${OUT_DIR}\n"
+	$(Q)rm -rf ${OUT_DIR}
 	@printf "  CLEAN   $(BINARY)\n"
 	$(Q)rm -f $(BINARY)
 	@printf "  CLEAN   $(BINARY).bin\n"
@@ -98,7 +109,7 @@ flash: images
 		       -c "reset" \
 		       -c "shutdown" $(NULL)
 
-.PHONY: images clean
+.PHONY: directories images clean
 
 Test:
 	cd test && $(MAKE)

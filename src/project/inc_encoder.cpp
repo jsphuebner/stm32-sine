@@ -55,16 +55,10 @@ static bool ignore = true;
 static enum Encoder::mode encMode = Encoder::INVALID;
 static bool seenNorthSignal = false;
 
-void Encoder::Init(void)
-{
-   //encMode = INVALID; //Make sure SetMode does something
-   //SetMode(false, false);
-   Reset();
-}
-
 void Encoder::Reset()
 {
    ignore = true;
+   seenNorthSignal = false;
    lastPulseTimespan = MAX_CNT;
    for (uint32_t i = 0; i < MAX_REVCNT_VALUES; i++)
       timdata[i] = MAX_CNT;
@@ -79,7 +73,7 @@ bool Encoder::SeenNorthSignal()
 /** Use pulse timing (single channel mode) or ABZ encoder mode
  * @param useAbzMode use ABZ mode, single channel otherwise
  * @param useSyncMode reset counter on rising edge of ETR */
-void Encoder::SetMode(enum Encoder::mode mode)
+void Encoder::SetMode(Encoder::mode mode)
 {
    if (encMode == mode) return;
 
@@ -151,7 +145,6 @@ void Encoder::UpdateRotorAngle(int dir)
 
       lastAngle = angle;
       turnsSinceLastSample += angleDiff;
-      //Param::SetDig(Param::tm_meas, angle);
    }
 }
 
@@ -166,7 +159,7 @@ void Encoder::UpdateRotorFrequency(int frq)
    {
       static int velest = 0, velint = 0;
       static uint16_t posest = 0;
-      const int ki = 800, kp = 20;
+      const int kp = 20, ki = Param::GetInt(Param::encki);
 
       posest += velest / frq;
       int16_t poserr = angle - posest;
@@ -322,7 +315,7 @@ static void InitTimerABZMode()
 static void InitResolverMode()
 {
    uint8_t channels[] = { 6, 6, 7, 7 };
-   adc_enable_discontinuous_mode_injected(ADC1);
+
    adc_set_injected_sequence(ADC1, 4, channels);
    adc_enable_external_trigger_injected(ADC1, ADC_CR2_JEXTSEL_JSWSTART);
    adc_set_sample_time(ADC1, 6, ADC_SMPR_SMP_1DOT5CYC);
@@ -344,12 +337,7 @@ static void InitResolverMode()
 
    adc_start_conversion_injected(ADC1);
 
-   for (volatile int i = 0; i < 80000; i++);
-   adc_start_conversion_injected(ADC1);
-
-   for (volatile int i = 0; i < 80000; i++);
-   //while (!adc_eoc_injected(ADC1));
-   //while (!(ADC_SR(ADC1) & ADC_SR_JEOC));
+   while (!adc_eoc_injected(ADC1));
 
    int cos = adc_read_injected(ADC1, 1);
    int sin = adc_read_injected(ADC1, 3);

@@ -335,7 +335,7 @@ static void CalcNextAngleSync(int dir)
 {
    if (Encoder::SeenNorthSignal())
    {
-      uint32_t polePairs = Param::GetInt(Param::encmode) == Encoder::RESOLVER ? 1 : Param::GetInt(Param::polepairs);
+      uint32_t polePairs = Param::GetInt(Param::polepairs) / Param::GetInt(Param::respolepairs);
       uint16_t syncOfs = Param::GetInt(Param::syncofs);
       uint16_t rotorAngle = Encoder::GetRotorAngle(0);
 
@@ -347,7 +347,6 @@ static void CalcNextAngleSync(int dir)
       angle = polePairs * rotorAngle + syncOfs;
       frq = polePairs * Encoder::GetRotorFrequency();
       Param::SetInt(Param::angle, angle);
-
    }
    else
    {

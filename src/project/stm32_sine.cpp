@@ -853,7 +853,7 @@ extern "C" int main(void)
    tim_setup();
    DigIo::Init();
    nvic_setup();
-   Encoder::Init();
+   Encoder::Reset();
    term_Init(termBuf);
    parm_load();
    parm_Change(Param::PARAM_LAST);

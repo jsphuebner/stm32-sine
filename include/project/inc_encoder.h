@@ -12,7 +12,6 @@ public:
       SINGLE, AB, ABZ, SPI, RESOLVER, INVALID
    };
 
-   static void Init();
    static void Reset();
    static void SetMode(enum mode encMode);
    static bool SeenNorthSignal();
