@@ -30,7 +30,7 @@
 #include "sine_core.h"
 
 #define TWO_PI 65536
-#define MAX_CNT 65535
+#define MAX_CNT TWO_PI - 1
 #define MAX_REVCNT_VALUES 5
 
 static void InitTimerSingleChannelMode();
@@ -48,8 +48,8 @@ static volatile uint16_t angle = 0;
 static uint32_t lastPulseTimespan = 0;
 static uint16_t filter = 0;
 static uint32_t anglePerPulse = 0;
+static uint32_t fullTurns = 0;
 static uint16_t pulsesPerTurn = 0;
-static uint32_t turnsSinceLastSample = 0;
 static u32fp lastFrequency = 0;
 static bool ignore = true;
 static enum Encoder::mode encMode = Encoder::INVALID;
@@ -70,22 +70,32 @@ bool Encoder::SeenNorthSignal()
    return seenNorthSignal;
 }
 
-/** Use pulse timing (single channel mode) or ABZ encoder mode
- * @param useAbzMode use ABZ mode, single channel otherwise
- * @param useSyncMode reset counter on rising edge of ETR */
+/** Set type of motor position feedback
+ * @param mode type of motor position feedback */
 void Encoder::SetMode(Encoder::mode mode)
 {
    if (encMode == mode) return;
 
    encMode = mode;
-   if (mode == AB || mode == ABZ)
-      InitTimerABZMode();
-   else if (mode == SINGLE)
-      InitTimerSingleChannelMode();
-   else if (mode == SPI)
-      InitSPIMode();
-   else if (mode == RESOLVER)
-      InitResolverMode();
+
+   switch (mode)
+   {
+      case AB:
+      case ABZ:
+         InitTimerABZMode();
+         break;
+      case SINGLE:
+         InitTimerSingleChannelMode();
+         break;
+      case SPI:
+         InitSPIMode();
+         break;
+      case RESOLVER:
+         InitResolverMode();
+         break;
+      default:
+         break;
+   }
 }
 
 /** set number of impulses per shaft rotation
@@ -109,6 +119,8 @@ void Encoder::SetFilterConst(uint8_t flt)
 
 void Encoder::UpdateRotorAngle(int dir)
 {
+   static uint16_t lastAngle = 0;
+
    if (encMode == SINGLE)
    {
       int16_t numPulses = GetPulseTimeFiltered();
@@ -121,16 +133,10 @@ void Encoder::UpdateRotorAngle(int dir)
    }
    else
    {
-      static uint16_t lastAngle = 0;
-      uint16_t angleDiff;
-
       if (encMode == SPI)
       {
          angle = GetAngleSPI(); //Gets 12-bit
          angle <<= 4;
-         uint16_t diffPos = angle - lastAngle;
-         uint16_t diffNeg = lastAngle - angle;
-         angleDiff = MIN(diffNeg, diffPos);
       }
       else
       {
@@ -138,14 +144,12 @@ void Encoder::UpdateRotorAngle(int dir)
          cntVal *= TWO_PI;
          cntVal /= pulsesPerTurn * 4;
          angle = (uint16_t)cntVal;
-         angleDiff = (angle - lastAngle) & 0xFFFF;
-         if ((TIM_CR1(REV_CNT_TIMER) & TIM_CR1_DIR_DOWN))
-            angleDiff = (lastAngle - angle) & 0xFFFF;
       }
-
-      lastAngle = angle;
-      turnsSinceLastSample += angleDiff;
    }
+
+   if (lastAngle <= (TWO_PI / 2) && angle > (TWO_PI / 2))
+      fullTurns++;
+   lastAngle = angle;
 }
 
 /** Update rotor frequency.
@@ -155,11 +159,11 @@ void Encoder::UpdateRotorAngle(int dir)
 void Encoder::UpdateRotorFrequency(int frq)
 {
    //Found here: https://www.embeddedrelated.com/showarticle/530.php
-   if ((encMode != SINGLE) && (encMode != RESOLVER) && frq > 0)
+   if ((encMode != SINGLE) && frq > 0)
    {
       static int velest = 0, velint = 0;
       static uint16_t posest = 0;
-      const int kp = 20, ki = Param::GetInt(Param::encki);
+      const int kp = Param::GetInt(Param::enckp), ki = Param::GetInt(Param::encki);
 
       posest += velest / frq;
       int16_t poserr = angle - posest;
@@ -215,6 +219,12 @@ uint32_t Encoder::GetSpeed()
    {
       return FP_TOINT(60 * lastFrequency);
    }
+}
+
+/** Get number of rotor turns since power up */
+uint32_t Encoder::GetFullTurns()
+{
+   return fullTurns;
 }
 
 bool Encoder::IsSyncMode()
@@ -373,7 +383,7 @@ static uint16_t GetAngleSPI()
 static uint16_t GetAngleResolver()
 {
    static bool state = false;
-   static uint16_t lastAngle;
+   //static uint16_t lastAngle;
 
    if (state)
    {
@@ -384,7 +394,7 @@ static uint16_t GetAngleResolver()
       timer_set_counter(REV_CNT_TIMER, 0);
       timer_enable_counter(REV_CNT_TIMER);
       state = false;
-      angle = lastAngle;
+      //angle = lastAngle;
    }
    else
    {
@@ -395,13 +405,13 @@ static uint16_t GetAngleResolver()
       //Param::SetInt(Param::sin, sin);
       //Param::SetInt(Param::cos, cos);
       state = true;
-      uint16_t diffPos = angle - lastAngle;
+      /*uint16_t diffPos = angle - lastAngle;
       uint16_t diffNeg = lastAngle - angle;
       uint16_t angleDiff = MIN(diffNeg, diffPos);
       angleDiff &= 0xFFF0; //Filter out some jitter
       u32fp frq = FP_MUL(angleDiff, FP_FROMFLT(2.148)); //32/(65536/4400)
       lastFrequency = IIRFILTER(lastFrequency, frq, filter);
-      lastAngle = angle;
+      lastAngle = angle;*/
    }
 
    return angle;

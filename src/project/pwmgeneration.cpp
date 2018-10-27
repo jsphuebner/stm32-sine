@@ -163,6 +163,7 @@ extern "C" void pwm_timer_isr(void)
       SineCore::SetAmp(amp);
       Param::SetInt(Param::amp, amp);
       Param::SetFlt(Param::fstat, frq);
+      Param::SetInt(Param::angle, angle);
       SineCore::Calc(angle);
 
       /* Match to PWM resolution */
@@ -346,7 +347,6 @@ static void CalcNextAngleSync(int dir)
 
       angle = polePairs * rotorAngle + syncOfs;
       frq = polePairs * Encoder::GetRotorFrequency();
-      Param::SetInt(Param::angle, angle);
    }
    else
    {

@@ -47,7 +47,8 @@
 #define CAT_CHARGER  "Charger"
 #define CAT_COMM     "Communication"
 
-#define VER 4.59
+#define VER 4.62
+#define VERCEIL VER + 0.009
 
 enum _modes
 {
@@ -112,7 +113,7 @@ enum _canio
     PARAM_ENTRY(CAT_MOTOR,   fslipmax,    "Hz",      0,      10,     3,      33  ) \
     PARAM_ENTRY(CAT_MOTOR,   polepairs,   "",        1,      16,     2,      32  ) \
     PARAM_ENTRY(CAT_MOTOR,   respolepairs,"",        1,      16,     1,      93  ) \
-    PARAM_ENTRY(CAT_MOTOR,   encflt,      "",        0,      16,     1,      6   ) \
+    PARAM_ENTRY(CAT_MOTOR,   enckp,       "",        0,      30,     1,      6   ) \
     PARAM_ENTRY(CAT_MOTOR,   encki,       "",        100,    16000,  800,    94  ) \
     PARAM_ENTRY(CAT_MOTOR,   encmode,     ENCMODES,  0,      4,      0,      75  ) \
     PARAM_ENTRY(CAT_MOTOR,   fmin,        "Hz",      0,      400,    1,      34  ) \
@@ -176,7 +177,7 @@ enum _canio
     PARAM_ENTRY(CAT_TEST,    ifltfall,    "dig",     0,      32,     3,      92  ) \
     PARAM_ENTRY(CAT_TEST,    fslipspnt,   "Hz",      -100,   1000,   0,      0   ) \
     PARAM_ENTRY(CAT_TEST,    ampnom,      "%",       0,      100,    0,      0   ) \
-    PARAM_ENTRY(CAT_TEST,    version,     "",        0,      0,      VER + 0.009,    0   ) \
+    PARAM_ENTRY(CAT_TEST,    version,     "",        0,      0,      VERCEIL,0   ) \
     VALUE_ENTRY(hwver,       HWREVS,  2036 ) \
     VALUE_ENTRY(opmode,      OPMODES, 2000 ) \
     VALUE_ENTRY(udc,         "V",     2001 ) \
@@ -191,6 +192,7 @@ enum _canio
     VALUE_ENTRY(fweakcalc,   "Hz",    2010 ) \
     VALUE_ENTRY(fstat,       "Hz",    2011 ) \
     VALUE_ENTRY(speed,       "rpm",   2012 ) \
+    VALUE_ENTRY(turns,       "",      2037 ) \
     VALUE_ENTRY(amp,         "dig",   2013 ) \
     VALUE_ENTRY(angle,       "°",     2014 ) \
     VALUE_ENTRY(pot,         "dig",   2015 ) \
@@ -217,4 +219,4 @@ enum _canio
 
 /*    VALUE_ENTRY(sin,     "°", 2100    ) \
     VALUE_ENTRY(cos,     "°", 2101    )*/
-//Next value Id: 2037
+//Next value Id: 2038

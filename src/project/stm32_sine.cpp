@@ -176,6 +176,7 @@ static void Ms100Task(void)
    CalcFancyValues();
 
    Param::SetInt(Param::dir, dir);
+   Param::SetInt(Param::turns, Encoder::GetFullTurns());
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
       Can::SendAll();
@@ -774,7 +775,7 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
    {
       PwmGeneration::SetCurrentLimitThreshold(Param::Get(Param::ocurlim));
 
-      Encoder::SetFilterConst(Param::GetInt(Param::encflt));
+      Encoder::SetFilterConst(Param::GetInt(Param::enckp));
       Encoder::SetMode((enum Encoder::mode)Param::GetInt(Param::encmode));
       Encoder::SetImpulsesPerTurn(Param::GetInt(Param::numimp));
 
@@ -857,7 +858,7 @@ extern "C" int main(void)
    term_Init(termBuf);
    parm_load();
    parm_Change(Param::PARAM_LAST);
-   Can::Init((enum Can::baudrates)Param::GetInt(Param::canspeed));
+   Can::Init((Can::baudrates)Param::GetInt(Param::canspeed));
    InitPWMIO();
 
    MotorVoltage::SetMaxAmp(SineCore::MAXAMP);

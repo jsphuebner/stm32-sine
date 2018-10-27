@@ -19,6 +19,7 @@ public:
    static void UpdateRotorFrequency(int timeBase);
    static uint16_t GetRotorAngle(int dir);
    static uint32_t GetSpeed();
+   static uint32_t GetFullTurns();
    static u32fp GetRotorFrequency();
    static void SetFilterConst(uint8_t flt);
    static void SetImpulsesPerTurn(uint16_t imp);
