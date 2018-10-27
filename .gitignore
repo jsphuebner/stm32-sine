@@ -1,1 +1,5 @@
 obj
+libopencm3
+linker.map
+sinus.layout
+stm32_sine*
