@@ -33,6 +33,7 @@ s32fp Throttle::speedkp;
 int Throttle::speedflt;
 int Throttle::speedFiltered;
 s32fp Throttle::idleThrotLim;
+int Throttle::throtmax;
 int Throttle::brkPedalRamp;
 int Throttle::brkRamped;
 int Throttle::throttleRamp;
@@ -103,7 +104,7 @@ int Throttle::CalcThrottle(int potval, int pot2val, bool brkpedal)
    if (potnom > 0)
    {
       throttleRamped = RAMPUP(throttleRamped, potnom, throttleRamp);
-      potnom = throttleRamped;
+      potnom = (throttleRamped * throtmax) / 100;
    }
    else
    {

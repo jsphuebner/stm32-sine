@@ -35,7 +35,6 @@
 #include "temp_meas.h"
 #include "param_save.h"
 #include "inc_encoder.h"
-#include "foc.h"
 #include "throttle.h"
 #include "my_math.h"
 #include "errormessage.h"
@@ -92,91 +91,77 @@ static void CruiseControl()
    lastState = Param::GetBool(Param::din_cruise);
 }
 
-static void CalcFancyValues()
+static void SelectDirection()
 {
-   //const s32fp twoPi = FP_FROMFLT(2*3.141593);
-   s32fp amp = Param::Get(Param::amp);
-   //s32fp speed = Param::Get(Param::speed);
-   s32fp il1 = Param::Get(Param::il1);
-   s32fp il2 = Param::Get(Param::il2);
-   s32fp udc = Param::Get(Param::udc);
-   s32fp fac = FP_DIV(amp, FP_FROMINT(SineCore::MAXAMP));
-   s32fp uac = FP_MUL(fac, FP_MUL(udc, FP_FROMFLT(0.7071)));
-   s32fp idc; //, is, p, q, s, pf, t;
+   int selectedDir = Param::GetInt(Param::dir);
+   int userDirSelection = 0;
 
-   FOC::ParkClarke(il1, il2, PwmGeneration::GetAngle());
-   //is = fp_sqrt(FP_MUL(FOC::id,FOC::id)+FP_MUL(FOC::iq,FOC::iq));
-   /*s = FP_MUL(fac, FP_MUL(uac, is) / 1000);
-   p = FP_MUL(fac, FP_MUL(uac, FOC::id));
-   t = FP_DIV(p, FP_MUL(twoPi, speed / 60));
-   p/= 1000;
-   q = FP_MUL(fac, FP_MUL(uac, FOC::iq) / 1000);
-   pf = MIN(FP_FROMINT(1), MAX(0, FP_DIV(FOC::id, is)));*/
-
-   if (Param::GetInt(Param::opmode) < MOD_BOOST)
+   if (Param::GetInt(Param::dirmode) == BUTTON)
    {
-      idc = FP_MUL(FP_MUL(fac, FOC::id), FP_FROMFLT(0.7071));
-      Param::SetFlt(Param::idc, idc);
+      /* if forward AND reverse selected, force neutral, because it's charge mode */
+      if (Param::GetBool(Param::din_forward) && Param::GetBool(Param::din_reverse))
+         selectedDir = 0;
+      else if (Param::GetBool(Param::din_forward))
+         userDirSelection = 1;
+      else if (Param::GetBool(Param::din_reverse))
+         userDirSelection = -1;
+      else
+         userDirSelection = selectedDir;
+   }
+   else
+   {
+      /* neither forward nor reverse or both forward and reverse -> neutral */
+      if (!(Param::GetBool(Param::din_forward) ^ Param::GetBool(Param::din_reverse)))
+         selectedDir = 0;
+      else if (Param::GetBool(Param::din_forward))
+         userDirSelection = 1;
+      else if (Param::GetBool(Param::din_reverse))
+         userDirSelection = -1;
    }
 
-   /*Param::SetFlt(Param::id, FOC::id);
-   Param::SetFlt(Param::iq, FOC::iq);*/
-   Param::SetFlt(Param::uac, uac);
-   /*Param::SetFlt(Param::pf, pf);
-   Param::SetFlt(Param::p, p);
-   Param::SetFlt(Param::q, q);
-   Param::SetFlt(Param::s, s);
-   Param::SetFlt(Param::t, t);*/
+   /* Only change direction when below certain motor speed */
+   if ((int)Encoder::GetSpeed() < Param::GetInt(Param::dirchrpm))
+      selectedDir = userDirSelection;
+
+   /* Current direction doesn't match selected direction -> neutral */
+   if (selectedDir != userDirSelection)
+      selectedDir = 0;
+
+   Param::SetInt(Param::dir, selectedDir);
 }
 
 static void Ms100Task(void)
 {
-   int dir = Param::GetInt(Param::dir);
-   int newDir = 0;
-
    DigIo::Toggle(Pin::led_out);
    ErrorMessage::PrintNewErrors();
    iwdg_reset();
    s32fp cpuLoad = FP_FROMINT(PwmGeneration::GetCpuLoad() + scheduler->GetCpuLoad());
    Param::SetFlt(Param::cpuload, cpuLoad / 10);
-
-   if (Param::GetBool(Param::din_forward))
-      newDir = 1;
-   else if (Param::GetBool(Param::din_reverse))
-      newDir = -1;
-
-   /* Only change direction when below certain motor speed */
-   if ((int)Encoder::GetSpeed() < Param::GetInt(Param::dirchrpm))
-      dir = newDir;
-
-   /* Current direction doesn't match selected direction -> neutral */
-   if (dir != newDir)
-      dir = 0;
-
-   /* neither forward nor reverse or both forward and reverse -> neutral */
-   if (!(Param::GetBool(Param::din_forward) ^ Param::GetBool(Param::din_reverse)))
-      dir = 0;
-
-   FOC::SetDirection(dir);
+   Param::SetInt(Param::turns, Encoder::GetFullTurns());
 
    if (hwRev == HW_REV1)
    {
       //If break pin is high and both mprot and emcystop are high than it must be over current
       if (DigIo::Get(Pin::emcystop_in) && DigIo::Get(Pin::mprot_in) && DigIo::Get(Pin::bk_in))
       {
-         Param::SetInt(Param::din_ocur, 1);
+         Param::SetInt(Param::din_ocur, 0);
       }
       else
       {
-         Param::SetInt(Param::din_ocur, 0);
+         Param::SetInt(Param::din_ocur, 1);
       }
+      Param::SetInt(Param::din_desat, 2);
    }
 
+   SelectDirection();
    CruiseControl();
-   CalcFancyValues();
 
-   Param::SetInt(Param::dir, dir);
-   Param::SetInt(Param::turns, Encoder::GetFullTurns());
+   //uac = udc * amp/maxamp / sqrt(2)
+   s32fp uac = Param::Get(Param::udc) * SineCore::GetAmp();
+   uac /= SineCore::MAXAMP;
+   uac = FP_DIV(uac, FP_FROMFLT(1.4142));
+
+   Param::SetFlt(Param::uac, uac);
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
       Can::SendAll();
@@ -227,22 +212,15 @@ static void CalcAmpAndSlip()
       if (Encoder::IsSyncMode())
          ampnom = ampmin + FP_DIV(FP_MUL((FP_FROMINT(100) - ampmin), potnom), FP_FROMINT(100));
       else /* In async mode first X% throttle commands amplitude, X-100% raises slip */
-         ampnom = 100 * FP_DIV(potnom, slipstart);
+         ampnom = ampmin + (100 - FP_TOINT(ampmin)) * FP_DIV(potnom, slipstart);
          //ampmin + (potnom - ampmin) * FP_DIV(FP_FROMINT(100), slipstart);
 
       if (potnom >= slipstart)
       {
          s32fp fslipmax = Param::Get(Param::fslipmax);
-         s32fp fpconst =  Param::Get(Param::fpconst);
-         s32fp fstat = Param::Get(Param::fstat);
-         s32fp fweak = Param::Get(Param::fweak);
          s32fp fslipdiff = fslipmax - fslipmin;
-         //Derate the slip frequency above fpconst and uprate above fweak
-         s32fp ffac = 2*(fstat > fweak?fpconst + fstat - 2 * fweak:fpconst - fstat);
-         s32fp fslipdrt = FP_MUL(FP_DIV(ffac, fweak), fslipdiff) + fslipmax;
 
          fslipspnt = fslipmin + (FP_MUL(fslipdiff, (potnom - slipstart)) / (100 - FP_TOINT(slipstart)));
-         fslipspnt = MIN(fslipspnt, fslipdrt);
       }
       else
       {
@@ -401,7 +379,9 @@ static s32fp ProcessUdc()
 
    //Calculate "12V" supply voltage from voltage divider on mprot pin
    //1.2/(4.7+1.2)/3.33*4095 = 250 -> make it a bit less for pin losses etc
-   Param::SetFlt(Param::uaux, FP_DIV(AnaIn::Get(AnaIn::uaux), 249));
+   //HW_REV1 had 3.9k resistors
+   int uauxGain = hwRev == HW_REV1 ? 289 : 249;
+   Param::SetFlt(Param::uaux, FP_DIV(AnaIn::Get(AnaIn::uaux), uauxGain));
    udc = IIRFILTER(udc, AnaIn::Get(AnaIn::udc), 2);
    udcfp = FP_DIV(FP_FROMINT(udc - udcofs), udcgain);
 
@@ -547,17 +527,43 @@ static void UdcLimitCommand(int& finalSpnt)
 {
    s32fp udc = Param::Get(Param::udc);
 
-   if (udc < Param::Get(Param::udcmin) && finalSpnt >= 0)
+   if (finalSpnt >= 0)
    {
-      s32fp udcErr = Param::Get(Param::udcmin) - udc;
-      s32fp res = finalSpnt - FP_TOINT(udcErr * 10);
-      finalSpnt = MAX(0, res);
+      s32fp udcErr = udc - FP_MUL(Param::Get(Param::udcmin), FP_FROMFLT(0.95));
+      int res = FP_TOINT(udcErr * 5);
+      res = MAX(0, res);
+      finalSpnt = MIN(finalSpnt, res);
    }
-   else if (udc > Param::Get(Param::udcmax) && finalSpnt < 0)
+   else
    {
-      s32fp udcErr = udc - Param::Get(Param::udcmax);
-      s32fp res = finalSpnt + FP_TOINT(udcErr * 10);
-      finalSpnt = MIN(0, res);
+      s32fp udcErr = udc - FP_MUL(Param::Get(Param::udcmax), FP_FROMFLT(1.05));
+      int res = FP_TOINT(udcErr * 5);
+      res = MIN(0, res);
+      finalSpnt = MAX(finalSpnt, res);
+   }
+}
+
+static void IdcLimitCommand(int& finalSpnt)
+{
+   s32fp idc = Param::Get(Param::idc);
+
+   if (finalSpnt >= 0)
+   {
+      s32fp idcmax = Param::Get(Param::idcmax);
+      s32fp idcerr = idcmax - idc;
+      int res = FP_TOINT(idcerr * 10);
+
+      res = MAX(0, res);
+      finalSpnt = MIN(res, finalSpnt);
+   }
+   else
+   {
+      s32fp idcmin = Param::Get(Param::idcmin);
+      s32fp idcerr = idcmin - idc;
+      int res = FP_TOINT(idcerr * 10);
+
+      res = MIN(0, res);
+      finalSpnt = MAX(res, finalSpnt);
    }
 }
 
@@ -574,6 +580,7 @@ static void ProcessThrottle()
    GetCruiseCreepCommand(finalSpnt, throtSpnt);
    BmsLimitCommand(finalSpnt);
    UdcLimitCommand(finalSpnt);
+   IdcLimitCommand(finalSpnt);
 
    if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), finalSpnt))
    {
@@ -742,15 +749,22 @@ static void Ms1Task(void)
 
    if (runChargeControl)
    {
+      s32fp chargeCurSpnt = Param::Get(Param::chargecur) << 8;
+      int dummy = 50;
+
+      if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), dummy))
+         chargeCurSpnt = 0;
+
       ilFlt = IIRFILTER(ilFlt, ilMax << 8, Param::GetInt(Param::chargeflt));
-      iSpntFlt = IIRFILTER(iSpntFlt, Param::Get(Param::chargecur) << 8, 11);
+      iSpntFlt = IIRFILTER(iSpntFlt, chargeCurSpnt, 11);
 
       s32fp ampnom = FP_MUL(Param::GetInt(Param::chargekp), (iSpntFlt - ilFlt));
+
       if (opmode == MOD_BOOST)
          Param::SetFlt(Param::idc, (FP_MUL((FP_FROMINT(100) - ampnom), ilFlt) / 100) >> 8);
       else
          Param::SetFlt(Param::idc, ilFlt >> 8);
-      //Throttle::TemperatureDerate(Param::Get(Param::tmphs), ampnom);
+
       ampnom = MAX(0, ampnom);
       ampnom = MIN(Param::Get(Param::chargemax), ampnom);
       PwmGeneration::SetAmpnom(ampnom);
@@ -791,6 +805,7 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
       Throttle::brknompedal = Param::GetInt(Param::brknompedal);
       Throttle::brkPedalRamp = Param::GetInt(Param::brkpedalramp);
       Throttle::brkmax = Param::GetInt(Param::brkmax);
+      Throttle::throtmax = Param::GetInt(Param::throtmax);
       Throttle::idleSpeed = Param::GetInt(Param::idlespeed);
       Throttle::speedkp = Param::Get(Param::speedkp);
       Throttle::speedflt = Param::GetInt(Param::speedflt);

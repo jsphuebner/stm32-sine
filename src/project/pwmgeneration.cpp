@@ -149,7 +149,7 @@ extern "C" void pwm_timer_isr(void)
 
       s32fp ampNomLimited = LimitCurrent();
       Encoder::UpdateRotorAngle(dir);
-      Encoder::UpdateRotorFrequency(pwmfrq);
+      Encoder::UpdateRotorFrequency();
 
       if (opmode == MOD_SINE)
          CalcNextAngleConstant(dir);
@@ -206,6 +206,7 @@ void PwmGeneration::PwmInit()
    slipIncr = FRQ_TO_ANGLE(fslip);
    shiftForTimer = SineCore::BITS - pwmdigits;
    tripped = false;
+   Encoder::SetPwmFrequency(pwmfrq);
 }
 
 /**
@@ -257,7 +258,7 @@ static s32fp LimitCurrent()
 {
    static s32fp curLimSpntFiltered = 0, slipFiltered = 0;
    s32fp slipmin = Param::Get(Param::fslipmin);
-   s32fp imax = Param::Get(Param::imax);
+   s32fp imax = Param::Get(Param::iacmax);
    s32fp ilMax = ProcessCurrents();
 
    s32fp a = imax / 20; //Start acting at 80% of imax
@@ -296,19 +297,21 @@ static s32fp GetCurrent(AnaIn::AnaIns input, s32fp offset, s32fp gain)
    return FP_DIV(il, gain);
 }
 
-static bool CalcRms(s32fp il, s32fp illast, s32fp& max, s32fp& rms)
+static bool CalcRms(s32fp il, s32fp illast, s32fp& max, s32fp& rms, int& samples)
 {
    const s32fp oneOverSqrt2 = FP_FROMFLT(0.707106781187);
-   bool signChanged = (illast <= 0 && il > 0) || (illast > 0 && il <= 0);
+   bool signChanged = ((illast <= 0 && il > 0) || (illast > 0 && il <= 0)) && samples > 10;
 
    if (signChanged)
    {
       rms = FP_MUL(oneOverSqrt2, max);
       max = 0;
+      samples = 0;
    }
 
    il = ABS(il);
    max = MAX(il, max);
+   samples++;
 
    return signChanged;
 }
@@ -316,15 +319,29 @@ static bool CalcRms(s32fp il, s32fp illast, s32fp& max, s32fp& rms)
 static s32fp ProcessCurrents()
 {
    static s32fp currentMax[2];
+   static int samples[2] = { 0 };
 
    s32fp il1 = GetCurrent(AnaIn::il1, ilofs[0], Param::Get(Param::il1gain));
    s32fp il2 = GetCurrent(AnaIn::il2, ilofs[1], Param::Get(Param::il2gain));
    s32fp rms;
 
-   if (CalcRms(il1, Param::Get(Param::il1), currentMax[0], rms))
+   if (CalcRms(il1, Param::Get(Param::il1), currentMax[0], rms, samples[0]))
+   {
       Param::SetFlt(Param::il1rms, rms);
-   if (CalcRms(il2, Param::Get(Param::il2), currentMax[1], rms))
+
+      if (opmode != MOD_BOOST || opmode != MOD_BUCK)
+      {
+         //rough approximation as we do not take power factor into account
+         s32fp idc = (SineCore::GetAmp() * rms) / SineCore::MAXAMP;
+         idc = FP_DIV(idc, FP_FROMFLT(1.2247)); //divide by sqrt(3)/sqrt(2)
+         idc *= fslip < 0 ? -1 : 1;
+         Param::SetFlt(Param::idc, idc);
+      }
+   }
+   if (CalcRms(il2, Param::Get(Param::il2), currentMax[1], rms, samples[1]))
+   {
       Param::SetFlt(Param::il2rms, rms);
+   }
 
    Param::SetFlt(Param::il1, il1);
    Param::SetFlt(Param::il2, il2);

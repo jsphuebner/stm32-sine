@@ -38,6 +38,7 @@ class Throttle
       static int brknom;
       static int brknompedal;
       static int brkmax;
+      static int throtmax;
       static int idleSpeed;
       static int cruiseSpeed;
       static s32fp speedkp;

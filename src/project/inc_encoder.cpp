@@ -50,6 +50,8 @@ static uint16_t filter = 0;
 static uint32_t anglePerPulse = 0;
 static uint32_t fullTurns = 0;
 static uint16_t pulsesPerTurn = 0;
+static uint32_t pwmFrq = 1;
+static uint32_t resolverSampleDelay = 0;
 static u32fp lastFrequency = 0;
 static bool ignore = true;
 static enum Encoder::mode encMode = Encoder::INVALID;
@@ -98,6 +100,12 @@ void Encoder::SetMode(Encoder::mode mode)
    }
 }
 
+void Encoder::SetPwmFrequency(uint32_t frq)
+{
+   pwmFrq = frq;
+   resolverSampleDelay = (40 * 8800) / frq; //We know at 8.8kHz we need a delay of 40µs
+}
+
 /** set number of impulses per shaft rotation
   */
 void Encoder::SetImpulsesPerTurn(uint16_t imp)
@@ -129,7 +137,7 @@ void Encoder::UpdateRotorAngle(int dir)
    }
    else if (encMode == RESOLVER)
    {
-      GetAngleResolver();
+      angle = GetAngleResolver();
    }
    else
    {
@@ -153,24 +161,19 @@ void Encoder::UpdateRotorAngle(int dir)
 }
 
 /** Update rotor frequency.
- *
- * @param timeBase calling frequency in Hz
+ * @ref https://www.embeddedrelated.com/showarticle/530.php
  */
-void Encoder::UpdateRotorFrequency(int frq)
+void Encoder::UpdateRotorFrequency()
 {
-   //Found here: https://www.embeddedrelated.com/showarticle/530.php
-   if ((encMode != SINGLE) && frq > 0)
-   {
-      static int velest = 0, velint = 0;
-      static uint16_t posest = 0;
-      const int kp = Param::GetInt(Param::enckp), ki = Param::GetInt(Param::encki);
+   static int velest = 0, velint = 0;
+   static uint16_t posest = 0;
+   const int kp = Param::GetInt(Param::enckp), ki = Param::GetInt(Param::encki);
 
-      posest += velest / frq;
-      int16_t poserr = angle - posest;
-      velint += (poserr * ki) / frq;
-      velest = poserr * kp + velint;
-      lastFrequency = ABS(velint) / 1820;
-   }
+   posest += velest / (int)pwmFrq;
+   int16_t poserr = angle - posest;
+   velint += (poserr * ki) / (int)pwmFrq;
+   velest = poserr * kp + velint;
+   lastFrequency = ABS(velest) / 1820;
 }
 
 /** Returns current angle of motor shaft to some arbitrary 0-axis
@@ -235,7 +238,7 @@ bool Encoder::IsSyncMode()
 static void DMASetup()
 {
    dma_disable_channel(DMA1, REV_CNT_DMACHAN);
-   dma_set_peripheral_address(DMA1, REV_CNT_DMACHAN, (uint32_t)&REV_CNT_CCR);
+   dma_set_peripheral_address(DMA1, REV_CNT_DMACHAN, REV_CNT_CCR_PTR);
    dma_set_memory_address(DMA1, REV_CNT_DMACHAN, (uint32_t)timdata);
    dma_set_peripheral_size(DMA1, REV_CNT_DMACHAN, DMA_CCR_PSIZE_16BIT);
    dma_set_memory_size(DMA1, REV_CNT_DMACHAN, DMA_CCR_MSIZE_16BIT);
@@ -390,7 +393,7 @@ static uint16_t GetAngleResolver()
       gpio_clear(GPIOD, GPIO2);
       /* The phase delay of the 3-pole filter, amplifier and resolver is 96µs.
          That is 40µs after the falling edge of the exciting square wave */
-      timer_set_oc_value(REV_CNT_TIMER, TIM_OC4, 40);
+      timer_set_oc_value(REV_CNT_TIMER, TIM_OC4, resolverSampleDelay);
       timer_set_counter(REV_CNT_TIMER, 0);
       timer_enable_counter(REV_CNT_TIMER);
       state = false;
@@ -467,7 +470,7 @@ static int GetPulseTimeFiltered()
    }
    else
    {
-      lastPulseTimespan = IIRFILTER(lastPulseTimespan, measTm, filter);
+      lastPulseTimespan = IIRFILTER(lastPulseTimespan, measTm, 1);
    }
 
    return pulses;

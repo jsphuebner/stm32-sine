@@ -20,21 +20,22 @@
 #define OPMODES      "0=Off, 1=Run, 2=ManualRun, 3=Boost, 4=Buck, 5=Sine, 6=AcHeat"
 #define PWMFRQS      "0=17.6kHz, 1=8.8kHz, 2=4.4KHz, 3=2.2kHz, 4=1.1kHz"
 #define PWMPOLS      "0=ACTHIGH, 1=ACTLOW"
-#define DIRS         "-1=REV, 0=NEUTRAL, 1=FWD"
-#define TRIPMODES    "0=AllOff, 1=dcswon, 2=prechargeon"
+#define DIRS         "-1=Reverse, 0=Neutral, 1=Forward"
+#define TRIPMODES    "0=AllOff, 1=DcSwOn, 2=PrechargeOn"
 #define SNS_HS       "0=JCurve, 1=Semikron, 2=MBB600"
 #define SNS_M        "12=KTY83-110, 13=KTY84-130, 14=Leaf"
 #define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=speedfrq"
-#define CRUISEMODS   "0=Button, 1=Switch"
+#define BTNSWITCH    "0=Button, 1=Switch"
 #define IDLEMODS     "0=always, 1=nobrake, 2=cruise"
-#define ONOFF        "0=Off, 1=On"
+#define ONOFF        "0=Off, 1=On, 2=na"
+#define OKERR        "0=Error, 1=Ok, 2=na"
 #define CHARGEMODS   "0=Off, 3=Boost, 4=Buck"
 #define ENCMODES     "0=Single, 1=AB, 2=ABZ, 3=SPI, 4=Resolver"
 #define POTMODES     "0=SingleRegen, 1=DualChannel, 2=CAN"
 #define CANSPEEDS    "0=250k, 1=500k, 2=800k, 3=1M"
 #define CANIOS       "1=Cruise, 2=Start, 4=Brake, 8=Fwd, 16=Rev, 32=Bms"
 #define CANPERIODS   "0=100ms, 1=10ms"
-#define HWREVS       "0=REV1, 1=REV2, 2=REV3, 3=Tesla"
+#define HWREVS       "0=Rev1, 1=Rev2, 2=Rev3, 3=Tesla"
 #define CAT_MOTOR    "Motor"
 #define CAT_INVERTER "Inverter"
 #define CAT_THROTTLE "Throttle"
@@ -47,7 +48,7 @@
 #define CAT_CHARGER  "Charger"
 #define CAT_COMM     "Communication"
 
-#define VER 4.62
+#define VER 4.71
 #define VERCEIL VER + 0.009
 
 enum _modes
@@ -102,33 +103,30 @@ enum _canio
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 95
+//Next param id (increase when adding new parameter!): 99
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   boost,       "dig",     0,      37813,  1700,   1   ) \
     PARAM_ENTRY(CAT_MOTOR,   fweak,       "Hz",      0,      1000,   90,     2   ) \
     PARAM_ENTRY(CAT_MOTOR,   udcnom,      "V",       0,      1000,   0,      78  ) \
-    PARAM_ENTRY(CAT_MOTOR,   fpconst,     "Hz",      0,      1000,   1000,   60  ) \
     PARAM_ENTRY(CAT_MOTOR,   fslipmin,    "Hz",      0,      10,     1,      37  ) \
     PARAM_ENTRY(CAT_MOTOR,   fslipmax,    "Hz",      0,      10,     3,      33  ) \
     PARAM_ENTRY(CAT_MOTOR,   polepairs,   "",        1,      16,     2,      32  ) \
     PARAM_ENTRY(CAT_MOTOR,   respolepairs,"",        1,      16,     1,      93  ) \
-    PARAM_ENTRY(CAT_MOTOR,   enckp,       "",        0,      30,     1,      6   ) \
-    PARAM_ENTRY(CAT_MOTOR,   encki,       "",        100,    16000,  800,    94  ) \
+    PARAM_ENTRY(CAT_MOTOR,   enckp,       "",        0,      40,     20,      6   ) \
+    PARAM_ENTRY(CAT_MOTOR,   encki,       "",        0,      16000,  400,    94  ) \
     PARAM_ENTRY(CAT_MOTOR,   encmode,     ENCMODES,  0,      4,      0,      75  ) \
     PARAM_ENTRY(CAT_MOTOR,   fmin,        "Hz",      0,      400,    1,      34  ) \
     PARAM_ENTRY(CAT_MOTOR,   fmax,        "Hz",      0,      1000,   200,    9   ) \
-    PARAM_ENTRY(CAT_MOTOR,   imax,        "A",       0,      5000,   5000,   89  ) \
     PARAM_ENTRY(CAT_MOTOR,   numimp,      "ppr",     8,      8192,   60,     15  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirchrpm,    "rpm",     0,      2000,   100,    87  ) \
+    PARAM_ENTRY(CAT_MOTOR,   dirmode,     BTNSWITCH, 0,      1,      1,      95  ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
-    /*PARAM_ENTRY(CAT_MOTOR,   delay,       "µs",      0,      65535,  40,     84  )*/ \
     PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     14,     12,     46  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmfrq,      PWMFRQS,   0,      4,      1,      13  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmpol,      PWMPOLS,   0,      1,      0,      52  ) \
     PARAM_ENTRY(CAT_INVERTER,deadtime,    "dig",     0,      255,    63,     14  ) \
     PARAM_ENTRY(CAT_INVERTER,ocurlim,     "A",       -65536, 65536,  100,    22  ) \
-    PARAM_ENTRY(CAT_INVERTER,tripmode,    TRIPMODES, 0,      2,      0,      86  ) \
     PARAM_ENTRY(CAT_INVERTER,minpulse,    "dig",     0,      4095,   1000,   24  ) \
     PARAM_ENTRY(CAT_INVERTER,il1gain,     "dig/A",   -100,   100,    4.7,    27  ) \
     PARAM_ENTRY(CAT_INVERTER,il2gain,     "dig/A",   -100,   100,    4.7,    28  ) \
@@ -136,6 +134,16 @@ enum _canio
     PARAM_ENTRY(CAT_INVERTER,udcofs,      "dig",     0,      4095,   0,      77  ) \
     PARAM_ENTRY(CAT_INVERTER,udclim,      "V",       0,      1000,   540,    48  ) \
     PARAM_ENTRY(CAT_INVERTER,snshs,       SNS_HS,    0,      2,      0,      45  ) \
+    PARAM_ENTRY(CAT_DERATE,  bmslimhigh,  "%",       0,      100,    50,     55  ) \
+    PARAM_ENTRY(CAT_DERATE,  bmslimlow,   "%",       -100,   0,      -1,     56  ) \
+    PARAM_ENTRY(CAT_DERATE,  udcmin,      "V",       0,      1000,   450,    42  ) \
+    PARAM_ENTRY(CAT_DERATE,  udcmax,      "V",       0,      1000,   520,    43  ) \
+    PARAM_ENTRY(CAT_DERATE,  iacmax,      "A",       0,      5000,   5000,   89  ) \
+    PARAM_ENTRY(CAT_DERATE,  idcmax,      "A",       0,      5000,   5000,   96  ) \
+    PARAM_ENTRY(CAT_DERATE,  idcmin,      "A",       -5000,  0,     -5000,   98  ) \
+    PARAM_ENTRY(CAT_DERATE,  throtmax,    "%",       0,      100,   100,     97  ) \
+    PARAM_ENTRY(CAT_DERATE,  ifltrise,    "dig",     0,      32,    10,      91  ) \
+    PARAM_ENTRY(CAT_DERATE,  ifltfall,    "dig",     0,      32,     3,      92  ) \
     PARAM_ENTRY(CAT_CHARGER, chargemode,  CHARGEMODS,0,      4,      0,      74  ) \
     PARAM_ENTRY(CAT_CHARGER, chargecur,   "A",       0,      50,     0,      71  ) \
     PARAM_ENTRY(CAT_CHARGER, chargekp,    "dig",     0,      100,    80,     72  ) \
@@ -161,20 +169,15 @@ enum _canio
     PARAM_ENTRY(CAT_AUTOM,   idlemode,    IDLEMODS,  0,      2,      0,      66  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedkp,     "",        0,      100,    0.25,   53  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedflt,    "",        0,      16,     5,      57  ) \
-    PARAM_ENTRY(CAT_AUTOM,   cruisemode,  CRUISEMODS,0,      1,      0,      62  ) \
-    PARAM_ENTRY(CAT_DERATE,  bmslimhigh,  "%",       0,      100,    50,     55  ) \
-    PARAM_ENTRY(CAT_DERATE,  bmslimlow,   "%",       -100,   0,      -1,     56  ) \
-    PARAM_ENTRY(CAT_DERATE,  udcmin,      "V",       0,      1000,   450,    42  ) \
-    PARAM_ENTRY(CAT_DERATE,  udcmax,      "V",       0,      1000,   520,    43  ) \
+    PARAM_ENTRY(CAT_AUTOM,   cruisemode,  BTNSWITCH, 0,      1,      0,      62  ) \
     PARAM_ENTRY(CAT_CONTACT, udcsw,       "V",       0,      1000,   330,    20  ) \
     PARAM_ENTRY(CAT_CONTACT, udcswbuck,   "V",       0,      1000,   540,    80  ) \
+    PARAM_ENTRY(CAT_CONTACT, tripmode,    TRIPMODES, 0,      2,      0,      86  ) \
     PARAM_ENTRY(CAT_PWM,     pwmfunc,     PWMFUNCS,  0,      3,      0,      58  ) \
     PARAM_ENTRY(CAT_PWM,     pwmgain,     "",        -100000,100000, 100,    40  ) \
     PARAM_ENTRY(CAT_PWM,     pwmofs,      "dig",     -65535, 65535,  0,      41  ) \
     PARAM_ENTRY(CAT_COMM,    canspeed,    CANSPEEDS, 0,      3,      0,      83  ) \
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      88  ) \
-    PARAM_ENTRY(CAT_TEST,    ifltrise,    "dig",     0,      32,    10,      91  ) \
-    PARAM_ENTRY(CAT_TEST,    ifltfall,    "dig",     0,      32,     3,      92  ) \
     PARAM_ENTRY(CAT_TEST,    fslipspnt,   "Hz",      -100,   1000,   0,      0   ) \
     PARAM_ENTRY(CAT_TEST,    ampnom,      "%",       0,      100,    0,      0   ) \
     PARAM_ENTRY(CAT_TEST,    version,     "",        0,      0,      VERCEIL,0   ) \
@@ -203,15 +206,15 @@ enum _canio
     VALUE_ENTRY(tmpm,        "°C",    2020 ) \
     VALUE_ENTRY(uaux,        "V",     2021 ) \
     VALUE_ENTRY(canio,       CANIOS,  2022 ) \
-    VALUE_ENTRY(din_cruise,  "",      2023 ) \
-    VALUE_ENTRY(din_start,   "",      2024 ) \
-    VALUE_ENTRY(din_brake,   "",      2025 ) \
-    VALUE_ENTRY(din_mprot,   "",      2026 ) \
-    VALUE_ENTRY(din_forward, "",      2027 ) \
-    VALUE_ENTRY(din_reverse, "",      2028 ) \
-    VALUE_ENTRY(din_emcystop,"",      2029 ) \
-    VALUE_ENTRY(din_ocur,    "",      2030 ) \
-    VALUE_ENTRY(din_desat,   "",      2031 ) \
+    VALUE_ENTRY(din_cruise,  ONOFF,   2023 ) \
+    VALUE_ENTRY(din_start,   ONOFF,   2024 ) \
+    VALUE_ENTRY(din_brake,   ONOFF,   2025 ) \
+    VALUE_ENTRY(din_mprot,   OKERR,   2026 ) \
+    VALUE_ENTRY(din_forward, ONOFF,   2027 ) \
+    VALUE_ENTRY(din_reverse, ONOFF,   2028 ) \
+    VALUE_ENTRY(din_emcystop,OKERR,   2029 ) \
+    VALUE_ENTRY(din_ocur,    OKERR,   2030 ) \
+    VALUE_ENTRY(din_desat,   OKERR,   2031 ) \
     VALUE_ENTRY(din_bms,     "",      2032 ) \
     VALUE_ENTRY(dout_prec,   "",      2033 ) \
     VALUE_ENTRY(dout_dcsw,   "",      2034 ) \

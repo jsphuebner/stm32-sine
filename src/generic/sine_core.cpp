@@ -142,6 +142,11 @@ void SineCore::SetAmp(uint32_t amp /**< amplitude in digit. Largest value is 378
    ampl = amp;
 }
 
+uint32_t SineCore::GetAmp()
+{
+   return ampl;
+}
+
 /** Sets the minimum pulse width in normalized digits.
   * @post duty cylcles shorter than minWidth are supressed, both on the negative and the positive pulse
   */

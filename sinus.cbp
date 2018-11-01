@@ -42,7 +42,6 @@
 		<Unit filename="include/generic/anain.h" />
 		<Unit filename="include/generic/digio.h" />
 		<Unit filename="include/generic/errormessage.h" />
-		<Unit filename="include/generic/foc.h" />
 		<Unit filename="include/generic/fu.h" />
 		<Unit filename="include/generic/my_fp.h" />
 		<Unit filename="include/generic/my_math.h" />
@@ -67,7 +66,6 @@
 		<Unit filename="src/generic/anain.cpp" />
 		<Unit filename="src/generic/digio.cpp" />
 		<Unit filename="src/generic/errormessage.cpp" />
-		<Unit filename="src/generic/foc.cpp" />
 		<Unit filename="src/generic/fu.cpp" />
 		<Unit filename="src/generic/my_fp.c">
 			<Option compilerVar="CC" />

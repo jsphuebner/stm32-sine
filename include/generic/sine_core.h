@@ -29,6 +29,7 @@ class SineCore
       static s32fp Cosine(uint16_t angle);
       static uint16_t Atan2(int32_t cos, int32_t sin);
       static void SetAmp(uint32_t amp);
+      static uint32_t GetAmp();
       static void SetMinPulseWidth(uint32_t minWidth);
       static int32_t CalcSVPWMOffset(int32_t a, int32_t b, int32_t c);
       static uint32_t DutyCycles[3];

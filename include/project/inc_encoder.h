@@ -16,7 +16,8 @@ public:
    static void SetMode(enum mode encMode);
    static bool SeenNorthSignal();
    static void UpdateRotorAngle(int dir);
-   static void UpdateRotorFrequency(int timeBase);
+   static void UpdateRotorFrequency();
+   static void SetPwmFrequency(uint32_t frq);
    static uint16_t GetRotorAngle(int dir);
    static uint32_t GetSpeed();
    static uint32_t GetFullTurns();
