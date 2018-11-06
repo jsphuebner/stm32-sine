@@ -163,7 +163,7 @@ extern "C" void pwm_timer_isr(void)
       SineCore::SetAmp(amp);
       Param::SetInt(Param::amp, amp);
       Param::SetFlt(Param::fstat, frq);
-      Param::SetInt(Param::angle, angle);
+      Param::SetFlt(Param::angle, FP_FROMINT(angle) / 182);
       SineCore::Calc(angle);
 
       /* Match to PWM resolution */
@@ -355,7 +355,7 @@ static void CalcNextAngleSync(int dir)
    {
       uint32_t polePairs = Param::GetInt(Param::polepairs) / Param::GetInt(Param::respolepairs);
       uint16_t syncOfs = Param::GetInt(Param::syncofs);
-      uint16_t rotorAngle = Encoder::GetRotorAngle(0);
+      uint16_t rotorAngle = Encoder::GetRotorAngle();
 
       if (dir < 0)
       {
@@ -376,7 +376,7 @@ static void CalcNextAngleAsync(int dir)
 {
    static uint16_t slipAngle = 0;
    uint32_t polePairs = Param::GetInt(Param::polepairs);
-   uint16_t rotorAngle = Encoder::GetRotorAngle(dir);
+   uint16_t rotorAngle = Encoder::GetRotorAngle();
 
    frq = polePairs * Encoder::GetRotorFrequency() + fslip;
    slipAngle += dir * slipIncr;

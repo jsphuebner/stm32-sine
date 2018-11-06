@@ -18,7 +18,7 @@ public:
    static void UpdateRotorAngle(int dir);
    static void UpdateRotorFrequency();
    static void SetPwmFrequency(uint32_t frq);
-   static uint16_t GetRotorAngle(int dir);
+   static uint16_t GetRotorAngle();
    static uint32_t GetSpeed();
    static uint32_t GetFullTurns();
    static u32fp GetRotorFrequency();

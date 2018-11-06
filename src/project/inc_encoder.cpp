@@ -60,7 +60,6 @@ static bool seenNorthSignal = false;
 void Encoder::Reset()
 {
    ignore = true;
-   seenNorthSignal = false;
    lastPulseTimespan = MAX_CNT;
    for (uint32_t i = 0; i < MAX_REVCNT_VALUES; i++)
       timdata[i] = MAX_CNT;
@@ -128,35 +127,50 @@ void Encoder::SetFilterConst(uint8_t flt)
 void Encoder::UpdateRotorAngle(int dir)
 {
    static uint16_t lastAngle = 0;
+   static uint16_t accumulatedAngle = 0;
+   static int poleCounter = 0;
+   uint32_t cntVal;
+   int16_t numPulses;
+   uint32_t timeSinceLastPulse;
+   uint16_t interpolatedAngle;
 
-   if (encMode == SINGLE)
+   switch (encMode)
    {
-      int16_t numPulses = GetPulseTimeFiltered();
-
-      angle += (int16_t)(dir * numPulses * anglePerPulse);
-   }
-   else if (encMode == RESOLVER)
-   {
-      angle = GetAngleResolver();
-   }
-   else
-   {
-      if (encMode == SPI)
-      {
-         angle = GetAngleSPI(); //Gets 12-bit
-         angle <<= 4;
-      }
-      else
-      {
-         uint32_t cntVal = timer_get_counter(REV_CNT_TIMER);
+      case AB:
+      case ABZ:
+         cntVal = timer_get_counter(REV_CNT_TIMER);
          cntVal *= TWO_PI;
          cntVal /= pulsesPerTurn * 4;
          angle = (uint16_t)cntVal;
-      }
+         break;
+      case SINGLE:
+         numPulses = GetPulseTimeFiltered();
+         timeSinceLastPulse = timer_get_counter(REV_CNT_TIMER);
+         interpolatedAngle = ignore ? (anglePerPulse * timeSinceLastPulse) / lastPulseTimespan : 0;
+         accumulatedAngle += (int16_t)(dir * numPulses * anglePerPulse);
+         angle = accumulatedAngle + dir * interpolatedAngle;
+         break;
+      case SPI:
+         angle = GetAngleSPI(); //Gets 12-bit
+         angle <<= 4;
+         break;
+      case RESOLVER:
+         angle = GetAngleResolver();
+         break;
+      default:
+         break;
    }
 
    if (lastAngle <= (TWO_PI / 2) && angle > (TWO_PI / 2))
-      fullTurns++;
+   {
+      poleCounter--;
+      if (poleCounter == 0)
+      {
+         fullTurns++;
+         poleCounter = Param::GetInt(Param::respolepairs);
+      }
+   }
+
    lastAngle = angle;
 }
 
@@ -167,31 +181,22 @@ void Encoder::UpdateRotorFrequency()
 {
    static int velest = 0, velint = 0;
    static uint16_t posest = 0;
-   const int kp = Param::GetInt(Param::enckp), ki = Param::GetInt(Param::encki);
+   const int kp = Param::GetInt(Param::enckp);
+   const int ki = Param::GetInt(Param::encki);
 
    posest += velest / (int)pwmFrq;
    int16_t poserr = angle - posest;
    velint += (poserr * ki) / (int)pwmFrq;
    velest = poserr * kp + velint;
-   lastFrequency = ABS(velest) / 1820;
+   lastFrequency = ABS(velint) / FP_TOINT(TWO_PI);
 }
 
 /** Returns current angle of motor shaft to some arbitrary 0-axis
  * @return angle in digit (2Pi=65536)
 */
-uint16_t Encoder::GetRotorAngle(int dir)
+uint16_t Encoder::GetRotorAngle()
 {
-   if (encMode == SINGLE)
-   {
-      uint32_t timeSinceLastPulse = timer_get_counter(REV_CNT_TIMER);
-      uint16_t interpolatedAngle = ignore ? (anglePerPulse * timeSinceLastPulse) / lastPulseTimespan : 0;
-
-      return angle + dir * interpolatedAngle;
-   }
-   else
-   {
-      return angle;
-   }
+   return angle;
 }
 
 
@@ -217,6 +222,10 @@ uint32_t Encoder::GetSpeed()
    {
       if (ignore) return 0;
       return 60000000 / (lastPulseTimespan * pulsesPerTurn);
+   }
+   else if (encMode == RESOLVER)
+   {
+      return FP_TOINT(60 * lastFrequency) / Param::GetInt(Param::respolepairs);
    }
    else
    {
@@ -327,9 +336,9 @@ static void InitTimerABZMode()
 
 static void InitResolverMode()
 {
-   uint8_t channels[] = { 6, 6, 7, 7 };
+   uint8_t channels[] = { 0, 6, 7 };
 
-   adc_set_injected_sequence(ADC1, 4, channels);
+   adc_set_injected_sequence(ADC1, sizeof(channels), channels);
    adc_enable_external_trigger_injected(ADC1, ADC_CR2_JEXTSEL_JSWSTART);
    adc_set_sample_time(ADC1, 6, ADC_SMPR_SMP_1DOT5CYC);
    adc_set_sample_time(ADC1, 7, ADC_SMPR_SMP_1DOT5CYC);
@@ -352,12 +361,10 @@ static void InitResolverMode()
 
    while (!adc_eoc_injected(ADC1));
 
-   int cos = adc_read_injected(ADC1, 1);
-   int sin = adc_read_injected(ADC1, 3);
-   adc_set_injected_offset(ADC1, 1, cos);
-   adc_set_injected_offset(ADC1, 2, cos);
-   adc_set_injected_offset(ADC1, 3, sin);
-   adc_set_injected_offset(ADC1, 4, sin);
+   int sin = adc_read_injected(ADC1, 2);
+   int cos = adc_read_injected(ADC1, 3);
+   adc_set_injected_offset(ADC1, 2, sin);
+   adc_set_injected_offset(ADC1, 3, cos);
    adc_enable_external_trigger_injected(ADC1, ADC_CR2_JEXTSEL_TIM3_CC4);
    seenNorthSignal = true;
 }
@@ -382,39 +389,33 @@ static uint16_t GetAngleSPI()
 }
 
 /** Calculates current angle and velocity from resolver feedback
- * @pre Must be called at 8.8kHz */
+ *
+ * For different PWM frequencies you need to populate different
+ * resistor values on the 3-pole filter.
+ * PWM Frequency  8.8kHz: (510+10k), 3k3, 3k3
+ * PWM Frequency 17.6kHz: (3k3+4k7), 1k2, 1k2
+ */
 static uint16_t GetAngleResolver()
 {
    static bool state = false;
-   //static uint16_t lastAngle;
 
    if (state)
    {
       gpio_clear(GPIOD, GPIO2);
-      /* The phase delay of the 3-pole filter, amplifier and resolver is 96µs.
-         That is 40µs after the falling edge of the exciting square wave */
+      /* The phase delay of the 3-pole filter, amplifier and resolver is 305°
+         That is 125° after the falling edge of the exciting square wave */
       timer_set_oc_value(REV_CNT_TIMER, TIM_OC4, resolverSampleDelay);
       timer_set_counter(REV_CNT_TIMER, 0);
       timer_enable_counter(REV_CNT_TIMER);
       state = false;
-      //angle = lastAngle;
    }
    else
    {
       gpio_set(GPIOD, GPIO2);
-      int cos = adc_read_injected(ADC1, 1) + adc_read_injected(ADC1, 2);
-      int sin = adc_read_injected(ADC1, 3) + adc_read_injected(ADC1, 4);
+      int sin = adc_read_injected(ADC1, 2);
+      int cos = adc_read_injected(ADC1, 3);
       angle = SineCore::Atan2(cos, sin);
-      //Param::SetInt(Param::sin, sin);
-      //Param::SetInt(Param::cos, cos);
       state = true;
-      /*uint16_t diffPos = angle - lastAngle;
-      uint16_t diffNeg = lastAngle - angle;
-      uint16_t angleDiff = MIN(diffNeg, diffPos);
-      angleDiff &= 0xFFF0; //Filter out some jitter
-      u32fp frq = FP_MUL(angleDiff, FP_FROMFLT(2.148)); //32/(65536/4400)
-      lastFrequency = IIRFILTER(lastFrequency, frq, filter);
-      lastAngle = angle;*/
    }
 
    return angle;

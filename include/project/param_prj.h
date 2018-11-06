@@ -48,7 +48,7 @@
 #define CAT_CHARGER  "Charger"
 #define CAT_COMM     "Communication"
 
-#define VER 4.71
+#define VER 4.75
 #define VERCEIL VER + 0.009
 
 enum _modes
@@ -113,7 +113,7 @@ enum _canio
     PARAM_ENTRY(CAT_MOTOR,   fslipmax,    "Hz",      0,      10,     3,      33  ) \
     PARAM_ENTRY(CAT_MOTOR,   polepairs,   "",        1,      16,     2,      32  ) \
     PARAM_ENTRY(CAT_MOTOR,   respolepairs,"",        1,      16,     1,      93  ) \
-    PARAM_ENTRY(CAT_MOTOR,   enckp,       "",        0,      40,     20,      6   ) \
+    PARAM_ENTRY(CAT_MOTOR,   enckp,       "",        0,      40,     20,      6  ) \
     PARAM_ENTRY(CAT_MOTOR,   encki,       "",        0,      16000,  400,    94  ) \
     PARAM_ENTRY(CAT_MOTOR,   encmode,     ENCMODES,  0,      4,      0,      75  ) \
     PARAM_ENTRY(CAT_MOTOR,   fmin,        "Hz",      0,      400,    1,      34  ) \
@@ -215,11 +215,11 @@ enum _canio
     VALUE_ENTRY(din_emcystop,OKERR,   2029 ) \
     VALUE_ENTRY(din_ocur,    OKERR,   2030 ) \
     VALUE_ENTRY(din_desat,   OKERR,   2031 ) \
-    VALUE_ENTRY(din_bms,     "",      2032 ) \
+    VALUE_ENTRY(din_bms,     ONOFF,   2032 ) \
     VALUE_ENTRY(dout_prec,   "",      2033 ) \
     VALUE_ENTRY(dout_dcsw,   "",      2034 ) \
     VALUE_ENTRY(cpuload,     "%",     2035 ) \
 
-/*    VALUE_ENTRY(sin,     "°", 2100    ) \
-    VALUE_ENTRY(cos,     "°", 2101    )*/
+/*    VALUE_ENTRY(sin,     "", 2100    ) \
+    VALUE_ENTRY(cos,     "", 2101    )*/
 //Next value Id: 2038

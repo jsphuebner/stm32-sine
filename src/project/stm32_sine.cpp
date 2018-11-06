@@ -233,7 +233,7 @@ static void CalcAmpAndSlip()
       u32fp brkrampstr = (u32fp)Param::Get(Param::brkrampstr);
 
       if (Encoder::IsSyncMode())
-         ampnom = ampmin - FP_DIV(FP_MUL(ampmin, potnom), FP_FROMINT(100));
+         ampnom = ampmin + FP_MUL(ampmin, potnom) / 100;
       else
          ampnom = -potnom;
 
@@ -514,7 +514,7 @@ static void GetCruiseCreepCommand(int& finalSpnt, int throtSpnt)
 
 static void BmsLimitCommand(int& finalSpnt)
 {
-   if (hwRev != HW_TESLA && Param::GetInt(Param::din_bms))
+   if (hwRev != HW_TESLA && Param::GetBool(Param::din_bms))
    {
       if (finalSpnt >= 0)
          finalSpnt = (finalSpnt * Param::GetInt(Param::bmslimhigh)) / 100;
