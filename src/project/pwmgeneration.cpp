@@ -128,11 +128,13 @@ extern "C" void tim1_brk_isr(void)
    DigIo::Set(Pin::err_out);
    tripped = true;
 
-   if (!DigIo::Get(Pin::emcystop_in))
+   if (!DigIo::Get(Pin::emcystop_in) && hwRev != HW_REV3)
       ErrorMessage::Post(ERR_EMCYSTOP);
    else if (!DigIo::Get(Pin::mprot_in))
       ErrorMessage::Post(ERR_MPROT);
-   else
+   else if (!DigIo::Get(Pin::desat_in) && hwRev != HW_REV1)
+      ErrorMessage::Post(ERR_DESAT);
+   else if (!DigIo::Get(Pin::ocur_in) || hwRev == HW_REV1)
       ErrorMessage::Post(ERR_OVERCURRENT);
 }
 

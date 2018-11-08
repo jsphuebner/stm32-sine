@@ -133,7 +133,7 @@ static void SelectDirection()
 static void Ms100Task(void)
 {
    DigIo::Toggle(Pin::led_out);
-   ErrorMessage::PrintNewErrors();
+   //ErrorMessage::PrintNewErrors();
    iwdg_reset();
    s32fp cpuLoad = FP_FROMINT(PwmGeneration::GetCpuLoad() + scheduler->GetCpuLoad());
    Param::SetFlt(Param::cpuload, cpuLoad / 10);

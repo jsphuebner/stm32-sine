@@ -443,8 +443,9 @@ static void Reset(char *arg)
 
 static void FastUart(char *arg)
 {
-   arg = arg;
+   arg = my_trim(arg);
+   int baud = arg[0] == '0' ? USART_BAUDRATE : 921600;
    printf("OK\r\n");
-   printf("Baud rate now 921600\r\n");
-   usart_set_baudrate(TERM_USART, 921600);
+   printf("Baud rate now %d\r\n", baud);
+   usart_set_baudrate(TERM_USART, baud);
 }
