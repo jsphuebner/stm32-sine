@@ -95,16 +95,17 @@ static void SelectDirection()
 {
    int selectedDir = Param::GetInt(Param::dir);
    int userDirSelection = 0;
+   int dirSign = (Param::GetInt(Param::dirmode) & DIR_REVERSED) ? -1 : 1;
 
-   if (Param::GetInt(Param::dirmode) == BUTTON)
+   if ((Param::GetInt(Param::dirmode) & 1) == DIR_BUTTON)
    {
       /* if forward AND reverse selected, force neutral, because it's charge mode */
       if (Param::GetBool(Param::din_forward) && Param::GetBool(Param::din_reverse))
          selectedDir = 0;
       else if (Param::GetBool(Param::din_forward))
-         userDirSelection = 1;
+         userDirSelection = 1 * dirSign;
       else if (Param::GetBool(Param::din_reverse))
-         userDirSelection = -1;
+         userDirSelection = -1 * dirSign;
       else
          userDirSelection = selectedDir;
    }
@@ -114,9 +115,9 @@ static void SelectDirection()
       if (!(Param::GetBool(Param::din_forward) ^ Param::GetBool(Param::din_reverse)))
          selectedDir = 0;
       else if (Param::GetBool(Param::din_forward))
-         userDirSelection = 1;
+         userDirSelection = 1 * dirSign;
       else if (Param::GetBool(Param::din_reverse))
-         userDirSelection = -1;
+         userDirSelection = -1 * dirSign;
    }
 
    /* Only change direction when below certain motor speed */
@@ -625,6 +626,7 @@ static void Ms10Task(void)
    int newMode = MOD_OFF;
    s32fp udc = ProcessUdc();
 
+   Encoder::UpdateRotorFrequency(100);
    GetDigInputs();
    ProcessThrottle();
    CalcAndOutputTemp();
@@ -789,7 +791,6 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
    {
       PwmGeneration::SetCurrentLimitThreshold(Param::Get(Param::ocurlim));
 
-      Encoder::SetFilterConst(Param::GetInt(Param::enckp));
       Encoder::SetMode((enum Encoder::mode)Param::GetInt(Param::encmode));
       Encoder::SetImpulsesPerTurn(Param::GetInt(Param::numimp));
 

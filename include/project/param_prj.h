@@ -26,11 +26,12 @@
 #define SNS_M        "12=KTY83-110, 13=KTY84-130, 14=Leaf"
 #define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=speedfrq"
 #define BTNSWITCH    "0=Button, 1=Switch"
+#define DIRMODES     "0=Button, 1=Switch, 2=ButtonReversed, 3=SwitchReversed"
 #define IDLEMODS     "0=always, 1=nobrake, 2=cruise"
 #define ONOFF        "0=Off, 1=On, 2=na"
 #define OKERR        "0=Error, 1=Ok, 2=na"
 #define CHARGEMODS   "0=Off, 3=Boost, 4=Buck"
-#define ENCMODES     "0=Single, 1=AB, 2=ABZ, 3=SPI, 4=Resolver"
+#define ENCMODES     "0=Single, 1=AB, 2=ABZ, 3=SPI, 4=Resolver, 5=SinCos"
 #define POTMODES     "0=SingleRegen, 1=DualChannel, 2=CAN"
 #define CANSPEEDS    "0=250k, 1=500k, 2=800k, 3=1M"
 #define CANIOS       "1=Cruise, 2=Start, 4=Brake, 8=Fwd, 16=Rev, 32=Bms"
@@ -48,7 +49,7 @@
 #define CAT_CHARGER  "Charger"
 #define CAT_COMM     "Communication"
 
-#define VER 4.78
+#define VER 4.87
 #define VERCEIL VER + 0.009
 
 enum _modes
@@ -68,6 +69,13 @@ enum _tripmodes
    TRIP_ALLOFF = 0,
    TRIP_DCSWON,
    TRIP_PRECHARGEON
+};
+
+enum _dirmodes
+{
+   DIR_BUTTON = 0,
+   DIR_SWITCH = 1,
+   DIR_REVERSED = 2, //used as a flag
 };
 
 enum _canio
@@ -113,14 +121,12 @@ enum _canio
     PARAM_ENTRY(CAT_MOTOR,   fslipmax,    "Hz",      0,      10,     3,      33  ) \
     PARAM_ENTRY(CAT_MOTOR,   polepairs,   "",        1,      16,     2,      32  ) \
     PARAM_ENTRY(CAT_MOTOR,   respolepairs,"",        1,      16,     1,      93  ) \
-    PARAM_ENTRY(CAT_MOTOR,   enckp,       "",        0,      40,     20,      6  ) \
-    PARAM_ENTRY(CAT_MOTOR,   encki,       "",        0,      16000,  400,    94  ) \
-    PARAM_ENTRY(CAT_MOTOR,   encmode,     ENCMODES,  0,      4,      0,      75  ) \
+    PARAM_ENTRY(CAT_MOTOR,   encmode,     ENCMODES,  0,      5,      0,      75  ) \
     PARAM_ENTRY(CAT_MOTOR,   fmin,        "Hz",      0,      400,    1,      34  ) \
     PARAM_ENTRY(CAT_MOTOR,   fmax,        "Hz",      0,      1000,   200,    9   ) \
     PARAM_ENTRY(CAT_MOTOR,   numimp,      "ppr",     8,      8192,   60,     15  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirchrpm,    "rpm",     0,      2000,   100,    87  ) \
-    PARAM_ENTRY(CAT_MOTOR,   dirmode,     BTNSWITCH, 0,      1,      1,      95  ) \
+    PARAM_ENTRY(CAT_MOTOR,   dirmode,     DIRMODES,  0,      3,      1,      95  ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
     PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     14,     12,     46  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmfrq,      PWMFRQS,   0,      4,      1,      13  ) \

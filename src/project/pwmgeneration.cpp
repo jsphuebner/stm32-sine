@@ -32,6 +32,7 @@
 #define SHIFT_180DEG (uint16_t)32768
 #define SHIFT_90DEG  (uint16_t)16384
 #define FRQ_TO_ANGLE(frq) FP_TOINT((frq << SineCore::BITS) / pwmfrq)
+#define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
 
 static uint8_t  pwmdigits;
 static uint16_t pwmfrq;
@@ -151,7 +152,6 @@ extern "C" void pwm_timer_isr(void)
 
       s32fp ampNomLimited = LimitCurrent();
       Encoder::UpdateRotorAngle(dir);
-      Encoder::UpdateRotorFrequency();
 
       if (opmode == MOD_SINE)
          CalcNextAngleConstant(dir);
@@ -165,7 +165,7 @@ extern "C" void pwm_timer_isr(void)
       SineCore::SetAmp(amp);
       Param::SetInt(Param::amp, amp);
       Param::SetFlt(Param::fstat, frq);
-      Param::SetFlt(Param::angle, FP_FROMINT(angle) / 182);
+      Param::SetFlt(Param::angle, DIGIT_TO_DEGREE(angle));
       SineCore::Calc(angle);
 
       /* Match to PWM resolution */

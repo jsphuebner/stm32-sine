@@ -240,26 +240,7 @@ void Init(enum baudrates baudrate)
 	// Reset CAN
 	can_reset(CAN1);
 
-	// CAN cell init.
-	 // Setting the bitrate to 250KBit. APB1 = 36MHz,
-	 // prescaler = 9 -> 4MHz time quanta frequency.
-	 // 1tq sync + 9tq bit segment1 (TS1) + 6tq bit segment2 (TS2) =
-	 // 16time quanto per bit period, therefor 4MHz/16 = 250kHz
-	 //
-	can_init(CAN1,
-		     false,          // TTCM: Time triggered comm mode?
-		     true,           // ABOM: Automatic bus-off management?
-		     false,          // AWUM: Automatic wakeup mode?
-		     true,           // NART: No automatic retransmission?
-		     false,          // RFLM: Receive FIFO locked mode?
-		     false,          // TXFP: Transmit FIFO priority?
-		     CAN_BTR_SJW_1TQ,
-		     canSpeed[baudrate].ts1,
-		     canSpeed[baudrate].ts2,
-		     canSpeed[baudrate].prescaler,				// BRP+1: Baud rate prescaler
-		     false,
-		     false);
-
+	SetBaudrate(baudrate);
    ConfigureFilters();
 	// Enable CAN RX interrupt.
 	can_enable_irq(CAN1, CAN_IER_FMPIE0);
@@ -267,6 +248,12 @@ void Init(enum baudrates baudrate)
 
 void SetBaudrate(enum baudrates baudrate)
 {
+	// CAN cell init.
+	 // Setting the bitrate to 250KBit. APB1 = 36MHz,
+	 // prescaler = 9 -> 4MHz time quanta frequency.
+	 // 1tq sync + 9tq bit segment1 (TS1) + 6tq bit segment2 (TS2) =
+	 // 16time quanto per bit period, therefor 4MHz/16 = 250kHz
+	 //
 	can_init(CAN1,
 		     false,          // TTCM: Time triggered comm mode?
 		     true,           // ABOM: Automatic bus-off management?

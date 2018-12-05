@@ -9,14 +9,14 @@ class Encoder
 public:
    enum mode
    {
-      SINGLE, AB, ABZ, SPI, RESOLVER, INVALID
+      SINGLE, AB, ABZ, SPI, RESOLVER, SINCOS, INVALID
    };
 
    static void Reset();
    static void SetMode(enum mode encMode);
    static bool SeenNorthSignal();
    static void UpdateRotorAngle(int dir);
-   static void UpdateRotorFrequency();
+   static void UpdateRotorFrequency(int callingFrequency);
    static void SetPwmFrequency(uint32_t frq);
    static uint16_t GetRotorAngle();
    static uint32_t GetSpeed();
