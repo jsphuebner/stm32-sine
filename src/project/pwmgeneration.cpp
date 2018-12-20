@@ -148,10 +148,10 @@ extern "C" void pwm_timer_isr(void)
    if (opmode == MOD_MANUAL || opmode == MOD_RUN || opmode == MOD_SINE)
    {
       int dir = Param::GetInt(Param::dir);
-      uint8_t shiftForTimer = SineCore::BITS - pwmdigits;
+
+      Encoder::UpdateRotorAngle(dir);
 
       s32fp ampNomLimited = LimitCurrent();
-      Encoder::UpdateRotorAngle(dir);
 
       if (opmode == MOD_SINE)
          CalcNextAngleConstant(dir);
@@ -479,8 +479,6 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
    timer_disable_break_automatic_output(PWM_TIMER);
    timer_enable_break_main_output(PWM_TIMER);
    timer_set_break_polarity_high(PWM_TIMER);
-   //#warning DEBUG
-   //timer_set_break_polarity_low(PWM_TIMER);
    timer_enable_break(PWM_TIMER);
    timer_set_enabled_off_state_in_run_mode(PWM_TIMER);
    timer_set_enabled_off_state_in_idle_mode(PWM_TIMER);

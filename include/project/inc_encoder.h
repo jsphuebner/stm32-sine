@@ -22,9 +22,21 @@ public:
    static uint32_t GetSpeed();
    static uint32_t GetFullTurns();
    static u32fp GetRotorFrequency();
-   static void SetFilterConst(uint8_t flt);
    static void SetImpulsesPerTurn(uint16_t imp);
    static bool IsSyncMode();
+
+private:
+   static u32fp CalcFrequencyFromAngleDifference(uint16_t angle);
+   static void InitTimerSingleChannelMode();
+   static void InitTimerABZMode();
+   static void InitSPIMode();
+   static void InitResolverMode();
+   static uint16_t GetAngleSPI();
+   static uint16_t GetAngleResolver();
+   static uint16_t GetAngleSinCos();
+   static int GetPulseTimeFiltered();
+   static void GetMinMaxTime(uint32_t& min, uint32_t& max);
+   static void DMASetup();
 };
 
 #endif // INC_ENCODER_H_INCLUDED

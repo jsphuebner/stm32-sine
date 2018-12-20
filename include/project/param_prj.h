@@ -49,7 +49,7 @@
 #define CAT_CHARGER  "Charger"
 #define CAT_COMM     "Communication"
 
-#define VER 4.87
+#define VER 4.9
 #define VERCEIL VER + 0.009
 
 enum _modes

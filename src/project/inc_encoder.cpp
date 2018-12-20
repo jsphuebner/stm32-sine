@@ -33,25 +33,12 @@
 #define MAX_CNT TWO_PI - 1
 #define MAX_REVCNT_VALUES 5
 
-static void InitTimerSingleChannelMode();
-static void InitTimerABZMode();
-static void InitSPIMode();
-static void InitResolverMode();
-static u32fp TrackFrequency(uint16_t angle);
-static void DMASetup();
-static uint16_t GetAngleSPI();
-static uint16_t GetAngleResolver();
-static uint16_t GetAngleSinCos();
-static int GetPulseTimeFiltered();
-static void GetMinMaxTime(uint32_t& min, uint32_t& max);
-
 static volatile uint16_t timdata[MAX_REVCNT_VALUES];
 static volatile uint16_t angle = 0;
+static uint16_t pulsesPerTurn = 0;
 static uint32_t lastPulseTimespan = 0;
-static uint16_t filter = 0;
 static uint32_t anglePerPulse = 0;
 static uint32_t fullTurns = 0;
-static uint16_t pulsesPerTurn = 0;
 static uint32_t pwmFrq = 1;
 static uint32_t resolverSampleDelay = 0;
 static u32fp lastFrequency = 0;
@@ -122,12 +109,6 @@ void Encoder::SetImpulsesPerTurn(uint16_t imp)
       InitTimerABZMode();
 }
 
-/** set filter constant of filter after pulse counter */
-void Encoder::SetFilterConst(uint8_t flt)
-{
-   filter = flt;
-}
-
 void Encoder::UpdateRotorAngle(int dir)
 {
    static uint16_t lastAngle = 0;
@@ -154,21 +135,22 @@ void Encoder::UpdateRotorAngle(int dir)
       case SINGLE:
          numPulses = GetPulseTimeFiltered();
          timeSinceLastPulse = timer_get_counter(REV_CNT_TIMER);
-         interpolatedAngle = ignore ? (anglePerPulse * timeSinceLastPulse) / lastPulseTimespan : 0;
+         interpolatedAngle = ignore ? 0 : (anglePerPulse * timeSinceLastPulse) / lastPulseTimespan;
          accumulatedAngle += (int16_t)(dir * numPulses * anglePerPulse);
          angle = accumulatedAngle + dir * interpolatedAngle;
+         lastFrequency = ignore ? lastFrequency : FP_FROMINT(1000000) / (lastPulseTimespan * pulsesPerTurn);
          break;
       case SPI:
          angle = GetAngleSPI();
-         lastFrequency = TrackFrequency(angle);
+         lastFrequency = CalcFrequencyFromAngleDifference(angle);
          break;
       case RESOLVER:
          angle = GetAngleResolver();
-         lastFrequency = TrackFrequency(angle);
+         lastFrequency = CalcFrequencyFromAngleDifference(angle);
          break;
       case SINCOS:
          angle = GetAngleSinCos();
-         lastFrequency = TrackFrequency(angle);
+         lastFrequency = CalcFrequencyFromAngleDifference(angle);
          break;
       default:
          break;
@@ -211,31 +193,17 @@ uint16_t Encoder::GetRotorAngle()
    return angle;
 }
 
-
 /** Return rotor frequency in Hz
  * @pre in AB/ABZ encoder mode UpdateRotorFrequency must be called at a regular interval */
 u32fp Encoder::GetRotorFrequency()
 {
-   if (encMode == SINGLE)
-   {
-      if (ignore) return 0;
-      return FP_FROMINT(1000000) / (lastPulseTimespan * pulsesPerTurn);
-   }
-   else
-   {
-      return lastFrequency;
-   }
+   return lastFrequency;
 }
 
 /** Get current speed in rpm */
 uint32_t Encoder::GetSpeed()
 {
-   if (encMode == SINGLE)
-   {
-      if (ignore) return 0;
-      return 60000000 / (lastPulseTimespan * pulsesPerTurn);
-   }
-   else if (encMode == RESOLVER || encMode == SINCOS)
+   if (encMode == RESOLVER || encMode == SINCOS)
    {
       return FP_TOINT(60 * lastFrequency) / Param::GetInt(Param::respolepairs);
    }
@@ -256,24 +224,32 @@ bool Encoder::IsSyncMode()
    return encMode == ABZ || encMode == SPI || encMode == RESOLVER || encMode == SINCOS;
 }
 
-/** Track rotor frequency.
- * @ref https://www.embeddedrelated.com/showarticle/530.php
- */
-static u32fp TrackFrequency(uint16_t angle)
+u32fp Encoder::CalcFrequencyFromAngleDifference(uint16_t angle)
 {
-   static int velest = 0, velint = 0;
-   static uint16_t posest = 0;
-   const int kp = 20;
-   const int ki = 400;
+   static int samples = 0;
+   static int lastAngle = 0;
+   u32fp frq = lastFrequency;
+   uint16_t diffPos = (lastAngle - angle) & 0xFFFF;
+   uint16_t diffNeg = (angle - lastAngle) & 0xFFFF;
+   uint16_t angleDiff = MIN(diffNeg, diffPos);
 
-   posest += velest / (int)pwmFrq;
-   int16_t poserr = angle - posest;
-   velint += (poserr * ki) / (int)pwmFrq;
-   velest = poserr * kp + velint;
-   return ABS(velint) / FP_TOINT(TWO_PI);
+   samples++;
+
+   if (angleDiff > 1820)
+   {
+      //We don't make assumption about the rotation direction but we
+      //do assume less than 180° in one PWM cycle
+      frq = (pwmFrq * angleDiff) / FP_TOINT(TWO_PI * samples);
+
+      lastAngle = angle;
+      samples = 0;
+   }
+
+   frq = IIRFILTER(lastFrequency, frq, 1);
+   return frq;
 }
 
-static void DMASetup()
+void Encoder::DMASetup()
 {
    dma_disable_channel(DMA1, REV_CNT_DMACHAN);
    dma_set_peripheral_address(DMA1, REV_CNT_DMACHAN, REV_CNT_CCR_PTR);
@@ -286,7 +262,7 @@ static void DMASetup()
    dma_enable_channel(DMA1, REV_CNT_DMACHAN);
 }
 
-static void InitTimerSingleChannelMode()
+void Encoder::InitTimerSingleChannelMode()
 {
    rcc_periph_reset_pulse(REV_CNT_TIMRST);
    //Some explanation: HCLK=72MHz
@@ -323,7 +299,7 @@ static void InitTimerSingleChannelMode()
    exti_disable_request(EXTI2);
 }
 
-static void InitSPIMode()
+void Encoder::InitSPIMode()
 {
    rcc_periph_reset_pulse(REV_CNT_TIMRST);
    exti_disable_request(EXTI2);
@@ -333,7 +309,7 @@ static void InitSPIMode()
    seenNorthSignal = true;
 }
 
-static void InitTimerABZMode()
+void Encoder::InitTimerABZMode()
 {
    rcc_periph_reset_pulse(REV_CNT_TIMRST);
    timer_set_period(REV_CNT_TIMER, 4 * pulsesPerTurn); //2 channels and 2 edges -> 4 times the number of base pulses
@@ -364,7 +340,7 @@ static void InitTimerABZMode()
    seenNorthSignal = false;
 }
 
-static void InitResolverMode()
+void Encoder::InitResolverMode()
 {
    uint8_t channels[] = { 0, 6, 7 };
 
@@ -410,7 +386,7 @@ static void InitResolverMode()
 }
 
 /** Gets angle from an AD2S chip */
-static uint16_t GetAngleSPI()
+uint16_t Encoder::GetAngleSPI()
 {
    uint32_t d = 0;
    //Skip the abstraction, we need speed here
@@ -438,11 +414,9 @@ static uint16_t GetAngleSPI()
  * PWM Frequency  8.8kHz: (510+10k), 3k3, 3k3
  * PWM Frequency 17.6kHz: (3k3+4k7), 1k2, 1k2
  */
-static uint16_t GetAngleResolver()
+uint16_t Encoder::GetAngleResolver()
 {
-   static bool state = false;
-
-   if (state)
+   if (gpio_get(GPIOD, GPIO2))
    {
       gpio_clear(GPIOD, GPIO2);
       /* The phase delay of the 3-pole filter, amplifier and resolver is 305°
@@ -459,13 +433,11 @@ static uint16_t GetAngleResolver()
       angle = SineCore::Atan2(cos, sin);
    }
 
-   state = !state;
-
    return angle;
 }
 
 /** Calculates angle from a Hall sin/cos encoder like MLX90380 */
-static uint16_t GetAngleSinCos()
+uint16_t Encoder::GetAngleSinCos()
 {
    int sin = adc_read_injected(ADC1, 2);
    int cos = adc_read_injected(ADC1, 3);
@@ -473,17 +445,13 @@ static uint16_t GetAngleSinCos()
 
    adc_start_conversion_injected(ADC1);
 
+   //Param::SetInt(Param::sin, sin);
+   //Param::SetInt(Param::cos, cos);
+
    return calcAngle;
 }
 
-extern "C" void exti2_isr(void)
-{
-   exti_reset_request(EXTI2);
-   timer_set_counter(REV_CNT_TIMER, 0);
-   seenNorthSignal = true;
-}
-
-static int GetPulseTimeFiltered()
+int Encoder::GetPulseTimeFiltered()
 {
    static int lastN = 0;
    static int noMovement = 0;
@@ -512,6 +480,7 @@ static int GetPulseTimeFiltered()
    if (noMovement > 1000)
    {
       ignore = true;
+      lastFrequency = 0;
    }
 
    //spike detection, a factor of 8 between adjacent pulses is most likely caused by interference
@@ -532,11 +501,18 @@ static int GetPulseTimeFiltered()
    return pulses;
 }
 
-static void GetMinMaxTime(uint32_t& min, uint32_t& max)
+void Encoder::GetMinMaxTime(uint32_t& min, uint32_t& max)
 {
    for (uint32_t i = 0; i < MAX_REVCNT_VALUES; i++)
    {
       min = MIN(min, timdata[i]);
       max = MAX(max, timdata[i]);
    }
+}
+
+extern "C" void exti2_isr(void)
+{
+   exti_reset_request(EXTI2);
+   timer_set_counter(REV_CNT_TIMER, 0);
+   seenNorthSignal = true;
 }
