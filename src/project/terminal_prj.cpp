@@ -35,6 +35,7 @@
 static void ParamGet(char *arg);
 static void ParamStream(char *arg);
 static void ParamSet(char *arg);
+static void ParamFlag(char *arg);
 static void LoadDefaults(char *arg);
 static void GetAll(char *arg);
 static void PrintList(char *arg);
@@ -55,6 +56,7 @@ extern "C" const TERM_CMD TermCmds[] =
 {
   { "set", ParamSet },
   { "get", ParamGet },
+  { "flag", ParamFlag },
   { "stream", ParamStream },
   { "defaults", LoadDefaults },
   { "all", GetAll },
@@ -166,23 +168,26 @@ static void PrintParamsJson(char *arg)
       s32fp canGain;
       pAtr = Param::GetAttrib((Param::PARAM_NUM)idx);
 
-      printf("%c\r\n   \"%s\": {\"unit\":\"%s\",\"value\":%f,",comma, pAtr->name, pAtr->unit, Param::Get((Param::PARAM_NUM)idx));
+      if ((Param::GetFlag((Param::PARAM_NUM)idx) & Param::FLAG_HIDDEN) == 0)
+      {
+         printf("%c\r\n   \"%s\": {\"unit\":\"%s\",\"value\":%f,",comma, pAtr->name, pAtr->unit, Param::Get((Param::PARAM_NUM)idx));
 
-      if (Can::FindMap((Param::PARAM_NUM)idx, canId, canOffset, canLength, canGain, isRx))
-      {
-         printf("\"canid\":%d,\"canoffset\":%d,\"canlength\":%d,\"cangain\":%d,\"isrx\":%s,",
-                canId, canOffset, canLength, canGain, isRx ? "true" : "false");
-      }
+         if (Can::FindMap((Param::PARAM_NUM)idx, canId, canOffset, canLength, canGain, isRx))
+         {
+            printf("\"canid\":%d,\"canoffset\":%d,\"canlength\":%d,\"cangain\":%d,\"isrx\":%s,",
+                   canId, canOffset, canLength, canGain, isRx ? "true" : "false");
+         }
 
-      if (Param::IsParam((Param::PARAM_NUM)idx))
-      {
-         printf("\"isparam\":true,\"minimum\":%f,\"maximum\":%f,\"default\":%f,\"category\":\"%s\"}", pAtr->min, pAtr->max, pAtr->def, pAtr->category);
+         if (Param::IsParam((Param::PARAM_NUM)idx))
+         {
+            printf("\"isparam\":true,\"minimum\":%f,\"maximum\":%f,\"default\":%f,\"category\":\"%s\"}", pAtr->min, pAtr->max, pAtr->def, pAtr->category);
+         }
+         else
+         {
+            printf("\"isparam\":false}");
+         }
+         comma = ',';
       }
-      else
-      {
-         printf("\"isparam\":false}");
-      }
-      comma = ',';
    }
    printf("\r\n}\r\n");
 }
@@ -198,7 +203,9 @@ static void PrintList(char *arg)
    for (uint32_t idx = 0; idx < Param::PARAM_LAST; idx++)
    {
       pAtr = Param::GetAttrib((Param::PARAM_NUM)idx);
-      printf("%s [%s]\r\n", pAtr->name, pAtr->unit);
+
+      if ((Param::GetFlag((Param::PARAM_NUM)idx) & Param::FLAG_HIDDEN) == 0)
+         printf("%s [%s]\r\n", pAtr->name, pAtr->unit);
    }
 }
 
@@ -215,7 +222,7 @@ static void PrintAtr(char *arg)
    {
       pAtr = Param::GetAttrib((Param::PARAM_NUM)idx);
       /* Only display for params */
-      if (Param::IsParam((Param::PARAM_NUM)idx))
+      if (Param::IsParam((Param::PARAM_NUM)idx) && (Param::GetFlag((Param::PARAM_NUM)idx) & Param::FLAG_HIDDEN) == 0)
       {
          printf("%s\t\t%f - %f [%f]\r\n", pAtr->name,pAtr->min,pAtr->max,pAtr->def);
       }
@@ -365,6 +372,64 @@ static void ParamSet(char *arg)
        {
           printf("Value out of range\r\n");
        }
+   }
+   else
+   {
+       printf("Unknown parameter %s\r\n", arg);
+   }
+}
+
+static void ParamFlag(char *arg)
+{
+   char *pFlagVal;
+   Param::PARAM_NUM idx;
+
+   arg = my_trim(arg);
+   pFlagVal = (char *)my_strchr(arg, ' ');
+
+   if (*pFlagVal == 0)
+   {
+      printf("No flag given\r\n");
+      return;
+   }
+
+   *pFlagVal = 0;
+   pFlagVal++;
+
+   idx = Param::NumFromString(arg);
+
+   if (Param::PARAM_INVALID != idx)
+   {
+      bool clearFlag = false;
+      Param::PARAM_FLAG flag = Param::FLAG_NONE;
+
+      if (pFlagVal[0] == '!' || pFlagVal[0] == '~' || pFlagVal[0] == '/')
+      {
+         clearFlag = true;
+         pFlagVal++;
+      }
+
+      if (my_strcmp("hidden", pFlagVal) == 0)
+      {
+         flag = Param::FLAG_HIDDEN;
+      }
+
+      if (flag != Param::FLAG_NONE)
+      {
+         if (clearFlag)
+         {
+            Param::ClearFlag(idx, flag);
+         }
+         else
+         {
+            Param::SetFlag(idx, flag);
+         }
+         printf("Flag change OK\r\n");
+      }
+      else
+      {
+         printf("Unknown flag\r\n");
+      }
    }
    else
    {

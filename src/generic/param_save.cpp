@@ -23,18 +23,20 @@
 #include "param_save.h"
 #include "hwdefs.h"
 
-#define NUM_PARAMS ((PARAM_BLKSIZE - 8) / sizeof(KEY_VALUEPAIR32))
+#define NUM_PARAMS ((PARAM_BLKSIZE - 8) / sizeof(PARAM_ENTRY))
 #define PARAM_WORDS (PARAM_BLKSIZE / 4)
 
 typedef struct
 {
-   uint32_t key;
+   uint16_t key;
+   uint8_t dummy;
+   uint8_t flags;
    uint32_t value;
-} KEY_VALUEPAIR32;
+} PARAM_ENTRY;
 
 typedef struct
 {
-   KEY_VALUEPAIR32 data[NUM_PARAMS];
+   PARAM_ENTRY data[NUM_PARAMS];
    uint32_t crc;
    uint32_t padding;
 } PARAM_PAGE;
@@ -55,15 +57,19 @@ uint32_t parm_save()
    for (idx = 0; Param::IsParam((Param::PARAM_NUM)idx) && idx < NUM_PARAMS; idx++)
    {
       const Param::Attributes *pAtr = Param::GetAttrib((Param::PARAM_NUM)idx);
+      parmPage.data[idx].dummy = 0;
+      parmPage.data[idx].flags = (uint8_t)Param::GetFlag((Param::PARAM_NUM)idx);
       parmPage.data[idx].key = pAtr->id;
       parmPage.data[idx].value = Param::Get((Param::PARAM_NUM)idx);
-      crc_calculate(pAtr->id);
-      crc_calculate(Param::Get((Param::PARAM_NUM)idx));
+      crc_calculate(((uint32_t*)&parmPage.data[idx])[0]); //Treat 3 fields as uint32_t
+      crc_calculate(parmPage.data[idx].value);
    }
    //Pad the remaining space and the CRC calculcator with 1's
    for (; idx < NUM_PARAMS; idx++)
    {
-      parmPage.data[idx].key = 0xffffffff;
+      parmPage.data[idx].dummy = 0xff;
+      parmPage.data[idx].flags = 0xff;
+      parmPage.data[idx].key = 0xffff;
       parmPage.data[idx].value = 0xffffffff;
       crc_calculate(0xffffffff);
       parmPage.crc = crc_calculate(0xffffffff);
@@ -103,6 +109,7 @@ int parm_load()
          if (idx != Param::PARAM_INVALID)
          {
             Param::SetFlt(idx, parmPage->data[idxPage].value);
+            Param::SetFlagsRaw(idx, parmPage->data[idxPage].flags);
          }
       }
       return 0;

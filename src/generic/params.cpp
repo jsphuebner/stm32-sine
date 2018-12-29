@@ -41,6 +41,15 @@ static s32fp values[] =
 #undef PARAM_ENTRY
 #undef VALUE_ENTRY
 
+#define PARAM_ENTRY(category, name, unit, min, max, def, id) 0,
+#define VALUE_ENTRY(name, unit, id) 0,
+static uint8_t flags[] =
+{
+    PARAM_LIST
+};
+#undef PARAM_ENTRY
+#undef VALUE_ENTRY
+
 /**
 * Set a parameter
 *
@@ -190,6 +199,26 @@ void LoadDefaults()
       if (curAtr->id > 0)
          SetFlt((PARAM_NUM)idx, curAtr->def);
    }
+}
+
+void SetFlagsRaw(PARAM_NUM param, uint8_t rawFlags)
+{
+   flags[param] = rawFlags;
+}
+
+void SetFlag(PARAM_NUM param, PARAM_FLAG flag)
+{
+   flags[param] |= (uint8_t)flag;
+}
+
+void ClearFlag(PARAM_NUM param, PARAM_FLAG flag)
+{
+   flags[param] &= (uint8_t)~flag;
+}
+
+PARAM_FLAG GetFlag(PARAM_NUM param)
+{
+   return (PARAM_FLAG)flags[param];
 }
 
 }

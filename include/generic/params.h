@@ -42,6 +42,12 @@ namespace Param
        TYPE_LAST
    } PARAM_TYPE;
 
+   typedef enum
+   {
+      FLAG_NONE = 0,
+      FLAG_HIDDEN = 1
+   } PARAM_FLAG;
+
    typedef struct
    {
       char const *category;
@@ -65,7 +71,10 @@ namespace Param
    const Attributes *GetAttrib(PARAM_NUM ParamNum);
    int IsParam(PARAM_NUM ParamNum);
    void LoadDefaults();
-
+   void SetFlagsRaw(PARAM_NUM param, uint8_t rawFlags);
+   void SetFlag(PARAM_NUM param, PARAM_FLAG flag);
+   void ClearFlag(PARAM_NUM param, PARAM_FLAG flag);
+   PARAM_FLAG GetFlag(PARAM_NUM param);
 }
 
 //User defined callback
