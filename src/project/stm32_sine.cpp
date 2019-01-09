@@ -139,6 +139,7 @@ static void Ms100Task(void)
    s32fp cpuLoad = FP_FROMINT(PwmGeneration::GetCpuLoad() + scheduler->GetCpuLoad());
    Param::SetFlt(Param::cpuload, cpuLoad / 10);
    Param::SetInt(Param::turns, Encoder::GetFullTurns());
+   Param::SetInt(Param::lasterr, ErrorMessage::GetLastError());
 
    if (hwRev == HW_REV1)
    {
@@ -887,6 +888,8 @@ extern "C" int main(void)
    s.AddTask(Ms100Task, 10000);
 
    DigIo::Set(Pin::prec_out);
+
+   Param::SetInt(Param::version, 4); //backward compatibility
 
    if (Param::GetInt(Param::snsm) < 12)
       Param::SetInt(Param::snsm, Param::GetInt(Param::snsm) + 10); //upgrade parameter

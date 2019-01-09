@@ -21,6 +21,9 @@
 #define NULL 0L
 #endif
 
+#define TOSTR_(...) #__VA_ARGS__
+#define STRINGIFY(x) TOSTR_(x)
+
 #ifdef __cplusplus
 extern "C"
 {

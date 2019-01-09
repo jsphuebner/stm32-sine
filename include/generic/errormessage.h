@@ -25,8 +25,9 @@
 #define ERROR_MESSAGE_ENTRY(id, type) ERR_##id,
 typedef enum
 {
-    ERROR_MESSAGE_LIST
-    ERROR_MESSAGE_LAST
+   ERROR_NONE,
+   ERROR_MESSAGE_LIST
+   ERROR_MESSAGE_LAST
 } ERROR_MESSAGE_NUM;
 #undef ERROR_MESSAGE_ENTRY
 
@@ -46,6 +47,7 @@ class ErrorMessage
       static void UnpostAll();
       static void PrintAllErrors();
       static void PrintNewErrors();
+      static ERROR_MESSAGE_NUM GetLastError();
    protected:
    private:
       static void PrintError(uint32_t time, ERROR_MESSAGE_NUM err);
@@ -54,6 +56,7 @@ class ErrorMessage
       static uint32_t currentBufIdx;
       static uint32_t lastPrintIdx;
       static bool posted[ERROR_MESSAGE_LAST];
+      static ERROR_MESSAGE_NUM lastError;
 };
 
 #endif // ERRORMESSAGE_H

@@ -18,6 +18,7 @@
  */
 #include "errormessage.h"
 #include "printf.h"
+#include "my_string.h"
 
 struct ErrorDescriptor
 {
@@ -38,6 +39,11 @@ static const struct ErrorDescriptor errorDescriptors[] =
 };
 #undef ERROR_MESSAGE_ENTRY
 
+#define EXPANDED_LIST ERROR_MESSAGE_ENTRY(NONE, ERROR_DISPLAY) ERROR_MESSAGE_LIST
+#define ERROR_MESSAGE_ENTRY(id, type) __COUNTER__=id,
+const char* errorListString = STRINGIFY(EXPANDED_LIST);
+#undef ERROR_MESSAGE_ENTRY
+
 static const char* types[ERROR_LAST] =
 {
    "STOP",
@@ -50,6 +56,7 @@ struct BufferEntry errorBuffer[ERROR_BUF_SIZE] = { { ERROR_MESSAGE_LAST, 0 } };
 uint32_t ErrorMessage::timeTick = 0;
 uint32_t ErrorMessage::currentBufIdx = 0;
 uint32_t ErrorMessage::lastPrintIdx = 0;
+ERROR_MESSAGE_NUM ErrorMessage::lastError = ERROR_NONE;
 bool ErrorMessage::posted[ERROR_MESSAGE_LAST] = { false };
 
 /** Set timestamp for error message
@@ -67,6 +74,7 @@ void ErrorMessage::Post(ERROR_MESSAGE_NUM msg)
 {
    if (!posted[msg] && timeTick > 0)
    {
+      lastError = msg;
       errorBuffer[currentBufIdx].msg = msg;
       errorBuffer[currentBufIdx].time = timeTick;
       posted[msg] = true;
@@ -90,6 +98,11 @@ void ErrorMessage::PrintNewErrors()
       PrintError(errorBuffer[lastPrintIdx].time, errorBuffer[lastPrintIdx].msg);
       lastPrintIdx = (lastPrintIdx + 1) % ERROR_BUF_SIZE;
    }
+}
+
+ERROR_MESSAGE_NUM ErrorMessage::GetLastError()
+{
+   return lastError;
 }
 
 /** Print all errors currently in error memory */

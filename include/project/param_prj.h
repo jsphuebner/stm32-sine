@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #define OPMODES      "0=Off, 1=Run, 2=ManualRun, 3=Boost, 4=Buck, 5=Sine, 6=AcHeat"
 #define PWMFRQS      "0=17.6kHz, 1=8.8kHz, 2=4.4KHz, 3=2.2kHz, 4=1.1kHz"
 #define PWMPOLS      "0=ACTHIGH, 1=ACTLOW"
@@ -49,8 +48,26 @@
 #define CAT_CHARGER  "Charger"
 #define CAT_COMM     "Communication"
 
-#define VER 4.9
-#define VERCEIL VER + 0.009
+#define BUTTON 0
+
+#define PWM_FUNC_TMPM       0
+#define PWM_FUNC_TMPHS      1
+#define PWM_FUNC_SPEED      2
+#define PWM_FUNC_SPEEDFRQ   3
+
+#define CAN_PERIOD_100MS    0
+#define CAN_PERIOD_10MS     1
+
+#define IDLE_MODE_ALWAYS    0
+#define IDLE_MODE_NOBRAKE   1
+#define IDLE_MODE_CRUISE    2
+
+#define POTMODE_REGENADJ    0
+#define POTMODE_DUALCHANNEL 1
+#define POTMODE_CAN         2
+
+#define VER 4.10.R
+#define VERSTR STRINGIFY(4=VER)
 
 enum _modes
 {
@@ -88,23 +105,8 @@ enum _canio
    CAN_IO_BMS = 32
 };
 
-#define BUTTON 0
+extern const char* errorListString;
 
-#define PWM_FUNC_TMPM       0
-#define PWM_FUNC_TMPHS      1
-#define PWM_FUNC_SPEED      2
-#define PWM_FUNC_SPEEDFRQ   3
-
-#define CAN_PERIOD_100MS    0
-#define CAN_PERIOD_10MS     1
-
-#define IDLE_MODE_ALWAYS    0
-#define IDLE_MODE_NOBRAKE   1
-#define IDLE_MODE_CRUISE    2
-
-#define POTMODE_REGENADJ    0
-#define POTMODE_DUALCHANNEL 1
-#define POTMODE_CAN         2
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -186,9 +188,10 @@ enum _canio
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      88  ) \
     PARAM_ENTRY(CAT_TEST,    fslipspnt,   "Hz",      -100,   1000,   0,      0   ) \
     PARAM_ENTRY(CAT_TEST,    ampnom,      "%",       0,      100,    0,      0   ) \
-    PARAM_ENTRY(CAT_TEST,    version,     "",        0,      0,      VERCEIL,0   ) \
+    VALUE_ENTRY(version,     VERSTR,  2039 ) \
     VALUE_ENTRY(hwver,       HWREVS,  2036 ) \
     VALUE_ENTRY(opmode,      OPMODES, 2000 ) \
+    VALUE_ENTRY(lasterr,     errorListString,  2038 ) \
     VALUE_ENTRY(udc,         "V",     2001 ) \
     VALUE_ENTRY(idc,         "A",     2002 ) \
     VALUE_ENTRY(il1,         "A",     2003 ) \
@@ -228,4 +231,4 @@ enum _canio
 
 /*    VALUE_ENTRY(sin,     "", 2100    ) \
     VALUE_ENTRY(cos,     "", 2101    )*/
-//Next value Id: 2038
+//Next value Id: 2040
