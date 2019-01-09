@@ -697,8 +697,8 @@ static void Ms10Task(void)
    else if (0 == initWait)
    {
       Encoder::Reset();
-      PwmGeneration::PwmInit(); //this applies new deadtime and pwmfrq
-      PwmGeneration::SetOpmode(opmode); //this enables the outputs for the given mode
+      //this applies new deadtime and pwmfrq and enables the outputs for the given mode
+      PwmGeneration::SetOpmode(opmode);
       runChargeControl = (opmode == MOD_BOOST || opmode == MOD_BUCK);
       DigIo::Clear(Pin::err_out);
       initWait = -1;

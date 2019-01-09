@@ -27,7 +27,6 @@ class PwmGeneration
    public:
       static uint16_t GetAngle();
       static bool Tripped();
-      static void PwmInit();
       static void SetOpmode(int);
       static void SetAmpnom(s32fp amp);
       static void SetFslip(s32fp fslip);
@@ -36,9 +35,11 @@ class PwmGeneration
       static int GetCpuLoad();
       //static void SetCurrentLimit(s32fp limit);
    private:
+      static void PwmInit();
       static void EnableOutput();
       static void DisableOutput();
       static uint16_t TimerSetup(uint16_t deadtime, int pwmpol);
+      static void AcHeatTimerSetup();
 };
 
 #endif // PWMGENERATION_H

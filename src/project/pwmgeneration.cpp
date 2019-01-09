@@ -94,6 +94,11 @@ void PwmGeneration::SetOpmode(int _opmode)
 {
    opmode = _opmode;
 
+   if (opmode != MOD_OFF)
+   {
+      PwmInit();
+   }
+
    switch (opmode)
    {
       default:
@@ -102,9 +107,9 @@ void PwmGeneration::SetOpmode(int _opmode)
          execTicks = 0;
          break;
       case MOD_ACHEAT:
-         EnableOutput();
-         timer_disable_oc_output(PWM_TIMER, TIM_OC3);
-         timer_disable_oc_output(PWM_TIMER, TIM_OC3N);
+         DisableOutput();
+         timer_enable_oc_output(PWM_TIMER, TIM_OC2N);
+         timer_enable_oc_output(PWM_TIMER, TIM_OC2);
          break;
       case MOD_BOOST:
          DisableOutput();
@@ -201,16 +206,6 @@ extern "C" void pwm_timer_isr(void)
    execTicks = ABS(time);
 }
 
-void PwmGeneration::PwmInit()
-{
-   pwmdigits = MIN_PWM_DIGITS + Param::GetInt(Param::pwmfrq);
-   pwmfrq = TimerSetup(Param::GetInt(Param::deadtime), Param::GetInt(Param::pwmpol));
-   slipIncr = FRQ_TO_ANGLE(fslip);
-   shiftForTimer = SineCore::BITS - pwmdigits;
-   tripped = false;
-   Encoder::SetPwmFrequency(pwmfrq);
-}
-
 /**
 * Enable timer PWM output
 */
@@ -256,6 +251,19 @@ void PwmGeneration::SetCurrentLimitThreshold(s32fp ocurlim)
 
 
 /*----- Private methods ----------------------------------------- */
+void PwmGeneration::PwmInit()
+{
+   pwmdigits = MIN_PWM_DIGITS + Param::GetInt(Param::pwmfrq);
+   pwmfrq = TimerSetup(Param::GetInt(Param::deadtime), Param::GetInt(Param::pwmpol));
+   slipIncr = FRQ_TO_ANGLE(fslip);
+   shiftForTimer = SineCore::BITS - pwmdigits;
+   tripped = false;
+   Encoder::SetPwmFrequency(pwmfrq);
+
+   if (opmode == MOD_ACHEAT)
+      AcHeatTimerSetup();
+}
+
 static s32fp LimitCurrent()
 {
    static s32fp curLimSpntFiltered = 0, slipFiltered = 0;
@@ -277,6 +285,9 @@ static s32fp LimitCurrent()
    slipSpnt = MIN(fslip, slipFiltered);
    slipIncr = FRQ_TO_ANGLE(slipSpnt);
 
+   if (ampNomLimited < ampnom)
+      ErrorMessage::Post(ERR_CURRENTLIMIT);
+
    return ampNomLimited;
 }
 
@@ -288,6 +299,8 @@ static s32fp GetIlMax(s32fp il1, s32fp il2)
    il3 = ABS(il3);
    s32fp ilMax = MAX(il1, il2);
    ilMax = MAX(ilMax, il3);
+
+   Param::SetFlt(Param::ilmax, ilMax);
 
    return ilMax;
 }
@@ -413,23 +426,19 @@ static void Charge()
 
 static void AcHeat()
 {
-   frq = fslip;
-   angle += slipIncr;
-
-   if (frq < 0) frq = 0;
-
-   Param::SetFlt(Param::fstat, frq);
-   //Param::SetDig(Param::angle, angle);
-   int val1 = SineCore::Sine(angle);
-   int val2 = -SineCore::Sine(angle);
-
-   val1 = FP_TOINT((val1 * ampnom) / 100) + 32768;
-   val2 = FP_TOINT((val2 * ampnom) / 100) + 32768;
-   val1 >>= shiftForTimer;
-   val2 >>= shiftForTimer;
-
-   timer_set_oc_value(PWM_TIMER, TIM_OC1, val1);
-   timer_set_oc_value(PWM_TIMER, TIM_OC2, val2);
+   //We need to make sure the negative output is NEVER permanently on.
+   if (ampnom < FP_FROMFLT(20))
+   {
+      timer_disable_break_main_output(PWM_TIMER);
+   }
+   else
+   {
+      timer_enable_break_main_output(PWM_TIMER);
+      int dc = FP_TOINT((ampnom * 30000) / 100);
+      Param::SetInt(Param::amp, dc);
+      timer_set_period(PWM_TIMER, dc);
+      timer_set_oc_value(PWM_TIMER, TIM_OC2, dc / 2);
+   }
 }
 
 /**
@@ -492,8 +501,6 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
    timer_set_oc_idle_state_unset(PWM_TIMER, TIM_OC2N);
    timer_set_oc_idle_state_unset(PWM_TIMER, TIM_OC3N);
 
-   timer_generate_event(PWM_TIMER, TIM_EGR_UG);
-
    timer_clear_flag(PWM_TIMER, TIM_SR_BIF);
    timer_enable_irq(PWM_TIMER, TIM_DIER_UIE);
    timer_enable_irq(PWM_TIMER, TIM_DIER_BIE);
@@ -506,6 +513,7 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
    timer_set_oc_value(PWM_TIMER, TIM_OC1, 0);
    timer_set_oc_value(PWM_TIMER, TIM_OC2, 0);
    timer_set_oc_value(PWM_TIMER, TIM_OC3, 0);
+   timer_generate_event(PWM_TIMER, TIM_EGR_UG);
 
    timer_enable_counter(PWM_TIMER);
 
@@ -515,3 +523,13 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
    return PERIPH_CLK / (uint32_t)pwmmax;
 }
 
+void PwmGeneration::AcHeatTimerSetup()
+{
+   timer_disable_counter(PWM_TIMER);
+   timer_set_clock_division(PWM_TIMER, TIM_CR1_CKD_CK_INT_MUL_4);
+   timer_set_deadtime(PWM_TIMER, 255);
+   timer_set_period(PWM_TIMER, 8000);
+   timer_set_oc_value(PWM_TIMER, TIM_OC2, 0);
+   timer_generate_event(PWM_TIMER, TIM_EGR_UG);
+   timer_enable_counter(PWM_TIMER);
+}

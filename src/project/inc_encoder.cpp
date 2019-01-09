@@ -32,6 +32,8 @@
 #define TWO_PI 65536
 #define MAX_CNT TWO_PI - 1
 #define MAX_REVCNT_VALUES 5
+#define PULSE_MEAS_FRQ    1000000
+#define PULSE_MEAS_PSC    ((72000000 / PULSE_MEAS_FRQ) - 1)
 
 static volatile uint16_t timdata[MAX_REVCNT_VALUES];
 static volatile uint16_t angle = 0;
@@ -138,7 +140,7 @@ void Encoder::UpdateRotorAngle(int dir)
          interpolatedAngle = ignore ? 0 : (anglePerPulse * timeSinceLastPulse) / lastPulseTimespan;
          accumulatedAngle += (int16_t)(dir * numPulses * anglePerPulse);
          angle = accumulatedAngle + dir * interpolatedAngle;
-         lastFrequency = ignore ? lastFrequency : FP_FROMINT(1000000) / (lastPulseTimespan * pulsesPerTurn);
+         lastFrequency = ignore ? lastFrequency : FP_FROMINT(PULSE_MEAS_FRQ) / (lastPulseTimespan * pulsesPerTurn);
          break;
       case SPI:
          angle = GetAngleSPI();
@@ -271,7 +273,7 @@ void Encoder::InitTimerSingleChannelMode()
    //So clock source is 72MHz (again)
    //We want the timer to run at 1MHz = 72MHz/72
    //Prescaler is div-1 => 71
-   timer_set_prescaler(REV_CNT_TIMER, 71);
+   timer_set_prescaler(REV_CNT_TIMER, PULSE_MEAS_PSC);
    timer_set_period(REV_CNT_TIMER, MAX_CNT);
    timer_direction_up(REV_CNT_TIMER);
 
