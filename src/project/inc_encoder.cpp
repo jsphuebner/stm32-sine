@@ -2,6 +2,7 @@
  * This file is part of the tumanako_vc project.
  *
  * Copyright (C) 2011 Johannes Huebner <dev@johanneshuebner.com>
+ * Copyright (C) 2019 Nail Güzel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,12 +29,32 @@
 #include "errormessage.h"
 #include "params.h"
 #include "sine_core.h"
+#include "printf.h"
 
 #define TWO_PI 65536
 #define MAX_CNT TWO_PI - 1
 #define MAX_REVCNT_VALUES 5
-#define PULSE_MEAS_FRQ    1000000
-#define PULSE_MEAS_PSC    ((72000000 / PULSE_MEAS_FRQ) - 1)
+
+#define FRQ_TO_PSC(frq) ((72000000 / frq) - 1)
+#define NUM_ENCODER_CONFIGS (sizeof(encoderConfigurations) / sizeof(encoderConfigurations[0]))
+
+typedef struct EncoderConfiguration
+{
+   uint32_t pulseMeasFrequency;
+   enum tim_ic_filter resetFilter;
+   enum tim_ic_filter captureFilter;
+   uint16_t maxPpr;
+} ENCODER_CONFIG;
+
+static const ENCODER_CONFIG encoderConfigurations[] =
+{
+   { 1000000, TIM_IC_DTF_DIV_32_N_8, TIM_IC_DTF_DIV_32_N_6, 60   }, // CFG1 - this will be selected for numimp <= 60
+   { 2400000, TIM_IC_DTF_DIV_2_N_8,  TIM_IC_DTF_DIV_2_N_6,  125  }, // CFG2 - this will be selected for numimp <= 125
+   { 7200000, TIM_IC_DTF_DIV_2_N_8,  TIM_IC_DTF_DIV_2_N_6,  8192 }, // CFG3 - this will be selected for numimp <= 8192
+};
+
+static const ENCODER_CONFIG * selectedConfig = &encoderConfigurations[0];
+static uint32_t pulseMeasFrq = selectedConfig->pulseMeasFrequency;
 
 static volatile uint16_t timdata[MAX_REVCNT_VALUES];
 static volatile uint16_t angle = 0;
@@ -95,7 +116,7 @@ void Encoder::SetMode(Encoder::mode mode)
 void Encoder::SetPwmFrequency(uint32_t frq)
 {
    pwmFrq = frq;
-   resolverSampleDelay = (40 * 8800) / frq; //We know at 8.8kHz we need a delay of 40Âµs
+   resolverSampleDelay = (40 * 8800) / frq; //We know at 8.8kHz we need a delay of 40µs
 }
 
 /** set number of impulses per shaft rotation
@@ -106,6 +127,9 @@ void Encoder::SetImpulsesPerTurn(uint16_t imp)
 
    pulsesPerTurn = imp;
    anglePerPulse = TWO_PI / imp;
+
+   if (encMode == SINGLE)
+	   InitTimerSingleChannelMode();
 
    if (encMode == AB || encMode == ABZ)
       InitTimerABZMode();
@@ -140,7 +164,7 @@ void Encoder::UpdateRotorAngle(int dir)
          interpolatedAngle = ignore ? 0 : (anglePerPulse * timeSinceLastPulse) / lastPulseTimespan;
          accumulatedAngle += (int16_t)(dir * numPulses * anglePerPulse);
          angle = accumulatedAngle + dir * interpolatedAngle;
-         lastFrequency = ignore ? lastFrequency : FP_FROMINT(PULSE_MEAS_FRQ) / (lastPulseTimespan * pulsesPerTurn);
+         lastFrequency = ignore ? lastFrequency : FP_FROMINT(pulseMeasFrq) / (lastPulseTimespan * pulsesPerTurn);
          break;
       case SPI:
          angle = GetAngleSPI();
@@ -240,7 +264,7 @@ u32fp Encoder::CalcFrequencyFromAngleDifference(uint16_t angle)
    if (angleDiff > 1820)
    {
       //We don't make assumption about the rotation direction but we
-      //do assume less than 180Â° in one PWM cycle
+      //do assume less than 180° in one PWM cycle
       frq = (pwmFrq * angleDiff) / FP_TOINT(TWO_PI * samples);
 
       lastAngle = angle;
@@ -266,14 +290,32 @@ void Encoder::DMASetup()
 
 void Encoder::InitTimerSingleChannelMode()
 {
+   const ENCODER_CONFIG* currentConfig = &encoderConfigurations[0];
+
+   for (uint8_t i = 0; i < NUM_ENCODER_CONFIGS; i++, currentConfig++)
+   {
+		if (pulsesPerTurn <= currentConfig->maxPpr)
+      {
+         if (selectedConfig != currentConfig)
+         {
+            debugf("Reconfiguring encoder timer for CFG%d", (i+1));
+         }
+         selectedConfig = currentConfig;
+			pulseMeasFrq = selectedConfig->pulseMeasFrequency;
+			break;
+		}
+	}
+
    rcc_periph_reset_pulse(REV_CNT_TIMRST);
+
    //Some explanation: HCLK=72MHz
    //APB1-Prescaler is 2 -> 36MHz
    //Timer clock source is ABP1*2 because APB1 prescaler > 1
    //So clock source is 72MHz (again)
    //We want the timer to run at 1MHz = 72MHz/72
    //Prescaler is div-1 => 71
-   timer_set_prescaler(REV_CNT_TIMER, PULSE_MEAS_PSC);
+
+   timer_set_prescaler(REV_CNT_TIMER, FRQ_TO_PSC(pulseMeasFrq));
    timer_set_period(REV_CNT_TIMER, MAX_CNT);
    timer_direction_up(REV_CNT_TIMER);
 
@@ -282,10 +324,10 @@ void Encoder::InitTimerSingleChannelMode()
    timer_slave_set_mode(REV_CNT_TIMER, TIM_SMCR_SMS_RM); // reset mode
    timer_slave_set_polarity(REV_CNT_TIMER, TIM_ET_FALLING);
    timer_slave_set_trigger(REV_CNT_TIMER, TIM_SMCR_TS_ETRF);
-   timer_slave_set_filter(REV_CNT_TIMER, TIM_IC_DTF_DIV_32_N_8);
+   timer_slave_set_filter(REV_CNT_TIMER, selectedConfig->resetFilter);
 
    /* Save timer value on input pulse with smaller filter constant */
-   timer_ic_set_filter(REV_CNT_TIMER, REV_CNT_IC, TIM_IC_DTF_DIV_32_N_6);
+   timer_ic_set_filter(REV_CNT_TIMER, REV_CNT_IC, selectedConfig->captureFilter);
    timer_ic_set_input(REV_CNT_TIMER, REV_CNT_IC, TIM_IC_IN_TI1);
    TIM_CCER(REV_CNT_TIMER) |= REV_CNT_CCER; //No API function yet available
    timer_ic_enable(REV_CNT_TIMER, REV_CNT_IC);
@@ -421,8 +463,8 @@ uint16_t Encoder::GetAngleResolver()
    if (gpio_get(GPIOD, GPIO2))
    {
       gpio_clear(GPIOD, GPIO2);
-      /* The phase delay of the 3-pole filter, amplifier and resolver is 305Â°
-         That is 125Â° after the falling edge of the exciting square wave */
+      /* The phase delay of the 3-pole filter, amplifier and resolver is 305°
+         That is 125° after the falling edge of the exciting square wave */
       timer_set_oc_value(REV_CNT_TIMER, TIM_OC4, resolverSampleDelay);
       timer_set_counter(REV_CNT_TIMER, 0);
       timer_enable_counter(REV_CNT_TIMER);
@@ -497,7 +539,7 @@ int Encoder::GetPulseTimeFiltered()
    }
    else
    {
-      lastPulseTimespan = IIRFILTER(lastPulseTimespan, measTm, 1);
+      lastPulseTimespan = IIRFILTER(lastPulseTimespan, measTm + 1, 1);
    }
 
    return pulses;

@@ -21,6 +21,12 @@
 #ifndef PRINTF_H_INCLUDED
 #define PRINTF_H_INCLUDED
 
+#if T_DEBUG
+#define debugf(...) printf(__VA_ARGS__)
+#else
+#define debugf(...)
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
