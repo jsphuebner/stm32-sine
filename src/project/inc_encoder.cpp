@@ -129,7 +129,7 @@ void Encoder::SetImpulsesPerTurn(uint16_t imp)
    anglePerPulse = TWO_PI / imp;
 
    if (encMode == SINGLE)
-	   InitTimerSingleChannelMode();
+      InitTimerSingleChannelMode();
 
    if (encMode == AB || encMode == ABZ)
       InitTimerABZMode();
@@ -294,17 +294,17 @@ void Encoder::InitTimerSingleChannelMode()
 
    for (uint8_t i = 0; i < NUM_ENCODER_CONFIGS; i++, currentConfig++)
    {
-		if (pulsesPerTurn <= currentConfig->maxPpr)
+      if (pulsesPerTurn <= currentConfig->maxPpr)
       {
          if (selectedConfig != currentConfig)
          {
             debugf("Reconfiguring encoder timer for CFG%d", (i+1));
          }
          selectedConfig = currentConfig;
-			pulseMeasFrq = selectedConfig->pulseMeasFrequency;
-			break;
-		}
-	}
+         pulseMeasFrq = selectedConfig->pulseMeasFrequency;
+         break;
+      }
+   }
 
    rcc_periph_reset_pulse(REV_CNT_TIMRST);
 
