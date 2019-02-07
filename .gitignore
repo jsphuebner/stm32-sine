@@ -1,3 +1,4 @@
+*.o
 obj
 libopencm3
 linker.map

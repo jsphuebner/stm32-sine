@@ -34,6 +34,7 @@ private:
    static uint16_t GetAngleSPI();
    static uint16_t GetAngleResolver();
    static uint16_t GetAngleSinCos();
+   static uint16_t DecodeAngle();
    static int GetPulseTimeFiltered();
    static void GetMinMaxTime(uint32_t& min, uint32_t& max);
    static void DMASetup();

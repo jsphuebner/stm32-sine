@@ -32,6 +32,7 @@
 #include "printf.h"
 
 #define TWO_PI 65536
+#define TEN_DEGREE ((10 * TWO_PI) / 360)
 #define MAX_CNT TWO_PI - 1
 #define MAX_REVCNT_VALUES 5
 
@@ -69,11 +70,14 @@ static bool ignore = true;
 static enum Encoder::mode encMode = Encoder::INVALID;
 static bool seenNorthSignal = false;
 static uint32_t turnsSinceLastSample = 0;
+static int32_t minSin = 0, maxSin = 0;
 
 void Encoder::Reset()
 {
    ignore = true;
    lastPulseTimespan = MAX_CNT;
+   minSin = 0;
+   maxSin = 0;
    for (uint32_t i = 0; i < MAX_REVCNT_VALUES; i++)
       timdata[i] = MAX_CNT;
 }
@@ -252,7 +256,7 @@ bool Encoder::IsSyncMode()
 
 u32fp Encoder::CalcFrequencyFromAngleDifference(uint16_t angle)
 {
-   static int samples = 0;
+   static uint32_t samples = 0;
    static int lastAngle = 0;
    u32fp frq = lastFrequency;
    uint16_t diffPos = (lastAngle - angle) & 0xFFFF;
@@ -261,7 +265,7 @@ u32fp Encoder::CalcFrequencyFromAngleDifference(uint16_t angle)
 
    samples++;
 
-   if (angleDiff > 1820)
+   if (angleDiff > TEN_DEGREE)
    {
       //We don't make assumption about the rotation direction but we
       //do assume less than 180° in one PWM cycle
@@ -269,6 +273,10 @@ u32fp Encoder::CalcFrequencyFromAngleDifference(uint16_t angle)
 
       lastAngle = angle;
       samples = 0;
+   }
+   else if (samples > (pwmFrq >> 5))
+   {
+      frq = 0;
    }
 
    frq = IIRFILTER(lastFrequency, frq, 1);
@@ -472,9 +480,7 @@ uint16_t Encoder::GetAngleResolver()
    else
    {
       gpio_set(GPIOD, GPIO2);
-      int sin = adc_read_injected(ADC1, 2);
-      int cos = adc_read_injected(ADC1, 3);
-      angle = SineCore::Atan2(cos, sin);
+      angle = DecodeAngle();
    }
 
    return angle;
@@ -483,16 +489,32 @@ uint16_t Encoder::GetAngleResolver()
 /** Calculates angle from a Hall sin/cos encoder like MLX90380 */
 uint16_t Encoder::GetAngleSinCos()
 {
-   int sin = adc_read_injected(ADC1, 2);
-   int cos = adc_read_injected(ADC1, 3);
-   uint16_t calcAngle = SineCore::Atan2(cos, sin);
+   uint16_t calcAngle = DecodeAngle();
 
    adc_start_conversion_injected(ADC1);
 
+   return calcAngle;
+}
+
+uint16_t Encoder::DecodeAngle()
+{
+   int sin = adc_read_injected(ADC1, 2);
+   int cos = adc_read_injected(ADC1, 3);
    //Param::SetInt(Param::sin, sin);
    //Param::SetInt(Param::cos, cos);
 
-   return calcAngle;
+   minSin = MIN(sin, minSin);
+   maxSin = MAX(sin, maxSin);
+
+   //Wait for signal to reach usable amplitude
+   if ((maxSin - minSin) > 1000)
+   {
+      return SineCore::Atan2(cos, sin);
+   }
+   else
+   {
+      return 0;
+   }
 }
 
 int Encoder::GetPulseTimeFiltered()
