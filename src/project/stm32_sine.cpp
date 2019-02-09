@@ -215,13 +215,25 @@ static void CalcAmpAndSlip()
          ampnom = ampmin + FP_DIV(FP_MUL((FP_FROMINT(100) - ampmin), potnom), FP_FROMINT(100));
       else /* In async mode first X% throttle commands amplitude, X-100% raises slip */
          ampnom = ampmin + (100 - FP_TOINT(ampmin)) * FP_DIV(potnom, slipstart);
-         //ampmin + (potnom - ampmin) * FP_DIV(FP_FROMINT(100), slipstart);
 
       if (potnom >= slipstart)
       {
+         s32fp fstat = Param::Get(Param::fstat);
+         s32fp fweak = Param::Get(Param::fweakcalc);
          s32fp fslipmax = Param::Get(Param::fslipmax);
-         s32fp fslipdiff = fslipmax - fslipmin;
 
+         if (fstat > fweak)
+         {
+            s32fp fconst = Param::Get(Param::fconst);
+            s32fp fslipconstmax = Param::Get(Param::fslipconstmax);
+            //Basically, for every Hz above fweak we get a fraction of
+            //the difference between fslipconstmax and fslipmax
+            //of additional slip
+            fslipmax += FP_MUL(FP_DIV(fstat - fweak, fconst - fweak), fslipconstmax - fslipmax);
+            fslipmax = MIN(fslipmax, fslipconstmax); //never exceed fslipconstmax!
+         }
+
+         s32fp fslipdiff = fslipmax - fslipmin;
          fslipspnt = fslipmin + (FP_MUL(fslipdiff, (potnom - slipstart)) / (100 - FP_TOINT(slipstart)));
       }
       else
@@ -867,12 +879,12 @@ extern "C" int main(void)
 
    //Additional test pins on JTAG header
    //AFIO_MAPR |= AFIO_MAPR_SPI1_REMAP | AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF;
-   char* termBuf = usart_setup();
+   usart_setup();
    tim_setup();
    DigIo::Init();
    nvic_setup();
    Encoder::Reset();
-   term_Init(termBuf);
+   term_Init();
    parm_load();
    parm_Change(Param::PARAM_LAST);
    Can::Init((Can::baudrates)Param::GetInt(Param::canspeed));

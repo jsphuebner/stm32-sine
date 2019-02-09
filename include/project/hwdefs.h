@@ -27,9 +27,9 @@
 #define TERM_USART         USART3
 #define TERM_USART_TXPIN   GPIO_USART3_TX
 #define TERM_USART_TXPORT  GPIOB
-#define TERM_USART_DMACHAN 3
+#define TERM_USART_DMARX   DMA_CHANNEL3
+#define TERM_USART_DMATX   DMA_CHANNEL2 //this means we can not use it on rev1 hardware (TIM3_CH3)
 #define TERM_USART_DR      USART3_DR
-#define TERM_USART_CNDTR   DMA1_CNDTR3
 #define TERM_BUFSIZE       128
 //Address of parameter block in flash
 #define FLASH_PAGE_SIZE 1024
@@ -43,7 +43,7 @@
 #define REV_CNT_CCER       hwRev == HW_REV1 ? TIM_CCER_CC3P : TIM_CCER_CC1P
 #define REV_CNT_SR         hwRev == HW_REV1 ? TIM_SR_CC3IF : TIM_SR_CC1IF
 #define REV_CNT_DMAEN      hwRev == HW_REV1 ? TIM_DIER_CC3DE : TIM_DIER_CC1DE
-#define REV_CNT_DMACHAN    hwRev == HW_REV1 ? 2 : 6
+#define REV_CNT_DMACHAN    hwRev == HW_REV1 ? DMA_CHANNEL2 : DMA_CHANNEL6
 #define REV_CNT_DMA_CNDTR  hwRev == HW_REV1 ? DMA1_CNDTR2 : DMA1_CNDTR6
 
 typedef enum

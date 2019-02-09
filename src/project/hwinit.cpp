@@ -89,10 +89,8 @@ HWREV detect_hw()
 /**
 * Setup UART3 115200 8N1
 */
-char* usart_setup(void)
+void usart_setup(void)
 {
-   static char inBuf[TERM_BUFSIZE];
-
    gpio_set_mode(TERM_USART_TXPORT, GPIO_MODE_OUTPUT_50_MHZ,
                GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, TERM_USART_TXPIN);
 
@@ -104,18 +102,25 @@ char* usart_setup(void)
    usart_set_flow_control(TERM_USART, USART_FLOWCONTROL_NONE);
    usart_enable_rx_dma(TERM_USART);
 
-   dma_disable_channel(DMA1, TERM_USART_DMACHAN);
-   dma_set_peripheral_address(DMA1, TERM_USART_DMACHAN, (uint32_t)&TERM_USART_DR);
-   dma_set_memory_address(DMA1, TERM_USART_DMACHAN, (uint32_t)inBuf);
-   dma_set_peripheral_size(DMA1, TERM_USART_DMACHAN, DMA_CCR_PSIZE_8BIT);
-   dma_set_memory_size(DMA1, TERM_USART_DMACHAN, DMA_CCR_MSIZE_8BIT);
-   dma_set_number_of_data(DMA1, TERM_USART_DMACHAN, sizeof(inBuf));
-   dma_enable_memory_increment_mode(DMA1, TERM_USART_DMACHAN);
-   dma_enable_channel(DMA1, TERM_USART_DMACHAN);
+   if (hwRev != HW_REV1)
+   {
+      usart_enable_tx_dma(TERM_USART);
+      dma_channel_reset(DMA1, TERM_USART_DMATX);
+      dma_set_read_from_memory(DMA1, TERM_USART_DMATX);
+      dma_set_peripheral_address(DMA1, TERM_USART_DMATX, (uint32_t)&TERM_USART_DR);
+      dma_set_peripheral_size(DMA1, TERM_USART_DMATX, DMA_CCR_PSIZE_8BIT);
+      dma_set_memory_size(DMA1, TERM_USART_DMATX, DMA_CCR_MSIZE_8BIT);
+      dma_enable_memory_increment_mode(DMA1, TERM_USART_DMATX);
+   }
+
+   dma_channel_reset(DMA1, TERM_USART_DMARX);
+   dma_set_peripheral_address(DMA1, TERM_USART_DMARX, (uint32_t)&TERM_USART_DR);
+   dma_set_peripheral_size(DMA1, TERM_USART_DMARX, DMA_CCR_PSIZE_8BIT);
+   dma_set_memory_size(DMA1, TERM_USART_DMARX, DMA_CCR_MSIZE_8BIT);
+   dma_enable_memory_increment_mode(DMA1, TERM_USART_DMARX);
+   dma_enable_channel(DMA1, TERM_USART_DMARX);
 
    usart_enable(TERM_USART);
-
-   return inBuf;
 }
 
 /**

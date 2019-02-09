@@ -31,11 +31,12 @@ static void term_send(uint32_t usart, const char *str);
 static void ResetDMA();
 
 extern const TERM_CMD TermCmds[];
-static char* inBuf;
+static char inBuf[TERM_BUFSIZE];
+static char outBuf[2][TERM_BUFSIZE]; //double buffering
 
-void term_Init(char* termBuf)
+void term_Init()
 {
-   inBuf = termBuf;
+   ResetDMA();
 }
 
 /** Run the terminal */
@@ -47,9 +48,10 @@ void term_Run()
 
    while (1)
    {
-      int currentIdx = TERM_BUFSIZE - TERM_USART_CNDTR;
+      int numRcvd = dma_get_number_of_data(DMA1, TERM_USART_DMARX);
+      int currentIdx = TERM_BUFSIZE - numRcvd;
 
-      if (0 == TERM_USART_CNDTR)
+      if (0 == numRcvd)
          ResetDMA();
 
       while (lastIdx < currentIdx) //echo
@@ -99,17 +101,51 @@ void term_Run()
    } /* while(1) */
 } /* term_Run */
 
+/*
+ * Revision 1 hardware can only use synchronous sending as the DMA channel is
+ * occupied by the encoder timer (TIM3, channel 3).
+ * All other hardware can use DMA for seamless sending of data. We use double
+ * buffering, so while one buffer is sent by DMA we can prepare the other
+ * buffer to go next.
+*/
 int putchar(int c)
 {
-   usart_send_blocking(TERM_USART, c);
+   static uint32_t curIdx = 0, curBuf = 0, first = 1;
+
+   if (hwRev == HW_REV1)
+   {
+      usart_send_blocking(TERM_USART, c);
+   }
+   else if (c == '\n' || curIdx == (TERM_BUFSIZE - 1))
+   {
+      outBuf[curBuf][curIdx] = c;
+
+      while (!dma_get_interrupt_flag(DMA1, TERM_USART_DMATX, DMA_TCIF) && !first);
+
+      dma_disable_channel(DMA1, TERM_USART_DMATX);
+      dma_set_number_of_data(DMA1, TERM_USART_DMATX, curIdx + 1);
+      dma_set_memory_address(DMA1, TERM_USART_DMATX, (uint32_t)outBuf[curBuf]);
+      dma_clear_interrupt_flags(DMA1, TERM_USART_DMATX, DMA_TCIF);
+      dma_enable_channel(DMA1, TERM_USART_DMATX);
+
+      curBuf = !curBuf; //switch buffers
+      first = 0; //only needed one so we don't get stuck in the while loop above
+      curIdx = 0;
+   }
+   else
+   {
+      outBuf[curBuf][curIdx] = c;
+      curIdx++;
+   }
    return 0;
 }
 
 static void ResetDMA()
 {
-   dma_disable_channel(DMA1, TERM_USART_DMACHAN);
-   dma_set_number_of_data(DMA1, TERM_USART_DMACHAN, TERM_BUFSIZE);
-   dma_enable_channel(DMA1, TERM_USART_DMACHAN);
+   dma_disable_channel(DMA1, TERM_USART_DMARX);
+   dma_set_memory_address(DMA1, TERM_USART_DMARX, (uint32_t)inBuf);
+   dma_set_number_of_data(DMA1, TERM_USART_DMARX, TERM_BUFSIZE);
+   dma_enable_channel(DMA1, TERM_USART_DMARX);
 }
 
 static const TERM_CMD *CmdLookup(char *buf)

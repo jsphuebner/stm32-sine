@@ -29,7 +29,7 @@ extern "C"
 {
 #endif
 
-void term_Init(char *termBuf);
+void term_Init();
 void term_Run();
 void term_Send(char *str);
 
