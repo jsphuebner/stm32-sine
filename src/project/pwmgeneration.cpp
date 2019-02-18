@@ -312,14 +312,15 @@ static s32fp GetCurrent(AnaIn::AnaIns input, s32fp offset, s32fp gain)
    return FP_DIV(il, gain);
 }
 
-static bool CalcRms(s32fp il, s32fp illast, s32fp& max, s32fp& rms, int& samples)
+static bool CalcRms(s32fp il, s32fp illast, s32fp& max, s32fp& rms, int& samples, s32fp prevRms)
 {
    const s32fp oneOverSqrt2 = FP_FROMFLT(0.707106781187);
    bool signChanged = ((illast <= 0 && il > 0) || (illast > 0 && il <= 0)) && samples > 10;
 
    if (signChanged)
    {
-      rms = FP_MUL(oneOverSqrt2, max);
+      rms = FP_DIV((FP_MUL(oneOverSqrt2, max) + prevRms), FP_FROMFLT(2)); // average with previous rms reading
+
       max = 0;
       samples = 0;
    }
@@ -340,7 +341,10 @@ static s32fp ProcessCurrents()
    s32fp il2 = GetCurrent(AnaIn::il2, ilofs[1], Param::Get(Param::il2gain));
    s32fp rms;
 
-   if (CalcRms(il1, Param::Get(Param::il1), currentMax[0], rms, samples[0]))
+   s32fp il1PrevRms = Param::Get(Param::il1rms);
+   s32fp il2PrevRms = Param::Get(Param::il2rms);
+
+   if (CalcRms(il1, Param::Get(Param::il1), currentMax[0], rms, samples[0], il1PrevRms))
    {
       Param::SetFlt(Param::il1rms, rms);
 
@@ -353,7 +357,7 @@ static s32fp ProcessCurrents()
          Param::SetFlt(Param::idc, idc);
       }
    }
-   if (CalcRms(il2, Param::Get(Param::il2), currentMax[1], rms, samples[1]))
+   if (CalcRms(il2, Param::Get(Param::il2), currentMax[1], rms, samples[1], il2PrevRms))
    {
       Param::SetFlt(Param::il2rms, rms);
    }
