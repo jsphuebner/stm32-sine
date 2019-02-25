@@ -84,6 +84,7 @@ void term_Run()
 
             if (NULL != pCurCmd)
             {
+               usart_wait_send_ready(TERM_USART);
                pCurCmd->CmdFunc(args);
             }
             else if (currentIdx > 1)
@@ -129,7 +130,7 @@ int putchar(int c)
       dma_enable_channel(DMA1, TERM_USART_DMATX);
 
       curBuf = !curBuf; //switch buffers
-      first = 0; //only needed one so we don't get stuck in the while loop above
+      first = 0; //only needed once so we don't get stuck in the while loop above
       curIdx = 0;
    }
    else
