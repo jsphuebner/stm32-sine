@@ -300,8 +300,6 @@ static s32fp GetIlMax(s32fp il1, s32fp il2)
    s32fp ilMax = MAX(il1, il2);
    ilMax = MAX(ilMax, il3);
 
-   Param::SetFlt(Param::ilmax, ilMax);
-
    return ilMax;
 }
 
