@@ -274,12 +274,12 @@ static s32fp LimitCurrent()
    s32fp a = imax / 20; //Start acting at 80% of imax
    s32fp imargin = imax - ilMax;
    s32fp curLimSpnt = FP_DIV(100 * imargin, a);
-   s32fp slipSpnt = FP_DIV(fslip *  imargin, a);
+   s32fp slipSpnt = FP_DIV(FP_MUL(fslip, imargin), a);
    slipSpnt = MAX(slipmin, slipSpnt);
    curLimSpnt = MAX(FP_FROMINT(40), curLimSpnt); //Never go below 40%
    int filter = Param::GetInt(curLimSpnt < curLimSpntFiltered ? Param::ifltfall : Param::ifltrise);
    curLimSpntFiltered = IIRFILTER(curLimSpntFiltered, curLimSpnt, filter);
-   slipFiltered = IIRFILTER(slipFiltered, slipSpnt, 5);
+   slipFiltered = IIRFILTER(slipFiltered, slipSpnt, 1);
 
    s32fp ampNomLimited = MIN(ampnom, curLimSpntFiltered);
    slipSpnt = MIN(fslip, slipFiltered);
@@ -294,11 +294,14 @@ static s32fp LimitCurrent()
 static s32fp GetIlMax(s32fp il1, s32fp il2)
 {
    s32fp il3 = -il1 - il2;
+   s32fp offset = SineCore::CalcSVPWMOffset(il1, il2, il3) / 2;
+   offset = ABS(offset);
    il1 = ABS(il1);
    il2 = ABS(il2);
    il3 = ABS(il3);
    s32fp ilMax = MAX(il1, il2);
    ilMax = MAX(ilMax, il3);
+   ilMax -= offset;
 
    Param::SetFlt(Param::ilmax, ilMax);
 
@@ -319,7 +322,7 @@ static bool CalcRms(s32fp il, s32fp illast, s32fp& max, s32fp& rms, int& samples
 
    if (signChanged)
    {
-      rms = FP_DIV((FP_MUL(oneOverSqrt2, max) + prevRms), FP_FROMFLT(2)); // average with previous rms reading
+      rms = (FP_MUL(oneOverSqrt2, max) + prevRms) / 2; // average with previous rms reading
 
       max = 0;
       samples = 0;

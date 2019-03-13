@@ -66,7 +66,7 @@
 #define POTMODE_DUALCHANNEL 1
 #define POTMODE_CAN         2
 
-#define VER 4.14.B
+#define VER 4.15.B
 #define VERSTR STRINGIFY(4=VER)
 
 enum _modes
