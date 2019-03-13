@@ -41,7 +41,7 @@ uint32_t MotorVoltage::GetAmpPerc(u32fp frq, u32fp perc)
    {
       amp = maxAmp;
    }
-   if (frq > (maxFrq - FRQ_DRT_STR))
+   if ((s32fp)frq > (s32fp)(maxFrq - FRQ_DRT_STR))
    {
       s32fp diff = maxFrq - frq;
       diff = diff < 0 ? 0 : diff;
