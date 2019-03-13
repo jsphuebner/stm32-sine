@@ -125,7 +125,7 @@ extern const char* errorListString;
     PARAM_ENTRY(CAT_MOTOR,   respolepairs,"",        1,      16,     1,      93  ) \
     PARAM_ENTRY(CAT_MOTOR,   encmode,     ENCMODES,  0,      5,      0,      75  ) \
     PARAM_ENTRY(CAT_MOTOR,   fmin,        "Hz",      0,      400,    1,      34  ) \
-    PARAM_ENTRY(CAT_MOTOR,   fmax,        "Hz",      0,      1000,   200,    9   ) \
+    PARAM_ENTRY(CAT_MOTOR,   fmax,        "Hz",      21,     1000,   200,    9   ) \
     PARAM_ENTRY(CAT_MOTOR,   numimp,      "ppr",     8,      8192,   60,     15  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirchrpm,    "rpm",     0,      2000,   100,    87  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirmode,     DIRMODES,  0,      3,      1,      95  ) \

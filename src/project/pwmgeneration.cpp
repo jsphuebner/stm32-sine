@@ -274,7 +274,7 @@ static s32fp LimitCurrent()
    s32fp a = imax / 20; //Start acting at 80% of imax
    s32fp imargin = imax - ilMax;
    s32fp curLimSpnt = FP_DIV(100 * imargin, a);
-   s32fp slipSpnt = FP_DIV(fslip *  imargin, a);
+   s32fp slipSpnt = FP_DIV(FP_MUL(fslip, imargin), a);
    slipSpnt = MAX(slipmin, slipSpnt);
    curLimSpnt = MAX(FP_FROMINT(40), curLimSpnt); //Never go below 40%
    int filter = Param::GetInt(curLimSpnt < curLimSpntFiltered ? Param::ifltfall : Param::ifltrise);
@@ -300,9 +300,18 @@ static s32fp GetIlMax(s32fp il1, s32fp il2)
    s32fp ilMax = MAX(il1, il2);
    ilMax = MAX(ilMax, il3);
 
-   Param::SetFlt(Param::ilmax, ilMax);
-
    return ilMax;
+}
+
+static s32fp GetIlSVM(s32fp il1, s32fp il2) {
+	s32fp il3 = -il1 - il2;
+	s32fp ilMax = MAX(il1, il2);
+	ilMax = MAX(ilMax, il3);
+
+	s32fp ilMin = MIN(il1, il2);
+	ilMin = MIN(ilMin, il3);
+
+	return ABS((ilMin + ilMax) / 4);
 }
 
 static s32fp GetCurrent(AnaIn::AnaIns input, s32fp offset, s32fp gain)
@@ -362,10 +371,14 @@ static s32fp ProcessCurrents()
       Param::SetFlt(Param::il2rms, rms);
    }
 
+   s32fp ilMax = GetIlMax(il1, il2);
+   s32fp ilSvm = GetIlSVM(il1, il2);
+   
    Param::SetFlt(Param::il1, il1);
    Param::SetFlt(Param::il2, il2);
 
-   return GetIlMax(il1, il2);
+   Param::SetFlt(Param::ilmax, (ilMax - ilSvm));
+   return (ilMax - ilSvm);
 }
 
 static void CalcNextAngleSync(int dir)
