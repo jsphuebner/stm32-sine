@@ -1,7 +1,0 @@
-#!/bin/bash
-
-git clone https://github.com/jsphuebner/libopencm3.git
-
-cd libopencm3
-make
-

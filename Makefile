@@ -113,7 +113,10 @@ flash: images
 .PHONY: directories images clean
 
 get-deps:
-	misc/getlibopencm3
+	@printf "  GIT SUBMODULE\n"
+	$(Q)git submodule update --init
+	@printf "  MAKE libopencm3\n"
+	$(Q)${MAKE} -C libopencm3
 
 Test:
 	cd test && $(MAKE)
