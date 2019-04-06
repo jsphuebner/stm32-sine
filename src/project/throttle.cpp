@@ -38,6 +38,12 @@ int Throttle::brkPedalRamp;
 int Throttle::brkRamped;
 int Throttle::throttleRamp;
 int Throttle::throttleRamped;
+int Throttle::bmslimhigh;
+int Throttle::bmslimlow;
+s32fp Throttle::udcmin;
+s32fp Throttle::udcmax;
+s32fp Throttle::idcmin;
+s32fp Throttle::idcmax;
 
 bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
 {
@@ -88,7 +94,7 @@ bool Throttle::CheckDualThrottle(int* potval, int pot2val)
 int Throttle::CalcThrottle(int potval, int pot2val, bool brkpedal)
 {
    int potnom;
-   int scaledBrkMax = brkpedal ? brknompedal : -brkmax;
+   int scaledBrkMax = brkpedal ? brknompedal : brkmax;
 
    if (pot2val > potmin[1])
    {
@@ -139,7 +145,7 @@ int Throttle::CalcCruiseSpeed(int speed)
 {
    speedFiltered = IIRFILTER(speedFiltered, speed, speedflt);
    int speederr = cruiseSpeed - speedFiltered;
-   return FP_TOINT(MAX(FP_FROMINT(-brkmax), MIN(FP_FROMINT(100), speedkp * speederr)));
+   return FP_TOINT(MAX(FP_FROMINT(brkmax), MIN(FP_FROMINT(100), speedkp * speederr)));
 }
 
 bool Throttle::TemperatureDerate(s32fp tmphs, int& finalSpnt)
@@ -158,3 +164,53 @@ bool Throttle::TemperatureDerate(s32fp tmphs, int& finalSpnt)
 
    return limit < 100;
 }
+
+void Throttle::BmsLimitCommand(int& finalSpnt, bool dinbms)
+{
+   if (dinbms)
+   {
+      if (finalSpnt >= 0)
+         finalSpnt = (finalSpnt * bmslimhigh) / 100;
+      else
+         finalSpnt = -(finalSpnt * bmslimlow) / 100;
+   }
+}
+
+void Throttle::UdcLimitCommand(int& finalSpnt, s32fp udc)
+{
+   if (finalSpnt >= 0)
+   {
+      s32fp udcErr = udc - udcmin;
+      int res = FP_TOINT(udcErr * 5);
+      res = MAX(0, res);
+      finalSpnt = MIN(finalSpnt, res);
+   }
+   else
+   {
+      s32fp udcErr = udc - udcmax;
+      int res = FP_TOINT(udcErr * 5);
+      res = MIN(0, res);
+      finalSpnt = MAX(finalSpnt, res);
+   }
+}
+
+void Throttle::IdcLimitCommand(int& finalSpnt, s32fp idc)
+{
+   if (finalSpnt >= 0)
+   {
+      s32fp idcerr = idcmax - idc;
+      int res = FP_TOINT(idcerr * 10);
+
+      res = MAX(0, res);
+      finalSpnt = MIN(res, finalSpnt);
+   }
+   else
+   {
+      s32fp idcerr = idcmin - idc;
+      int res = FP_TOINT(idcerr * 10);
+
+      res = MIN(0, res);
+      finalSpnt = MAX(res, finalSpnt);
+   }
+}
+

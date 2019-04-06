@@ -66,7 +66,7 @@
 #define POTMODE_DUALCHANNEL 1
 #define POTMODE_CAN         2
 
-#define VER 4.15.B
+#define VER 4.17.R
 #define VERSTR STRINGIFY(4=VER)
 
 enum _modes
@@ -171,7 +171,7 @@ extern const char* errorListString;
     PARAM_ENTRY(CAT_REGEN,   brknompedal, "%",       -100,   0,      -50,    38  ) \
     PARAM_ENTRY(CAT_REGEN,   brkpedalramp,"%/10ms",  1,      100,    100,    68  ) \
     PARAM_ENTRY(CAT_REGEN,   brknom,      "%",       0,      100,    30,     19  ) \
-    PARAM_ENTRY(CAT_REGEN,   brkmax,      "%",       0,      100,    30,     49  ) \
+    PARAM_ENTRY(CAT_REGEN,   brkmax,      "%",       -100,   0,      -30,    49  ) \
     PARAM_ENTRY(CAT_REGEN,   brkrampstr,  "Hz",      0,      400,    10,     39  ) \
     PARAM_ENTRY(CAT_REGEN,   brkout,      "%",       -100,   -1,     -50,    67  ) \
     PARAM_ENTRY(CAT_AUTOM,   idlespeed,   "rpm",     -100,   1000,   -100,   54  ) \
@@ -216,6 +216,7 @@ extern const char* errorListString;
     VALUE_ENTRY(tmphs,       "°C",    2019 ) \
     VALUE_ENTRY(tmpm,        "°C",    2020 ) \
     VALUE_ENTRY(uaux,        "V",     2021 ) \
+    VALUE_ENTRY(pwmio,       "",      12022 ) \
     VALUE_ENTRY(canio,       CANIOS,  2022 ) \
     VALUE_ENTRY(din_cruise,  ONOFF,   2023 ) \
     VALUE_ENTRY(din_start,   ONOFF,   2024 ) \

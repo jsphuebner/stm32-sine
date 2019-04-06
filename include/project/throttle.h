@@ -33,6 +33,9 @@ class Throttle
       static int CalcIdleSpeed(int speed);
       static int CalcCruiseSpeed(int speed);
       static bool TemperatureDerate(s32fp tmphs, int& finalSpnt);
+      static void BmsLimitCommand(int& finalSpnt, bool dinbms);
+      static void UdcLimitCommand(int& finalSpnt, s32fp udc);
+      static void IdcLimitCommand(int& finalSpnt, s32fp idc);
       static int potmin[2];
       static int potmax[2];
       static int brknom;
@@ -46,6 +49,14 @@ class Throttle
       static s32fp idleThrotLim;
       static int brkPedalRamp;
       static int throttleRamp;
+      static int bmslimhigh;
+      static int bmslimlow;
+      static int accelmax;
+      static int accelflt;
+      static s32fp udcmin;
+      static s32fp udcmax;
+      static s32fp idcmin;
+      static s32fp idcmax;
 
    private:
       static int speedFiltered;

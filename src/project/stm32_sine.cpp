@@ -526,61 +526,6 @@ static void GetCruiseCreepCommand(int& finalSpnt, int throtSpnt)
    }
 }
 
-static void BmsLimitCommand(int& finalSpnt)
-{
-   if (hwRev != HW_TESLA && Param::GetBool(Param::din_bms))
-   {
-      if (finalSpnt >= 0)
-         finalSpnt = (finalSpnt * Param::GetInt(Param::bmslimhigh)) / 100;
-      else
-         finalSpnt = -(finalSpnt * Param::GetInt(Param::bmslimlow)) / 100;
-   }
-}
-
-static void UdcLimitCommand(int& finalSpnt)
-{
-   s32fp udc = Param::Get(Param::udc);
-
-   if (finalSpnt >= 0)
-   {
-      s32fp udcErr = udc - FP_MUL(Param::Get(Param::udcmin), FP_FROMFLT(0.95));
-      int res = FP_TOINT(udcErr * 5);
-      res = MAX(0, res);
-      finalSpnt = MIN(finalSpnt, res);
-   }
-   else
-   {
-      s32fp udcErr = udc - FP_MUL(Param::Get(Param::udcmax), FP_FROMFLT(1.05));
-      int res = FP_TOINT(udcErr * 5);
-      res = MIN(0, res);
-      finalSpnt = MAX(finalSpnt, res);
-   }
-}
-
-static void IdcLimitCommand(int& finalSpnt)
-{
-   s32fp idc = Param::Get(Param::idc);
-
-   if (finalSpnt >= 0)
-   {
-      s32fp idcmax = Param::Get(Param::idcmax);
-      s32fp idcerr = idcmax - idc;
-      int res = FP_TOINT(idcerr * 10);
-
-      res = MAX(0, res);
-      finalSpnt = MIN(res, finalSpnt);
-   }
-   else
-   {
-      s32fp idcmin = Param::Get(Param::idcmin);
-      s32fp idcerr = idcmin - idc;
-      int res = FP_TOINT(idcerr * 10);
-
-      res = MIN(0, res);
-      finalSpnt = MAX(res, finalSpnt);
-   }
-}
-
 static void ProcessThrottle()
 {
    int throtSpnt, finalSpnt;
@@ -592,9 +537,12 @@ static void ProcessThrottle()
 
    throtSpnt = GetUserThrottleCommand();
    GetCruiseCreepCommand(finalSpnt, throtSpnt);
-   BmsLimitCommand(finalSpnt);
-   UdcLimitCommand(finalSpnt);
-   IdcLimitCommand(finalSpnt);
+
+   if (hwRev != HW_TESLA)
+      Throttle::BmsLimitCommand(finalSpnt, Param::GetBool(Param::din_bms));
+
+   Throttle::UdcLimitCommand(finalSpnt, Param::Get(Param::udc));
+   Throttle::IdcLimitCommand(finalSpnt, Param::Get(Param::idc));
 
    if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), finalSpnt))
    {
@@ -824,6 +772,12 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
       Throttle::speedkp = Param::Get(Param::speedkp);
       Throttle::speedflt = Param::GetInt(Param::speedflt);
       Throttle::idleThrotLim = Param::Get(Param::idlethrotlim);
+      Throttle::bmslimlow = Param::GetInt(Param::bmslimlow);
+      Throttle::bmslimhigh = Param::GetInt(Param::bmslimhigh);
+      Throttle::udcmin = FP_MUL(Param::Get(Param::udcmin), FP_FROMFLT(0.95)); //Leave some room for the notification light
+      Throttle::udcmax = FP_MUL(Param::Get(Param::udcmax), FP_FROMFLT(1.05));
+      Throttle::idcmin = Param::Get(Param::idcmin);
+      Throttle::idcmax = Param::Get(Param::idcmax);
 
       if (Param::GetInt(Param::pwmfunc) == PWM_FUNC_SPEEDFRQ)
          gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO9);
@@ -836,6 +790,8 @@ static void InitPWMIO()
 {
    uint8_t outputMode = Param::GetInt(Param::pwmpol) == 0 ? GPIO_MODE_OUTPUT_50_MHZ : GPIO_MODE_INPUT;
    uint8_t outputConf = Param::GetInt(Param::pwmpol) == 0 ? GPIO_CNF_OUTPUT_ALTFN_PUSHPULL : GPIO_CNF_INPUT_FLOAT;
+
+   Param::SetInt(Param::pwmio, gpio_get(GPIOA, GPIO8 | GPIO9 | GPIO10) | gpio_get(GPIOB, GPIO13 | GPIO14 | GPIO15));
 
    gpio_set_mode(GPIOA, outputMode, outputConf, GPIO8 | GPIO9 | GPIO10);
    gpio_set_mode(GPIOB, outputMode, outputConf, GPIO13 | GPIO14 | GPIO15);
@@ -905,6 +861,8 @@ extern "C" int main(void)
 
    if (Param::GetInt(Param::snsm) < 12)
       Param::SetInt(Param::snsm, Param::GetInt(Param::snsm) + 10); //upgrade parameter
+   if (Param::Get(Param::brkmax) > 0)
+      Param::Set(Param::brkmax, -Param::Get(Param::brkmax));
 
    term_Run();
 
