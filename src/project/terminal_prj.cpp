@@ -81,7 +81,9 @@ static void MapCan(char *arg)
 {
    Param::PARAM_NUM paramIdx = Param::PARAM_INVALID;
    int values[4];
-   bool tx = false;
+   int result;
+   char op;
+   char *ending;
    const int numArgs = 4;
 
    arg = my_trim(arg);
@@ -93,9 +95,44 @@ static void MapCan(char *arg)
       return;
    }
 
-   for (int i = -2; i < numArgs; i++)
+   op = arg[0];
+   arg = (char *)my_strchr(arg, ' ');
+
+   if (0 == *arg)
    {
-      char *ending = (char *)my_strchr(arg, ' ');
+      printf("Missing argument\r\n");
+      return;
+   }
+
+   arg = my_trim(arg);
+   ending = (char *)my_strchr(arg, ' ');
+
+   if (*ending == 0 && op != 'd')
+   {
+      printf("Missing argument\r\n");
+      return;
+   }
+
+   *ending = 0;
+   paramIdx = Param::NumFromString(arg);
+   arg = my_trim(ending + 1);
+
+   if (Param::PARAM_INVALID == paramIdx)
+   {
+      printf("Unknown parameter\r\n");
+      return;
+   }
+
+   if (op == 'd')
+   {
+      result = Can::Remove(paramIdx);
+      printf("%d entries removed\r\n", result);
+      return;
+   }
+
+   for (int i = 0; i < numArgs; i++)
+   {
+      ending = (char *)my_strchr(arg, ' ');
 
       if (0 == *ending && i < (numArgs - 1))
       {
@@ -105,52 +142,38 @@ static void MapCan(char *arg)
 
       *ending = 0;
 
-      if (i == -2)
-         tx = arg[0] == 't';
-      else if (i == -1)
-         paramIdx = Param::NumFromString(arg);
-      else
-         values[i] = my_atoi(arg);
-      arg = ending + 1;
+      values[i] = my_atoi(arg);
+      arg = my_trim(ending + 1);
    }
 
-   if (Param::PARAM_INVALID != paramIdx)
+   if (op == 't')
    {
-      int result;
-
-      if (tx)
-      {
-         result = Can::AddSend(paramIdx, values[0], values[1], values[2], values[3]);
-      }
-      else
-      {
-         result = Can::AddRecv(paramIdx, values[0], values[1], values[2], values[3]);
-      }
-
-      switch (result)
-      {
-         case CAN_ERR_INVALID_ID:
-            printf("Invalid CAN Id %x\r\n", values[0]);
-            break;
-         case CAN_ERR_INVALID_OFS:
-            printf("Invalid Offset %d\r\n", values[1]);
-            break;
-         case CAN_ERR_INVALID_LEN:
-            printf("Invalid length %d\r\n", values[2]);
-            break;
-         case CAN_ERR_MAXITEMS:
-            printf("Cannot map anymore items to CAN id %d\r\n", values[0]);
-            break;
-         case CAN_ERR_MAXMESSAGES:
-            printf("Max message count reached\r\n");
-            break;
-         default:
-            printf("CAN map successful, %d messages active\r\n", result);
-      }
+      result = Can::AddSend(paramIdx, values[0], values[1], values[2], values[3]);
    }
    else
    {
-       printf("Unknown parameter\r\n");
+      result = Can::AddRecv(paramIdx, values[0], values[1], values[2], values[3]);
+   }
+
+   switch (result)
+   {
+      case CAN_ERR_INVALID_ID:
+         printf("Invalid CAN Id %x\r\n", values[0]);
+         break;
+      case CAN_ERR_INVALID_OFS:
+         printf("Invalid Offset %d\r\n", values[1]);
+         break;
+      case CAN_ERR_INVALID_LEN:
+         printf("Invalid length %d\r\n", values[2]);
+         break;
+      case CAN_ERR_MAXITEMS:
+         printf("Cannot map anymore items to CAN id %d\r\n", values[0]);
+         break;
+      case CAN_ERR_MAXMESSAGES:
+         printf("Max message count reached\r\n");
+         break;
+      default:
+         printf("CAN map successful, %d message%s active\r\n", result, result > 1 ? "s" : "");
    }
 }
 

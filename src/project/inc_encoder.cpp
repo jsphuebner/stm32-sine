@@ -442,16 +442,18 @@ uint16_t Encoder::GetAngleSPI()
 {
    uint32_t d = 0;
    //Skip the abstraction, we need speed here
-   GPIO_BSRR(GPIOA) |= GPIO7; //Clock high
-   GPIO_BSRR(GPIOD) |= GPIO2 << 16; //Read LOW = active
+   GPIO_BSRR(GPIOA) = GPIO7; //Clock high
+   GPIO_BRR(GPIOD) = GPIO2;
 
    for (int i = 15; i >= 0; i--)
    {
-      GPIO_BSRR(GPIOA) |= GPIO7 << 16; //Clock low
-      d |= ((int)GPIO_IDR(GPIOA) & GPIO6) << i;
-      GPIO_BSRR(GPIOA) |= GPIO7;
+      GPIO_BRR(GPIOA) = GPIO7;
+      uint32_t bit = ((uint32_t)GPIO_IDR(GPIOA) & GPIO6);
+      //d |= ((uint32_t)GPIO_IDR(GPIOA) & GPIO6) << i;
+      GPIO_BSRR(GPIOA) = GPIO7;
+      d |= bit << i;
    }
-   GPIO_BSRR(GPIOD) |= GPIO2; //Read high
+   GPIO_BSRR(GPIOD) = GPIO2; //Read high
    d >>= 10; //6 because of GPIO6, 4 because of encoder format
    //Encoder format is ANGLE[11:0], RDVEL, Parity, DOS, LOT
    return d << 4; //we want 16-bit representation

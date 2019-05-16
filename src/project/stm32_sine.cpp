@@ -53,6 +53,14 @@ HWREV hwRev; //Hardware variant of board we are running on
 static bool runChargeControl = false;
 static Stm32Scheduler* scheduler;
 
+static void PostErrorIfRunning(ERROR_MESSAGE_NUM err)
+{
+   if (Param::GetInt(Param::opmode) == MOD_RUN)
+   {
+      ErrorMessage::Post(err);
+   }
+}
+
 static void CruiseControl()
 {
    static bool lastState = false;
@@ -206,39 +214,41 @@ static void CalcAmpAndSlip()
    s32fp potnom = Param::Get(Param::potnom);
    s32fp slipstart = Param::Get(Param::slipstart);
    s32fp ampnom;
-   s32fp fslipspnt;
+   s32fp fslipspnt = 0;
 
    if (potnom >= 0)
    {
       /* In sync mode throttle only commands amplitude. Above back-EMF is acceleration, below is regen */
       if (Encoder::IsSyncMode())
          ampnom = ampmin + FP_DIV(FP_MUL((FP_FROMINT(100) - ampmin), potnom), FP_FROMINT(100));
-      else /* In async mode first X% throttle commands amplitude, X-100% raises slip */
+      else
+      {/* In async mode first X% throttle commands amplitude, X-100% raises slip */
          ampnom = ampmin + (100 - FP_TOINT(ampmin)) * FP_DIV(potnom, slipstart);
 
-      if (potnom >= slipstart)
-      {
-         s32fp fstat = Param::Get(Param::fstat);
-         s32fp fweak = Param::Get(Param::fweakcalc);
-         s32fp fslipmax = Param::Get(Param::fslipmax);
-
-         if (fstat > fweak)
+         if (potnom >= slipstart)
          {
-            s32fp fconst = Param::Get(Param::fconst);
-            s32fp fslipconstmax = Param::Get(Param::fslipconstmax);
-            //Basically, for every Hz above fweak we get a fraction of
-            //the difference between fslipconstmax and fslipmax
-            //of additional slip
-            fslipmax += FP_MUL(FP_DIV(fstat - fweak, fconst - fweak), fslipconstmax - fslipmax);
-            fslipmax = MIN(fslipmax, fslipconstmax); //never exceed fslipconstmax!
-         }
+            s32fp fstat = Param::Get(Param::fstat);
+            s32fp fweak = Param::Get(Param::fweakcalc);
+            s32fp fslipmax = Param::Get(Param::fslipmax);
 
-         s32fp fslipdiff = fslipmax - fslipmin;
-         fslipspnt = fslipmin + (FP_MUL(fslipdiff, (potnom - slipstart)) / (100 - FP_TOINT(slipstart)));
-      }
-      else
-      {
-         fslipspnt = fslipmin;
+            if (fstat > fweak)
+            {
+               s32fp fconst = Param::Get(Param::fconst);
+               s32fp fslipconstmax = Param::Get(Param::fslipconstmax);
+               //Basically, for every Hz above fweak we get a fraction of
+               //the difference between fslipconstmax and fslipmax
+               //of additional slip
+               fslipmax += FP_MUL(FP_DIV(fstat - fweak, fconst - fweak), fslipconstmax - fslipmax);
+               fslipmax = MIN(fslipmax, fslipconstmax); //never exceed fslipconstmax!
+            }
+
+            s32fp fslipdiff = fslipmax - fslipmin;
+            fslipspnt = fslipmin + (FP_MUL(fslipdiff, (potnom - slipstart)) / (100 - FP_TOINT(slipstart)));
+         }
+         else
+         {
+            fslipspnt = fslipmin;
+         }
       }
       DigIo::Clear(Pin::brk_out);
    }
@@ -460,7 +470,7 @@ static int GetUserThrottleCommand()
       else
       {
          DigIo::Set(Pin::err_out);
-         ErrorMessage::Post(ERR_CANTIMEOUT);
+         PostErrorIfRunning(ERR_CANTIMEOUT);
          return 0;
       }
    }
@@ -476,7 +486,7 @@ static int GetUserThrottleCommand()
    if (!Throttle::CheckAndLimitRange(&potval, 0))
    {
       DigIo::Set(Pin::err_out);
-      ErrorMessage::Post(ERR_THROTTLE1);
+      PostErrorIfRunning(ERR_THROTTLE1);
       return 0;
    }
 
@@ -487,7 +497,7 @@ static int GetUserThrottleCommand()
       if (!Throttle::CheckDualThrottle(&potval, pot2val) || !throt2Res)
       {
          DigIo::Set(Pin::err_out);
-         ErrorMessage::Post(ERR_THROTTLE1);
+         PostErrorIfRunning(ERR_THROTTLE1);
          Param::SetInt(Param::potnom, 0);
          return 0;
       }
@@ -611,7 +621,7 @@ static void Ms10Task(void)
        DigIo::Get(Pin::mprot_in) &&
        Param::GetInt(Param::potnom) <= 0)
    {
-      if (udc >= Param::Get(Param::udcsw))
+      if (udc >= Param::Get(Param::udcsw) && udc < Param::Get(Param::udclim))
       {
          /* Switch to charge mode if
           * - Charge mode is enabled
@@ -790,8 +800,15 @@ static void InitPWMIO()
 {
    uint8_t outputMode = Param::GetInt(Param::pwmpol) == 0 ? GPIO_MODE_OUTPUT_50_MHZ : GPIO_MODE_INPUT;
    uint8_t outputConf = Param::GetInt(Param::pwmpol) == 0 ? GPIO_CNF_OUTPUT_ALTFN_PUSHPULL : GPIO_CNF_INPUT_FLOAT;
+   uint16_t expectedPattern = Param::GetInt(Param::pwmpol) == 0 ? 0 : GPIO8 | GPIO9 | GPIO10 | GPIO13 | GPIO14 | GPIO15;
+   uint16_t actualPattern = gpio_get(GPIOA, GPIO8 | GPIO9 | GPIO10) | gpio_get(GPIOB, GPIO13 | GPIO14 | GPIO15);
 
-   Param::SetInt(Param::pwmio, gpio_get(GPIOA, GPIO8 | GPIO9 | GPIO10) | gpio_get(GPIOB, GPIO13 | GPIO14 | GPIO15));
+   Param::SetInt(Param::pwmio, actualPattern);
+
+   if (actualPattern != expectedPattern)
+   {
+      ErrorMessage::Post(ERR_PWMSTUCK);
+   }
 
    gpio_set_mode(GPIOA, outputMode, outputConf, GPIO8 | GPIO9 | GPIO10);
    gpio_set_mode(GPIOB, outputMode, outputConf, GPIO13 | GPIO14 | GPIO15);
@@ -844,6 +861,7 @@ extern "C" int main(void)
    parm_load();
    parm_Change(Param::PARAM_LAST);
    Can::Init((Can::baudrates)Param::GetInt(Param::canspeed));
+   ErrorMessage::SetTime(1);
    InitPWMIO();
 
    MotorVoltage::SetMaxAmp(SineCore::MAXAMP);

@@ -35,7 +35,8 @@ struct BufferEntry
 #define ERROR_MESSAGE_ENTRY(id, type) { #id, type },
 static const struct ErrorDescriptor errorDescriptors[] =
 {
-    ERROR_MESSAGE_LIST
+   { "", ERROR_LAST },
+   ERROR_MESSAGE_LIST
 };
 #undef ERROR_MESSAGE_ENTRY
 

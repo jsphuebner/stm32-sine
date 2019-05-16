@@ -93,11 +93,13 @@ typedef struct
 } SENDBUFFER;
 
 static void ProcessSDO(uint32_t data[2]);
+static void Clear(CANIDMAP *canMap);
+static int Remove(CANIDMAP *canMap, Param::PARAM_NUM param);
 static int Add(CANIDMAP *canMap, Param::PARAM_NUM param, int canId, int offset, int length, s16fp gain);
-static CANIDMAP *FindById(CANIDMAP *canMap, int canId);
 static uint32_t SaveToFlash(uint32_t baseAddress, uint32_t* data, int len);
 static int LoadFromFlash();
 static CANIDMAP *FindById(CANIDMAP *canMap, int canId);
+static int CopyIdMapExcept(CANIDMAP *source, CANIDMAP *dest, Param::PARAM_NUM param);
 static void ReplaceParamEnumByUid(CANIDMAP *canMap);
 static void ReplaceParamUidByEnum(CANIDMAP *canMap);
 static void ConfigureFilters();
@@ -204,20 +206,16 @@ void SendAll()
 
 void Clear(void)
 {
-   int loops = 2;
-   for (CANIDMAP *map = canSendMap; loops > 0; map = canRecvMap)
-   {
-      for (int i = 0; i < MAX_MESSAGES; i++)
-      {
-         map[i].canId = CANID_UNSET;
+   Clear(canSendMap);
+   Clear(canRecvMap);
+}
 
-         for (int j = 0; j < MAX_ITEMS_PER_MESSAGE; j++)
-         {
-            map[i].items[j].numBits = 0;
-         }
-      }
-      loops--;
-   }
+int Remove(Param::PARAM_NUM param)
+{
+   int removed = Remove(canSendMap, param);
+   removed += Remove(canRecvMap, param);
+
+   return removed;
 }
 
 void Init(enum baudrates baudrate)
@@ -475,6 +473,18 @@ static int LoadFromFlash()
    return 0;
 }
 
+static int Remove(CANIDMAP *canMap, Param::PARAM_NUM param)
+{
+   CANIDMAP copyMap[MAX_MESSAGES];
+
+   Clear(copyMap);
+   int removed = CopyIdMapExcept(canMap, copyMap, param);
+   Clear(canMap);
+   CopyIdMapExcept(copyMap, canMap, param);
+
+   return removed;
+}
+
 static int Add(CANIDMAP *canMap, Param::PARAM_NUM param, int canId, int offset, int length, s16fp gain)
 {
    if (canId > 0x7ff) return CAN_ERR_INVALID_ID;
@@ -512,6 +522,19 @@ static int Add(CANIDMAP *canMap, Param::PARAM_NUM param, int canId, int offset, 
    return count;
 }
 
+static void Clear(CANIDMAP *canMap)
+{
+   for (int i = 0; i < MAX_MESSAGES; i++)
+   {
+      canMap[i].canId = CANID_UNSET;
+
+      for (int j = 0; j < MAX_ITEMS_PER_MESSAGE; j++)
+      {
+         canMap[i].items[j].numBits = 0;
+      }
+   }
+}
+
 static CANIDMAP *FindById(CANIDMAP *canMap, int canId)
 {
    for (int i = 0; i < MAX_MESSAGES; i++)
@@ -534,6 +557,39 @@ static uint32_t SaveToFlash(uint32_t baseAddress, uint32_t* data, int len)
    }
 
    return crc;
+}
+
+static int CopyIdMapExcept(CANIDMAP *source, CANIDMAP *dest, Param::PARAM_NUM param)
+{
+   int i = 0, removed = 0;
+
+   forEachCanMap(curMap, source)
+   {
+      bool discardId = true;
+      int j = 0;
+
+      forEachPosMap(curPos, curMap)
+      {
+         if (curPos->mapParam != param)
+         {
+            discardId = false;
+            dest[i].items[j] = *curPos;
+            j++;
+         }
+         else
+         {
+            removed++;
+         }
+      }
+
+      if (!discardId)
+      {
+         dest[i].canId = curMap->canId;
+         i++;
+      }
+   }
+
+   return removed;
 }
 
 static void ReplaceParamEnumByUid(CANIDMAP *canMap)

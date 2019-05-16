@@ -43,6 +43,7 @@ namespace Can
    uint32_t GetLastRxTimestamp();
    int AddSend(Param::PARAM_NUM param, int canId, int offset, int length, s16fp gain);
    int AddRecv(Param::PARAM_NUM param, int canId, int offset, int length, s16fp gain);
+   int Remove(Param::PARAM_NUM param);
    bool FindMap(Param::PARAM_NUM param, int& canId, int& offset, int& length, s32fp& gain, bool& rx);
 }
 
