@@ -22,6 +22,7 @@
     DIG_IO_ENTRY(prec_out,    GPIOB, GPIO1,  PinMode::OUTPUT)      \
     DIG_IO_ENTRY(led_out,     GPIOC, GPIO12, PinMode::OUTPUT)      \
     DIG_IO_ENTRY(err_out,     GPIOC, GPIO10, PinMode::OUTPUT)      \
+    DIG_IO_ENTRY(temp0_out,   GPIOC, GPIO10, PinMode::OUTPUT)      \
     DIG_IO_ENTRY(speed_out,   GPIOB, GPIO9,  PinMode::OUTPUT)      \
     DIG_IO_ENTRY(brk_out,     GPIOC, GPIO5,  PinMode::OUTPUT)      \
 
@@ -30,7 +31,6 @@
     DIG_IO_ENTRY(test3_out,   GPIOA, GPIO14, PinMode::OUTPUT)     \
     DIG_IO_ENTRY(test4_out,   GPIOA, GPIO15, PinMode::OUTPUT)     \*/
 
-#define temp0_out err_out
 #define temp1_out bms_in  //is configured to output dynamically on Tesla hardware
 
 #endif // PinMode_PRJ_H_INCLUDED

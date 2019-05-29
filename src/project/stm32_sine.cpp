@@ -220,9 +220,13 @@ static void CalcAmpAndSlip()
    {
       /* In sync mode throttle only commands amplitude. Above back-EMF is acceleration, below is regen */
       if (Encoder::IsSyncMode())
+      {
+         MotorVoltage::SetMinFrqMode(MotorVoltage::IGNORE);
          ampnom = ampmin + FP_DIV(FP_MUL((FP_FROMINT(100) - ampmin), potnom), FP_FROMINT(100));
+      }
       else
       {/* In async mode first X% throttle commands amplitude, X-100% raises slip */
+         MotorVoltage::SetMinFrqMode(MotorVoltage::SETZERO);
          ampnom = ampmin + (100 - FP_TOINT(ampmin)) * FP_DIV(potnom, slipstart);
 
          if (potnom >= slipstart)
@@ -257,14 +261,20 @@ static void CalcAmpAndSlip()
       u32fp brkrampstr = (u32fp)Param::Get(Param::brkrampstr);
 
       if (Encoder::IsSyncMode())
+      {
          ampnom = ampmin + FP_MUL(ampmin, potnom) / 100;
+         //ampnom = ampmin + FP_DIV(FP_MUL((FP_FROMINT(100) - ampmin), -potnom), FP_FROMINT(100));
+         MotorVoltage::SetMinFrqMode(MotorVoltage::RAMPDOWN);
+      }
       else
+      {
          ampnom = -potnom;
 
-      fslipspnt = -fslipmin;
-      if (Encoder::GetRotorFrequency() < brkrampstr)
-      {
-         ampnom = FP_TOINT(FP_DIV(Encoder::GetRotorFrequency(), brkrampstr) * ampnom);
+         fslipspnt = -fslipmin;
+         if (Encoder::GetRotorFrequency() < brkrampstr)
+         {
+            ampnom = FP_TOINT(FP_DIV(Encoder::GetRotorFrequency(), brkrampstr) * ampnom);
+         }
       }
       //This works because ampnom = -potnom
       if (ampnom >= -Param::Get(Param::brkout))
@@ -548,6 +558,9 @@ static void ProcessThrottle()
    throtSpnt = GetUserThrottleCommand();
    GetCruiseCreepCommand(finalSpnt, throtSpnt);
 
+   Throttle::iacmax = (Param::Get(Param::iacmax) * finalSpnt) / 100;
+   Throttle::IacLimitCommand(finalSpnt, Param::Get(Param::ilmax));
+
    if (hwRev != HW_TESLA)
       Throttle::BmsLimitCommand(finalSpnt, Param::GetBool(Param::din_bms));
 
@@ -660,10 +673,16 @@ static void Ms10Task(void)
       initWait = 50;
 
       SetContactorsOffState();
-      Param::SetInt(Param::amp, 0);
+      //Param::SetInt(Param::amp, 0);
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
       runChargeControl = false;
+      /*Param::SetInt(Param::speed, 0);
+      Param::SetInt(Param::fstat, 0);
+      Param::SetInt(Param::il1, 0);
+      Param::SetInt(Param::il2, 0);
+      Param::SetInt(Param::il1rms, 0);
+      Param::SetInt(Param::il2rms, 0);*/
    }
    else if (0 == initWait)
    {
@@ -833,6 +852,8 @@ static void ConfigureVariantIO()
          break;
       case HW_TESLA:
          DigIo::Configure(Pin::temp1_out, GPIOC, GPIO8, PinMode::OUTPUT);
+         //Essentially disable error output by mapping it to an unused pin
+         DigIo::Configure(Pin::err_out, GPIOB, GPIO9, PinMode::INPUT_FLT);
          break;
    }
 

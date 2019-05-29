@@ -31,10 +31,11 @@
 #include "sine_core.h"
 #include "printf.h"
 
-#define TWO_PI 65536
-#define TEN_DEGREE ((10 * TWO_PI) / 360)
-#define MAX_CNT TWO_PI - 1
+#define TWO_PI            65536
+#define TEN_DEGREE        ((10 * TWO_PI) / 360)
+#define MAX_CNT           TWO_PI - 1
 #define MAX_REVCNT_VALUES 5
+#define MIN_RES_AMP       1000
 
 #define FRQ_TO_PSC(frq) ((72000000 / frq) - 1)
 #define NUM_ENCODER_CONFIGS (sizeof(encoderConfigurations) / sizeof(encoderConfigurations[0]))
@@ -70,7 +71,7 @@ static bool ignore = true;
 static enum Encoder::mode encMode = Encoder::INVALID;
 static bool seenNorthSignal = false;
 static uint32_t turnsSinceLastSample = 0;
-static int32_t minSin = 0, maxSin = 0;
+static int32_t minSin = 0, maxSin = 0, startupDelay;
 
 void Encoder::Reset()
 {
@@ -78,6 +79,8 @@ void Encoder::Reset()
    lastPulseTimespan = MAX_CNT;
    minSin = 0;
    maxSin = 0;
+   lastFrequency = 0;
+   startupDelay = 2000;
    for (uint32_t i = 0; i < MAX_REVCNT_VALUES; i++)
       timdata[i] = MAX_CNT;
 }
@@ -199,6 +202,7 @@ void Encoder::UpdateRotorAngle(int dir)
       }
    }
 
+   startupDelay = startupDelay > 0 ? startupDelay - 1 : 0;
    lastAngle = angle;
 }
 
@@ -263,9 +267,16 @@ u32fp Encoder::CalcFrequencyFromAngleDifference(uint16_t angle)
    uint16_t diffNeg = (angle - lastAngle) & 0xFFFF;
    uint16_t angleDiff = MIN(diffNeg, diffPos);
 
+   if (startupDelay > 0)
+   {
+      samples = 0;
+      lastAngle = angle;
+      return lastFrequency;
+   }
+
    samples++;
 
-   if (angleDiff > TEN_DEGREE)
+   if (angleDiff > TEN_DEGREE && samples > 0)
    {
       //We don't make assumption about the rotation direction but we
       //do assume less than 180° in one PWM cycle
@@ -426,6 +437,11 @@ void Encoder::InitResolverMode()
       adc_set_injected_offset(ADC1, 2, sin);
       adc_set_injected_offset(ADC1, 3, cos);
       adc_enable_external_trigger_injected(ADC1, ADC_CR2_JEXTSEL_TIM3_CC4);
+
+      if (CHK_BIPOLAR_OFS(sin) || CHK_BIPOLAR_OFS(cos))
+      {
+         ErrorMessage::Post(ERR_HIRESOFS);
+      }
    }
    else //SINCOS
    {
@@ -466,7 +482,7 @@ uint16_t Encoder::GetAngleSPI()
  * For different PWM frequencies you need to populate different
  * resistor values on the 3-pole filter.
  * PWM Frequency  8.8kHz: (510+10k), 3k3, 3k3
- * PWM Frequency 17.6kHz: (3k3+4k7), 1k2, 1k2
+ * PWM Frequency 17.6kHz: (3k3+3k3), 1k2, 1k2
  */
 uint16_t Encoder::GetAngleResolver()
 {
@@ -509,12 +525,16 @@ uint16_t Encoder::DecodeAngle()
    maxSin = MAX(sin, maxSin);
 
    //Wait for signal to reach usable amplitude
-   if ((maxSin - minSin) > 1000)
+   if ((maxSin - minSin) > MIN_RES_AMP)
    {
       return SineCore::Atan2(cos, sin);
    }
    else
    {
+      if (0 == startupDelay)
+      {
+         ErrorMessage::Post(ERR_LORESAMP);
+      }
       return 0;
    }
 }

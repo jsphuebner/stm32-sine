@@ -9,5 +9,6 @@
 #define IIRFILTER(l,n,c) (((n) + ((l) << (c)) - (l)) >> (c))
 #define MEDIAN3(a,b,c)  ((a) > (b) ? ((b) > (c) ? (b) : ((a) > (c) ? (c) : (a))) \
                                    : ((a) > (c) ? (a) : ((b) > (c) ? (c) : (b))))
+#define CHK_BIPOLAR_OFS(ofs) ((ofs < (2048 - 512)) || (ofs > (2048 + 512)))
 
 #endif // MY_MATH_H_INCLUDED

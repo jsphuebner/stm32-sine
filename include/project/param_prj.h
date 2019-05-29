@@ -21,7 +21,7 @@
 #define PWMPOLS      "0=ACTHIGH, 1=ACTLOW"
 #define DIRS         "-1=Reverse, 0=Neutral, 1=Forward"
 #define TRIPMODES    "0=AllOff, 1=DcSwOn, 2=PrechargeOn"
-#define SNS_HS       "0=JCurve, 1=Semikron, 2=MBB600"
+#define SNS_HS       "0=JCurve, 1=Semikron, 2=MBB600, 3=KTY81, 4=PT1000, 5=NTCK45_2k2"
 #define SNS_M        "12=KTY83-110, 13=KTY84-130, 14=Leaf"
 #define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=speedfrq"
 #define BTNSWITCH    "0=Button, 1=Switch"
@@ -66,7 +66,7 @@
 #define POTMODE_DUALCHANNEL 1
 #define POTMODE_CAN         2
 
-#define VER 4.18.R
+#define VER 4.26.R
 #define VERSTR STRINGIFY(4=VER)
 
 enum _modes
@@ -113,7 +113,7 @@ extern const char* errorListString;
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 100
+//Next param id (increase when adding new parameter!): 104
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   boost,       "dig",     0,      37813,  1700,   1   ) \
@@ -132,6 +132,8 @@ extern const char* errorListString;
     PARAM_ENTRY(CAT_MOTOR,   dirchrpm,    "rpm",     0,      2000,   100,    87  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirmode,     DIRMODES,  0,      3,      1,      95  ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
+    PARAM_ENTRY(CAT_MOTOR,   syncadv,     "dig/Hz",  -100,   100,    0,      101 ) \
+    PARAM_ENTRY(CAT_MOTOR,   syncadvweak, "dig/Hz",  -100,   100,    0,      102 ) \
     PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     14,     12,     46  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmfrq,      PWMFRQS,   0,      4,      1,      13  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmpol,      PWMPOLS,   0,      1,      0,      52  ) \
@@ -143,7 +145,7 @@ extern const char* errorListString;
     PARAM_ENTRY(CAT_INVERTER,udcgain,     "dig/V",   0,      4095,   6.175,  29  ) \
     PARAM_ENTRY(CAT_INVERTER,udcofs,      "dig",     0,      4095,   0,      77  ) \
     PARAM_ENTRY(CAT_INVERTER,udclim,      "V",       0,      1000,   540,    48  ) \
-    PARAM_ENTRY(CAT_INVERTER,snshs,       SNS_HS,    0,      2,      0,      45  ) \
+    PARAM_ENTRY(CAT_INVERTER,snshs,       SNS_HS,    0,      5,      0,      45  ) \
     PARAM_ENTRY(CAT_DERATE,  bmslimhigh,  "%",       0,      100,    50,     55  ) \
     PARAM_ENTRY(CAT_DERATE,  bmslimlow,   "%",       -100,   0,      -1,     56  ) \
     PARAM_ENTRY(CAT_DERATE,  udcmin,      "V",       0,      1000,   450,    42  ) \
@@ -174,7 +176,7 @@ extern const char* errorListString;
     PARAM_ENTRY(CAT_REGEN,   brkmax,      "%",       -100,   0,      -30,    49  ) \
     PARAM_ENTRY(CAT_REGEN,   brkrampstr,  "Hz",      0,      400,    10,     39  ) \
     PARAM_ENTRY(CAT_REGEN,   brkout,      "%",       -100,   -1,     -50,    67  ) \
-    PARAM_ENTRY(CAT_AUTOM,   idlespeed,   "rpm",     -100,   1000,   -100,   54  ) \
+    PARAM_ENTRY(CAT_AUTOM,   idlespeed,   "rpm",     -100,   10000,  -100,   54  ) \
     PARAM_ENTRY(CAT_AUTOM,   idlethrotlim,"%",       0,      100,    50,     65  ) \
     PARAM_ENTRY(CAT_AUTOM,   idlemode,    IDLEMODS,  0,      2,      0,      66  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedkp,     "",        0,      100,    0.25,   53  ) \

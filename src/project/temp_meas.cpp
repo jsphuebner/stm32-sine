@@ -60,11 +60,24 @@ static const uint16_t Tesla100k[] = { TESLA_100K };
 /* Temp sensor embedded in Tesla rear heatsink */
 static const uint16_t Tesla52k[] = { TESLA_52K };
 
+/* contributed by Fabian Brauss */
+/* Temp sensor KTY81-121 */
+static const uint16_t Kty81[] = { KTY81 };
+
+/* Temp sensor PT1000 */
+static const uint16_t Pt1000[] = { PT1000 };
+
+/* Temp sensor NTC K45 2k2 (with parallel 2k!) */
+static const uint16_t NtcK45[] = { NTCK45 };
+
 static const TEMP_SENSOR sensors[] =
 {
    { -25, 105, 5,  TABLEN(JCurve),    NTC, JCurve     },
    { 0,   100, 5,  TABLEN(Semikron),  PTC, Semikron   },
    { -5,  100, 5,  TABLEN(mbb600),    PTC, mbb600     },
+   { -50, 150, 10, TABLEN(Kty81),     PTC, Kty81      },
+   { -50, 150, 10, TABLEN(Pt1000),    PTC, Pt1000     },
+   { -50, 150, 5,  TABLEN(NtcK45),    NTC, NtcK45     },
    { -50, 170, 10, TABLEN(Kty83),     PTC, Kty83      },
    { -40, 300, 10, TABLEN(Kty84),     PTC, Kty84      },
    { -20, 150, 10, TABLEN(leaf),      NTC, leaf       },
@@ -75,7 +88,7 @@ static const TEMP_SENSOR sensors[] =
 s32fp TempMeas::Lookup(int digit, Sensors sensorId)
 {
    if (sensorId >= TEMP_LAST) return 0;
-   int index = sensorId >= TEMP_KTY83 ? sensorId - TEMP_SEPARATOR : sensorId;
+   int index = sensorId >= TEMP_KTY83 ? sensorId - NUM_HS_SENSORS : sensorId;
 
    const TEMP_SENSOR * sensor = &sensors[index];
    uint16_t last = sensor->lookup[0] + (sensor->coeff == NTC?-1:+1);

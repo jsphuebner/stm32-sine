@@ -20,6 +20,7 @@
 #define TEMP_MEAS_H_INCLUDED
 
 #include "my_fp.h"
+#define NUM_HS_SENSORS 6
 
 class TempMeas
 {
@@ -29,7 +30,9 @@ public:
       TEMP_JCURVE = 0,
       TEMP_SEMIKRON = 1,
       TEMP_MBB600 = 2,
-      TEMP_SEPARATOR = 9,
+      TEMP_KTY81 = 3,
+      TEMP_PT1000 = 4,
+      TEMP_NTCK45 = 5, /*hier muss ein NTC K45 2k2 verwendet werden, der mit einem Parallelwiderstand mit 2k verschaltet wird. Achtung: Der Parallelwiderstand ist im Schaltplan und Layout nicht vorhanden! */
       TEMP_KTY83 = 12,
       TEMP_KTY84 = 13,
       TEMP_LEAF = 14,
@@ -261,6 +264,95 @@ public:
 395, \
 358
 
+
+#define KTY81 \
+1851, \
+1979, \
+2107, \
+2238, \
+2367, \
+2495, \
+2620, \
+2744, \
+2865, \
+2984, \
+3098, \
+3210, \
+3317, \
+3422, \
+3522, \
+3619, \
+3712, \
+3801, \
+3881, \
+3951, \
+4009
+
+#define PT1000 \
+2488, \
+2560, \
+2629, \
+2696, \
+2760, \
+2821, \
+2880, \
+2937, \
+2991, \
+3044, \
+3095, \
+3144, \
+3192, \
+3238, \
+3282, \
+3325, \
+3367, \
+3407, \
+3446, \
+3484, \
+3521
+
+#define NTCK45 \
+3855, \
+3846, \
+3833, \
+3817, \
+3796, \
+3769, \
+3735, \
+3692, \
+3639, \
+3575, \
+3498, \
+3406, \
+3300, \
+3179, \
+3043, \
+2893, \
+2731, \
+2560, \
+2382, \
+2201, \
+2021, \
+1843, \
+1672, \
+1509, \
+1356, \
+1214, \
+1084, \
+966, \
+859, \
+763, \
+677, \
+601, \
+534, \
+474, \
+422, \
+375, \
+336, \
+301, \
+270, \
+243, \
+219
 
 #endif
 
