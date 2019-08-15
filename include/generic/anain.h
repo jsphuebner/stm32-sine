@@ -36,9 +36,9 @@ private:
 };
 
 #define ANA_IN_ENTRY(name, port, pin) { port, pin },
-/** Usage: AnaIn::AnaInfo analogInputs[] = ANA_IN_ARRAY;
+/** Usage: AnaIn::AnaInfo analogInputs[] = ANA_IN_ARRAY(ANA_IN_LIST);
  * AnaIn::Init(analogInputs); */
-#define ANA_IN_ARRAY { ANA_IN_LIST }
+#define ANA_IN_ARRAY(l) { l }
 
 
 #endif // ANAIO_H_INCLUDED

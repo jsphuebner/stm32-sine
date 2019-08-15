@@ -149,7 +149,7 @@ static void Ms100Task(void)
    Param::SetInt(Param::turns, Encoder::GetFullTurns());
    Param::SetInt(Param::lasterr, ErrorMessage::GetLastError());
 
-   if (hwRev == HW_REV1)
+   if (hwRev == HW_REV1 || hwRev == HW_BLUEPILL)
    {
       //If break pin is high and both mprot and emcystop are high than it must be over current
       if (DigIo::Get(Pin::emcystop_in) && DigIo::Get(Pin::mprot_in) && DigIo::Get(Pin::bk_in))
@@ -200,7 +200,7 @@ static void GetDigInputs()
    Param::SetInt(Param::din_emcystop, DigIo::Get(Pin::emcystop_in));
    Param::SetInt(Param::din_bms, DigIo::Get(Pin::bms_in) | ((canio & CAN_IO_BMS) != 0));
 
-   if (hwRev != HW_REV1)
+   if (hwRev != HW_REV1 && hwRev != HW_BLUEPILL)
    {
       Param::SetInt(Param::din_ocur, DigIo::Get(Pin::ocur_in));
       Param::SetInt(Param::din_desat, DigIo::Get(Pin::desat_in));
@@ -835,7 +835,9 @@ static void InitPWMIO()
 
 static void ConfigureVariantIO()
 {
-   AnaIn::AnaInfo analogInputs[] = ANA_IN_ARRAY;
+   AnaIn::AnaInfo analogInputs[] = ANA_IN_ARRAY(ANA_IN_LIST);
+   AnaIn::AnaInfo analogInputsBluePill[] = ANA_IN_ARRAY(ANA_IN_LIST_BLUEPILL);
+   AnaIn::AnaInfo *selectedAnalogInputs = analogInputs;
 
    hwRev = detect_hw();
    Param::SetInt(Param::hwver, hwRev);
@@ -855,9 +857,25 @@ static void ConfigureVariantIO()
          //Essentially disable error output by mapping it to an unused pin
          DigIo::Configure(Pin::err_out, GPIOB, GPIO9, PinMode::INPUT_FLT);
          break;
+      case HW_BLUEPILL:
+         selectedAnalogInputs = analogInputsBluePill;
+         DigIo::Configure(Pin::brake_in, GPIOB, GPIO9, PinMode::INPUT_FLT);
+         DigIo::Configure(Pin::mprot_in, GPIOB, GPIO1, PinMode::INPUT_FLT);
+         DigIo::Configure(Pin::fwd_in, GPIOB, GPIO7, PinMode::INPUT_FLT);
+         DigIo::Configure(Pin::rev_in, GPIOB, GPIO8, PinMode::INPUT_FLT);
+         DigIo::Configure(Pin::emcystop_in, GPIOA, GPIO15, PinMode::INPUT_FLT);
+         DigIo::Configure(Pin::led_out, GPIOC, GPIO13, PinMode::OUTPUT);
+         DigIo::Configure(Pin::err_out, GPIOC, GPIO15, PinMode::OUTPUT);
+         //Map to unavailable pin bank that always reads 0
+         DigIo::Configure(Pin::bms_in, GPIOD, GPIO15, PinMode::INPUT_FLT);
+         DigIo::Configure(Pin::desat_in, GPIOD, GPIO15, PinMode::INPUT_FLT);
+         DigIo::Configure(Pin::vtg_out, GPIOD, GPIO14, PinMode::OUTPUT);
+         DigIo::Configure(Pin::speed_out, GPIOD, GPIO14, PinMode::OUTPUT);
+         DigIo::Configure(Pin::brk_out, GPIOD, GPIO14, PinMode::OUTPUT);
+         break;
    }
 
-   AnaIn::Init(analogInputs);
+   AnaIn::Init(selectedAnalogInputs);
 }
 
 extern "C" void tim2_isr(void)

@@ -13,7 +13,6 @@
     DIG_IO_ENTRY(emcystop_in, GPIOC, GPIO7,  PinMode::INPUT_FLT)   \
     DIG_IO_ENTRY(bk_in,       GPIOB, GPIO12, PinMode::INPUT_FLT)   \
     DIG_IO_ENTRY(bms_in,      GPIOC, GPIO8,  PinMode::INPUT_FLT)   \
-    DIG_IO_ENTRY(north_in,    GPIOD, GPIO2,  PinMode::INPUT_FLT)   \
     DIG_IO_ENTRY(uvlo_in,     GPIOA, GPIO0,  PinMode::INPUT_PU)    \
     DIG_IO_ENTRY(ocur_in,     GPIOA, GPIO1,  PinMode::INPUT_FLT)   \
     DIG_IO_ENTRY(desat_in,    GPIOC, GPIO9,  PinMode::INPUT_FLT)   \

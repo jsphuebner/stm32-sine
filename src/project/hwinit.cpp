@@ -82,6 +82,8 @@ HWREV detect_hw()
       return HW_REV3;
    else if (is_floating(GPIOC, GPIO8)) //bms input is output for mux and floating
       return HW_TESLA;
+   else if (is_floating(GPIOC, GPIO12)) //The LED pin is floating because it is non-existent
+      return HW_BLUEPILL;
    else
       return HW_REV2;
 }

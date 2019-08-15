@@ -356,7 +356,7 @@ void Encoder::InitTimerSingleChannelMode()
 
    timer_generate_event(REV_CNT_TIMER, TIM_EGR_UG);
    timer_enable_counter(REV_CNT_TIMER);
-   gpio_set_mode(GPIOD, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO2);
+   gpio_set_mode(NORTH_EXC_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, NORTH_EXC_PIN);
    gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO6 | GPIO7);
    DMASetup();
    exti_disable_request(EXTI2);
@@ -365,8 +365,8 @@ void Encoder::InitTimerSingleChannelMode()
 void Encoder::InitSPIMode()
 {
    rcc_periph_reset_pulse(REV_CNT_TIMRST);
-   exti_disable_request(EXTI2);
-   gpio_set_mode(GPIOD, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO2);
+   exti_disable_request(NORTH_EXC_EXTI);
+   gpio_set_mode(NORTH_EXC_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, NORTH_EXC_PIN);
    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO7);
    gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO6);
    seenNorthSignal = true;
@@ -381,13 +381,13 @@ void Encoder::InitTimerABZMode()
    //mode once the north marker has been detected
    if (encMode == Encoder::ABZ)
    {
-      exti_select_source(EXTI2, GPIOD);
-      exti_set_trigger(EXTI2, EXTI_TRIGGER_RISING);
-      exti_enable_request(EXTI2);
+      exti_select_source(NORTH_EXC_EXTI, NORTH_EXC_PORT);
+      exti_set_trigger(NORTH_EXC_EXTI, EXTI_TRIGGER_RISING);
+      exti_enable_request(NORTH_EXC_EXTI);
    }
    else
    {
-      exti_disable_request(EXTI2);
+      exti_disable_request(NORTH_EXC_EXTI);
    }
 
    timer_slave_set_mode(REV_CNT_TIMER, TIM_SMCR_SMS_EM3); // encoder mode
@@ -398,7 +398,7 @@ void Encoder::InitTimerABZMode()
    timer_ic_enable(REV_CNT_TIMER, TIM_IC1);
    timer_ic_enable(REV_CNT_TIMER, TIM_IC2);
    timer_enable_counter(REV_CNT_TIMER);
-   gpio_set_mode(GPIOD, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO2);
+   gpio_set_mode(NORTH_EXC_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, NORTH_EXC_PIN);
    gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO6 | GPIO7);
    seenNorthSignal = false;
 }
@@ -413,7 +413,7 @@ void Encoder::InitResolverMode()
    adc_set_sample_time(ADC1, 7, ADC_SMPR_SMP_1DOT5CYC);
 
    gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_ANALOG, GPIO6 | GPIO7);
-   exti_disable_request(EXTI2);
+   exti_disable_request(NORTH_EXC_EXTI);
 
    if (encMode == Encoder::RESOLVER)
    {
@@ -426,7 +426,7 @@ void Encoder::InitResolverMode()
       timer_enable_preload(REV_CNT_TIMER);
       timer_direction_up(REV_CNT_TIMER);
       timer_generate_event(REV_CNT_TIMER, TIM_EGR_UG);
-      gpio_set_mode(GPIOD, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO2);
+      gpio_set_mode(NORTH_EXC_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, NORTH_EXC_PIN);
 
       adc_start_conversion_injected(ADC1); //Determine offset
 
@@ -459,7 +459,7 @@ uint16_t Encoder::GetAngleSPI()
    uint32_t d = 0;
    //Skip the abstraction, we need speed here
    GPIO_BSRR(GPIOA) = GPIO7; //Clock high
-   GPIO_BRR(GPIOD) = GPIO2;
+   GPIO_BRR(NORTH_EXC_PORT) = NORTH_EXC_PIN;
 
    for (int i = 15; i >= 0; i--)
    {
@@ -469,7 +469,7 @@ uint16_t Encoder::GetAngleSPI()
       GPIO_BSRR(GPIOA) = GPIO7;
       d |= bit << i;
    }
-   GPIO_BSRR(GPIOD) = GPIO2; //Read high
+   GPIO_BSRR(NORTH_EXC_PORT) = NORTH_EXC_PIN; //Read high
    d >>= 10; //6 because of GPIO6, 4 because of encoder format
    //Encoder format is ANGLE[11:0], RDVEL, Parity, DOS, LOT
    return d << 4; //we want 16-bit representation
@@ -486,9 +486,9 @@ uint16_t Encoder::GetAngleSPI()
  */
 uint16_t Encoder::GetAngleResolver()
 {
-   if (gpio_get(GPIOD, GPIO2))
+   if (gpio_get(NORTH_EXC_PORT, NORTH_EXC_PIN))
    {
-      gpio_clear(GPIOD, GPIO2);
+      gpio_clear(NORTH_EXC_PORT, NORTH_EXC_PIN);
       /* The phase delay of the 3-pole filter, amplifier and resolver is 305°
          That is 125° after the falling edge of the exciting square wave */
       timer_set_oc_value(REV_CNT_TIMER, TIM_OC4, resolverSampleDelay);
@@ -497,7 +497,7 @@ uint16_t Encoder::GetAngleResolver()
    }
    else
    {
-      gpio_set(GPIOD, GPIO2);
+      gpio_set(NORTH_EXC_PORT, NORTH_EXC_PIN);
       angle = DecodeAngle();
    }
 
@@ -601,6 +601,13 @@ void Encoder::GetMinMaxTime(uint32_t& min, uint32_t& max)
 extern "C" void exti2_isr(void)
 {
    exti_reset_request(EXTI2);
+   timer_set_counter(REV_CNT_TIMER, 0);
+   seenNorthSignal = true;
+}
+
+extern "C" void exti15_10_isr(void)
+{
+   exti_reset_request(EXTI14);
    timer_set_counter(REV_CNT_TIMER, 0);
    seenNorthSignal = true;
 }

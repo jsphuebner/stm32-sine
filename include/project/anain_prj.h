@@ -16,4 +16,14 @@
    ANA_IN_ENTRY(il1,       GPIOA, 5) \
    ANA_IN_ENTRY(il2,       GPIOB, 0)
 
+#define ANA_IN_LIST_BLUEPILL \
+   ANA_IN_ENTRY(throttle1, GPIOA, 0) \
+   ANA_IN_ENTRY(throttle2, GPIOA, 1) \
+   ANA_IN_ENTRY(udc,       GPIOA, 2) \
+   ANA_IN_ENTRY(tmpm,      GPIOA, 3) \
+   ANA_IN_ENTRY(tmphs,     GPIOA, 4) \
+   ANA_IN_ENTRY(uaux,      GPIOB, 1) \
+   ANA_IN_ENTRY(il1,       GPIOA, 5) \
+   ANA_IN_ENTRY(il2,       GPIOB, 0)
+
 #endif // ANAIN_PRJ_H_INCLUDED
