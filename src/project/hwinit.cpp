@@ -50,9 +50,9 @@ void clock_setup(void)
    rcc_periph_clock_enable(RCC_GPIOD);
    rcc_periph_clock_enable(RCC_USART3);
    rcc_periph_clock_enable(RCC_TIM1); //Main PWM
-   rcc_periph_clock_enable(RCC_TIM2); //Scheduler
+   rcc_periph_clock_enable(RCC_TIM2); //Scheduler, over current on blue pill
    rcc_periph_clock_enable(RCC_TIM3); //Rotor Encoder
-   rcc_periph_clock_enable(RCC_TIM4); //Overcurrent / AUX PWM
+   rcc_periph_clock_enable(RCC_TIM4); //Overcurrent / AUX PWM, scheduler on blue pill
    rcc_periph_clock_enable(RCC_DMA1);  //ADC, Encoder and UART receive
    rcc_periph_clock_enable(RCC_ADC1);
    rcc_periph_clock_enable(RCC_CRC);
@@ -74,16 +74,28 @@ static bool is_floating(uint32_t port, uint16_t pin)
    return isFloating;
 }
 
+//Careful when using this function, it configures the given pin as output!
+static bool is_existent(uint32_t port, uint16_t pin)
+{
+   gpio_set_mode(port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, pin);
+   gpio_set(port, pin);
+   for (volatile int i = 0; i < 80000; i++);
+   bool isExistent = gpio_get(port, pin);
+   gpio_set_mode(port, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, pin);
+
+   return isExistent;
+}
+
 HWREV detect_hw()
 {
-   if (is_floating(GPIOC, GPIO9)) //Desat pin is floating
+   if (!is_existent(GPIOC, GPIO12)) //Olimex LED pin does not exist
+      return HW_BLUEPILL;
+   else if (is_floating(GPIOC, GPIO9)) //Desat pin is floating
       return HW_REV1;
    else if (is_floating(GPIOA, GPIO0)) //uvlo/button pin is floating
       return HW_REV3;
    else if (is_floating(GPIOC, GPIO8)) //bms input is output for mux and floating
       return HW_TESLA;
-   else if (is_floating(GPIOC, GPIO12)) //The LED pin is floating because it is non-existent
-      return HW_BLUEPILL;
    else
       return HW_REV2;
 }
@@ -139,14 +151,22 @@ void nvic_setup(void)
    nvic_enable_irq(NVIC_EXTI2_IRQ); //Encoder Index pulse
    nvic_set_priority(NVIC_EXTI2_IRQ, 0); //Set highest priority
 
-   nvic_enable_irq(NVIC_TIM2_IRQ); //Scheduler
-   nvic_set_priority(NVIC_TIM2_IRQ, 0xe << 4); //second lowest priority
+   if (hwRev == HW_BLUEPILL)
+   {
+      nvic_enable_irq(NVIC_TIM4_IRQ); //Scheduler
+      nvic_set_priority(NVIC_TIM4_IRQ, 0xe << 4); //second lowest priority
+   }
+   else
+   {
+      nvic_enable_irq(NVIC_TIM2_IRQ); //Scheduler
+      nvic_set_priority(NVIC_TIM2_IRQ, 0xe << 4); //second lowest priority
+   }
 
-	nvic_enable_irq(NVIC_USB_LP_CAN_RX0_IRQ); //CAN RX
-	nvic_set_priority(NVIC_USB_LP_CAN_RX0_IRQ, 0xf << 4); //lowest priority
+   nvic_enable_irq(NVIC_USB_LP_CAN_RX0_IRQ); //CAN RX
+   nvic_set_priority(NVIC_USB_LP_CAN_RX0_IRQ, 0xf << 4); //lowest priority
 
-	nvic_enable_irq(NVIC_USB_HP_CAN_TX_IRQ); //CAN TX
-	nvic_set_priority(NVIC_USB_HP_CAN_TX_IRQ, 0xf << 4); //lowest priority
+   nvic_enable_irq(NVIC_USB_HP_CAN_TX_IRQ); //CAN TX
+   nvic_set_priority(NVIC_USB_HP_CAN_TX_IRQ, 0xf << 4); //lowest priority
 }
 
 void rtc_setup()
@@ -169,16 +189,20 @@ void tim_setup()
    timer_set_alignment(OVER_CUR_TIMER, TIM_CR1_CMS_EDGE);
    timer_enable_preload(OVER_CUR_TIMER);
    /* PWM mode 1 and preload enable */
+   timer_set_oc_mode(OVER_CUR_TIMER, TIM_OC1, TIM_OCM_PWM1);
    timer_set_oc_mode(OVER_CUR_TIMER, TIM_OC2, TIM_OCM_PWM1);
    timer_set_oc_mode(OVER_CUR_TIMER, TIM_OC3, TIM_OCM_PWM1);
    timer_set_oc_mode(OVER_CUR_TIMER, TIM_OC4, TIM_OCM_PWM1);
+   timer_enable_oc_preload(OVER_CUR_TIMER, TIM_OC1);
    timer_enable_oc_preload(OVER_CUR_TIMER, TIM_OC2);
    timer_enable_oc_preload(OVER_CUR_TIMER, TIM_OC3);
    timer_enable_oc_preload(OVER_CUR_TIMER, TIM_OC4);
 
+   timer_set_oc_polarity_high(OVER_CUR_TIMER, TIM_OC1);
    timer_set_oc_polarity_high(OVER_CUR_TIMER, TIM_OC2);
    timer_set_oc_polarity_high(OVER_CUR_TIMER, TIM_OC3);
    timer_set_oc_polarity_high(OVER_CUR_TIMER, TIM_OC4);
+   timer_enable_oc_output(OVER_CUR_TIMER, TIM_OC1);
    timer_enable_oc_output(OVER_CUR_TIMER, TIM_OC2);
    timer_enable_oc_output(OVER_CUR_TIMER, TIM_OC3);
    timer_enable_oc_output(OVER_CUR_TIMER, TIM_OC4);
@@ -189,6 +213,15 @@ void tim_setup()
    timer_enable_counter(OVER_CUR_TIMER);
 
    /** setup gpio */
-   gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO7 | GPIO8 | GPIO9);
+   if (hwRev == HW_BLUEPILL)
+   {
+      gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO15);
+      gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO3);
+      gpio_primary_remap(AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_ON, AFIO_MAPR_TIM2_REMAP_PARTIAL_REMAP1);
+   }
+   else
+   {
+      gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO7 | GPIO8 | GPIO9);
+   }
 }
 

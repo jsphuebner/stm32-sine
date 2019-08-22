@@ -259,8 +259,8 @@ void PwmGeneration::SetCurrentLimitThreshold(s32fp ocurlim)
    limNeg = MAX(0, limNeg);
    limPos = MIN(OCURMAX, limPos);
 
-   timer_set_oc_value(OVER_CUR_TIMER, TIM_OC2, limNeg);
-   timer_set_oc_value(OVER_CUR_TIMER, TIM_OC3, limPos);
+   timer_set_oc_value(OVER_CUR_TIMER, OVER_CUR_NEG, limNeg);
+   timer_set_oc_value(OVER_CUR_TIMER, OVER_CUR_POS, limPos);
 }
 
 

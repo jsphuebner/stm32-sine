@@ -861,17 +861,19 @@ static void ConfigureVariantIO()
          selectedAnalogInputs = analogInputsBluePill;
          DigIo::Configure(Pin::brake_in, GPIOB, GPIO9, PinMode::INPUT_FLT);
          DigIo::Configure(Pin::mprot_in, GPIOB, GPIO1, PinMode::INPUT_FLT);
+         DigIo::Configure(Pin::emcystop_in, GPIOB, GPIO1, PinMode::INPUT_FLT);
          DigIo::Configure(Pin::fwd_in, GPIOB, GPIO7, PinMode::INPUT_FLT);
          DigIo::Configure(Pin::rev_in, GPIOB, GPIO8, PinMode::INPUT_FLT);
-         DigIo::Configure(Pin::emcystop_in, GPIOA, GPIO15, PinMode::INPUT_FLT);
          DigIo::Configure(Pin::led_out, GPIOC, GPIO13, PinMode::OUTPUT);
-         DigIo::Configure(Pin::err_out, GPIOC, GPIO15, PinMode::OUTPUT);
+         DigIo::Configure(Pin::dcsw_out, GPIOC, GPIO15, PinMode::OUTPUT);
+         DigIo::Configure(Pin::prec_out, GPIOB, GPIO4, PinMode::OUTPUT);
          //Map to unavailable pin bank that always reads 0
          DigIo::Configure(Pin::bms_in, GPIOD, GPIO15, PinMode::INPUT_FLT);
          DigIo::Configure(Pin::desat_in, GPIOD, GPIO15, PinMode::INPUT_FLT);
          DigIo::Configure(Pin::vtg_out, GPIOD, GPIO14, PinMode::OUTPUT);
          DigIo::Configure(Pin::speed_out, GPIOD, GPIO14, PinMode::OUTPUT);
          DigIo::Configure(Pin::brk_out, GPIOD, GPIO14, PinMode::OUTPUT);
+         DigIo::Configure(Pin::err_out, GPIOD, GPIO14, PinMode::OUTPUT);
          break;
    }
 
@@ -879,6 +881,11 @@ static void ConfigureVariantIO()
 }
 
 extern "C" void tim2_isr(void)
+{
+   scheduler->Run();
+}
+
+extern "C" void tim4_isr(void)
 {
    scheduler->Run();
 }
@@ -905,7 +912,7 @@ extern "C" int main(void)
 
    MotorVoltage::SetMaxAmp(SineCore::MAXAMP);
 
-   Stm32Scheduler s(TIM2); //We never exit main so it's ok to put it on stack
+   Stm32Scheduler s(hwRev == HW_BLUEPILL ? TIM4 : TIM2); //We never exit main so it's ok to put it on stack
    scheduler = &s;
 
    s.AddTask(Ms1Task, 100);

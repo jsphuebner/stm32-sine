@@ -22,7 +22,9 @@
 #define rev_timer_isr      tim3_isr
 #define REV_CNT_TIMER      TIM3
 #define REV_CNT_TIMRST     RST_TIM3
-#define OVER_CUR_TIMER TIM4
+#define OVER_CUR_TIMER     hwRev == HW_BLUEPILL ? TIM2 : TIM4
+#define OVER_CUR_NEG       hwRev == HW_BLUEPILL ? TIM_OC1 : TIM_OC2
+#define OVER_CUR_POS       hwRev == HW_BLUEPILL ? TIM_OC2 : TIM_OC3
 
 #define TERM_USART         USART3
 #define TERM_USART_TXPIN   GPIO_USART3_TX
