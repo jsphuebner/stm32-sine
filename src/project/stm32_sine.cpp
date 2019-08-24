@@ -558,9 +558,6 @@ static void ProcessThrottle()
    throtSpnt = GetUserThrottleCommand();
    GetCruiseCreepCommand(finalSpnt, throtSpnt);
 
-   Throttle::iacmax = (Param::Get(Param::iacmax) * finalSpnt) / 100;
-   Throttle::IacLimitCommand(finalSpnt, Param::Get(Param::ilmax));
-
    if (hwRev != HW_TESLA)
       Throttle::BmsLimitCommand(finalSpnt, Param::GetBool(Param::din_bms));
 
