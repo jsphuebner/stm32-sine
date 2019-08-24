@@ -8,7 +8,6 @@ uint32_t MotorVoltage::maxAmp;
 u32fp MotorVoltage::endFrq = 1; //avoid division by 0 when not set
 u32fp MotorVoltage::minFrq;
 u32fp MotorVoltage::maxFrq;
-enum MotorVoltage::minFrqMode MotorVoltage::minFrqMode = SETZERO;
 
 /** Set 0 Hz boost to overcome winding resistance */
 void MotorVoltage::SetBoost(uint32_t boost /**< amplitude in digit */)
@@ -24,11 +23,6 @@ void MotorVoltage::SetWeakeningFrq(u32fp frq)
    CalcFac();
 }
 
-void MotorVoltage::SetMinFrqMode(enum minFrqMode val)
-{
-   minFrqMode = val;
-}
-
 /** Get amplitude for a given frequency */
 uint32_t MotorVoltage::GetAmp(u32fp frq)
 {
@@ -41,17 +35,7 @@ uint32_t MotorVoltage::GetAmpPerc(u32fp frq, u32fp perc)
    uint32_t amp = FP_MUL(perc, (FP_TOINT(FP_MUL(fac, frq)) + boost)) / 100;
    if (frq < minFrq)
    {
-      switch (minFrqMode)
-      {
-      case SETZERO:
-         amp = 0;
-         break;
-      case RAMPDOWN:
-         amp = FP_MUL(perc, FP_TOINT(FP_MUL(fac, frq))) / 100;
-         break;
-      case IGNORE:
-         break;
-      }
+      amp = 0;
    }
    if (amp > maxAmp)
    {

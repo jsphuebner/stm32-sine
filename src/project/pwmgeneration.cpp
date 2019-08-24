@@ -449,17 +449,12 @@ static s32fp ProcessCurrents()
    {
       Param::SetFlt(Param::il1rms, rms);
 
-      if (((angle + 40000) & 0xFFFF) > SHIFT_180DEG)
-         sign = edge == PosEdge ? -1 : 1;
-      else
-         sign = edge == NegEdge ? -1 : 1;
-
       if (opmode != MOD_BOOST || opmode != MOD_BUCK)
       {
          //rough approximation as we do not take power factor into account
          s32fp idc = (SineCore::GetAmp() * rms) / SineCore::MAXAMP;
          idc = FP_DIV(idc, FP_FROMFLT(1.2247)); //divide by sqrt(3)/sqrt(2)
-         idc *= sign; //fslip < 0 ? -1 : 1;
+         idc *= fslip < 0 ? -1 : 1;
          Param::SetFlt(Param::idc, idc);
       }
    }

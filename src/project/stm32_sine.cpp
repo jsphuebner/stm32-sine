@@ -221,12 +221,10 @@ static void CalcAmpAndSlip()
       /* In sync mode throttle only commands amplitude. Above back-EMF is acceleration, below is regen */
       if (Encoder::IsSyncMode())
       {
-         MotorVoltage::SetMinFrqMode(MotorVoltage::IGNORE);
          ampnom = ampmin + FP_DIV(FP_MUL((FP_FROMINT(100) - ampmin), potnom), FP_FROMINT(100));
       }
       else
       {/* In async mode first X% throttle commands amplitude, X-100% raises slip */
-         MotorVoltage::SetMinFrqMode(MotorVoltage::SETZERO);
          ampnom = ampmin + (100 - FP_TOINT(ampmin)) * FP_DIV(potnom, slipstart);
 
          if (potnom >= slipstart)
@@ -264,7 +262,6 @@ static void CalcAmpAndSlip()
       {
          ampnom = ampmin + FP_MUL(ampmin, potnom) / 100;
          //ampnom = ampmin + FP_DIV(FP_MUL((FP_FROMINT(100) - ampmin), -potnom), FP_FROMINT(100));
-         MotorVoltage::SetMinFrqMode(MotorVoltage::RAMPDOWN);
       }
       else
       {
