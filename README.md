@@ -10,7 +10,8 @@ The same principle is applied to the hardware design, keeping component count lo
 To fine tune the driving experience and adapt to different flavours of power stages, over 60 parameters can be customized.
 
 # Motor Control Concept
-The idea is that the dynamics of any 3-phase asynchronous motor are controlled by the amplitude of the sythesized sine wave and its frequency offset to the rotor speed (slip). For 3-phase synchronous motors the only relevant quantities are assumed to be the sine wave amplitude (again) and the phase shift between rotor and stator magnetic field.
+The idea is that the dynamics of any 3-phase asynchronous motor are controlled by the amplitude of the sythesized sine wave and its frequency offset to the rotor speed (slip). 
+For 3-phase synchronous motors a similar control method did not prove practical. Therefor a FOC version of the software has been created. It shares 95% of the code.
 
 # Inverter charging
 A unique feature of this software is to re-purpose the drivetrain hardware as a programmable battery charger. One of the motor phase windings is being used as a high current capable inductor and one of the phase switches as a buck or boost converter. This has practically proven to replace a separate charging unit and further reduce complexity of electric vehicles.
@@ -27,5 +28,11 @@ The only external depedency is libopencm3 which I forked. You can download and b
 Now you can compile stm32-sine by typing
 
 `make`
+
+or
+
+`CONTROL=FOC make`
+
+to build the FOC version for synchronous motors.
 
 And upload it to your board using a JTAG/SWD adapter, the updater.py script or the esp8266 web interface
