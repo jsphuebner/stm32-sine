@@ -168,7 +168,7 @@ extern "C" void pwm_timer_isr(void)
       uint16_t dc[3];
 
       Encoder::UpdateRotorAngle(dir);
-      s32fp ampNomLimited = ampnom; //LimitCurrent();
+      s32fp ampNomLimited = LimitCurrent();
 
       if (opmode == MOD_SINE)
          CalcNextAngleConstant(dir);
@@ -270,18 +270,8 @@ static void CalcNextAngleSync(int dir)
    if (Encoder::SeenNorthSignal())
    {
       uint32_t polePairs = Param::GetInt(Param::polepairs) / Param::GetInt(Param::respolepairs);
-      //int32_t potnom = Param::GetInt(Param::potnom);
       uint16_t syncOfs = /*potnom < 0 ? Param::GetInt(Param::syncofsregen) :*/ Param::GetInt(Param::syncofs);
       uint16_t rotorAngle = Encoder::GetRotorAngle();
-      s32fp fweak = Param::Get(Param::fweak);
-      int16_t syncAdv = frq > fweak ? FP_TOINT(FP_MUL(Param::Get(Param::syncadvweak), frq)) : FP_TOINT(FP_MUL(Param::Get(Param::syncadv), frq));
-
-      syncOfs += syncAdv;
-
-      /*if (dir < 0)
-      {
-         syncOfs += SHIFT_180DEG;
-      }*/
 
       angle = polePairs * rotorAngle + syncOfs;
       frq = polePairs * Encoder::GetRotorFrequency();
@@ -360,7 +350,7 @@ void PwmGeneration::PwmInit()
       AcHeatTimerSetup();
 }
 
-/*static s32fp LimitCurrent()
+static s32fp LimitCurrent()
 {
    static s32fp curLimSpntFiltered = 0, slipFiltered = 0;
    s32fp slipmin = Param::Get(Param::fslipmin);
@@ -385,7 +375,7 @@ void PwmGeneration::PwmInit()
       ErrorMessage::Post(ERR_CURRENTLIMIT);
 
    return ampNomLimited;
-}*/
+}
 
 static s32fp GetIlMax(s32fp il1, s32fp il2)
 {

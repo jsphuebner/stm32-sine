@@ -66,7 +66,7 @@
 #define POTMODE_DUALCHANNEL 1
 #define POTMODE_CAN         2
 
-#define VER 4.50.R
+#define VER 4.51.R
 #define VERSTR STRINGIFY(4=VER)
 
 enum _modes
@@ -132,8 +132,6 @@ extern const char* errorListString;
     PARAM_ENTRY(CAT_MOTOR,   dirchrpm,    "rpm",     0,      2000,   100,    87  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirmode,     DIRMODES,  0,      3,      1,      95  ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
-    PARAM_ENTRY(CAT_MOTOR,   syncadv,     "dig/Hz",  -100,   100,    0,      101 ) \
-    PARAM_ENTRY(CAT_MOTOR,   syncadvweak, "dig/Hz",  -100,   100,    0,      102 ) \
     PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     14,     12,     46  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmfrq,      PWMFRQS,   0,      4,      1,      13  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmpol,      PWMPOLS,   0,      1,      0,      52  ) \
@@ -230,8 +228,6 @@ extern const char* errorListString;
     VALUE_ENTRY(din_ocur,    OKERR,   2030 ) \
     VALUE_ENTRY(din_desat,   OKERR,   2031 ) \
     VALUE_ENTRY(din_bms,     ONOFF,   2032 ) \
-    VALUE_ENTRY(dout_prec,   "",      2033 ) \
-    VALUE_ENTRY(dout_dcsw,   "",      2034 ) \
     VALUE_ENTRY(cpuload,     "%",     2035 ) \
 
 /*    VALUE_ENTRY(sin,     "", 2100    ) \
