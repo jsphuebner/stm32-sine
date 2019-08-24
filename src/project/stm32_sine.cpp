@@ -370,12 +370,12 @@ static s32fp ProcessUdc()
          //decrease boost on voltage below nominal
          boost = FP_DIV(boost, factor);
       }
-   }
 
-   Param::SetFlt(Param::fweakcalc, fweak);
-   Param::SetFlt(Param::boostcalc, boost);
-   MotorVoltage::SetWeakeningFrq(fweak);
-   MotorVoltage::SetBoost(FP_TOINT(boost));
+      Param::SetFlt(Param::fweakcalc, fweak);
+      Param::SetFlt(Param::boostcalc, boost);
+      MotorVoltage::SetWeakeningFrq(fweak);
+      MotorVoltage::SetBoost(FP_TOINT(boost));
+   }
    #endif // CONTROL
 
    Param::SetFlt(Param::udc, udcfp);
