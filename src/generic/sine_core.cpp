@@ -88,7 +88,7 @@ s32fp SineCore::Sine(uint16_t angle)
 
 s32fp SineCore::Cosine(uint16_t angle)
 {
-   return SineLookup((PHASE_SHIFT90 - angle) & 0xFFFF);
+   return SineLookup((PHASE_SHIFT90 + angle) & 0xFFFF);
 }
 
 //Found here: http://www.coranac.com/documents/arctangent/

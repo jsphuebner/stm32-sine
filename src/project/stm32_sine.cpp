@@ -348,7 +348,7 @@ static s32fp ProcessUdc()
       ErrorMessage::Post(ERR_OVERVOLTAGE);
    }
 
-   if (udcfp < (udcsw / 2) && rtc_get_counter_val() > PRECHARGE_TIMEOUT)
+   if (udcfp < (udcsw / 2) && rtc_get_counter_val() > PRECHARGE_TIMEOUT && DigIo::Get(Pin::prec_out))
    {
       DigIo::Set(Pin::err_out);
       DigIo::Clear(Pin::prec_out);
@@ -469,7 +469,7 @@ static s32fp ProcessThrottle()
    s32fp throtSpnt, finalSpnt;
 
    if ((int)Encoder::GetSpeed() < Param::GetInt(Param::throtramprpm))
-      Throttle::throttleRamp = Param::GetInt(Param::throtramp);
+      Throttle::throttleRamp = Param::Get(Param::throtramp);
    else
       Throttle::throttleRamp = Param::GetAttrib(Param::throtramp)->max;
 
@@ -489,7 +489,7 @@ static s32fp ProcessThrottle()
       ErrorMessage::Post(ERR_TMPHSMAX);
    }
 
-   Param::SetInt(Param::potnom, finalSpnt);
+   Param::SetFlt(Param::potnom, finalSpnt);
 
    if (finalSpnt < Param::Get(Param::brkout))
       DigIo::Set(Pin::brk_out);
@@ -563,7 +563,10 @@ static void Ms10Task(void)
           * - Charge mode is enabled
           * - Fwd AND Rev are high
           */
-         if (DigIo::Get(Pin::fwd_in) && DigIo::Get(Pin::rev_in) && !DigIo::Get(Pin::bms_in) && chargemode >= MOD_BOOST)
+         if (Param::GetBool(Param::din_forward) &&
+             Param::GetBool(Param::din_reverse) &&
+            !Param::GetBool(Param::din_bms) &&
+             chargemode >= MOD_BOOST)
          {
             //In buck mode we precharge to a different voltage
             if ((chargemode == MOD_BUCK && udc >= Param::Get(Param::udcswbuck)) || chargemode == MOD_BOOST)
@@ -585,7 +588,7 @@ static void Ms10Task(void)
       ErrorMessage::UnpostAll();
    }
 
-   if (hwRev != HW_TESLA && opmode >= MOD_BOOST && DigIo::Get(Pin::bms_in))
+   if (hwRev != HW_TESLA && opmode >= MOD_BOOST && Param::GetBool(Param::din_bms))
    {
       opmode = MOD_OFF;
       Param::SetInt(Param::opmode, opmode);
@@ -649,14 +652,6 @@ static void Ms1Task(void)
 {
    static s32fp ilFlt = 0;
    static s32fp iSpntFlt = 0;
-   s32fp il1 = Param::Get(Param::il1);
-   s32fp il2 = Param::Get(Param::il2);
-   s32fp ilMax;
-   int opmode = Param::GetInt(Param::opmode);
-
-   il1 = ABS(il1);
-   il2 = ABS(il2);
-   ilMax = MAX(il1, il2);
 
    ErrorMessage::SetTime(rtc_get_counter_val());
 
@@ -664,8 +659,16 @@ static void Ms1Task(void)
 
    if (runChargeControl)
    {
+      s32fp il1 = Param::Get(Param::il1);
+      s32fp il2 = Param::Get(Param::il2);
       s32fp chargeCurSpnt = Param::Get(Param::chargecur) << 8;
       s32fp dummy = 50;
+      s32fp ilMax;
+      int opmode = Param::GetInt(Param::opmode);
+
+      il1 = ABS(il1);
+      il2 = ABS(il2);
+      ilMax = MAX(il1, il2);
 
       if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), dummy))
          chargeCurSpnt = 0;
@@ -722,11 +725,11 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
       Throttle::potmax[0] = Param::GetInt(Param::potmax);
       Throttle::potmin[1] = Param::GetInt(Param::pot2min);
       Throttle::potmax[1] = Param::GetInt(Param::pot2max);
-      Throttle::brknom = Param::GetInt(Param::brknom);
-      Throttle::brknompedal = Param::GetInt(Param::brknompedal);
-      Throttle::brkPedalRamp = Param::GetInt(Param::brkpedalramp);
-      Throttle::brkmax = Param::GetInt(Param::brkmax);
-      Throttle::throtmax = Param::GetInt(Param::throtmax);
+      Throttle::brknom = Param::Get(Param::brknom);
+      Throttle::brknompedal = Param::Get(Param::brknompedal);
+      Throttle::brkPedalRamp = Param::Get(Param::brkpedalramp);
+      Throttle::brkmax = Param::Get(Param::brkmax);
+      Throttle::throtmax = Param::Get(Param::throtmax);
       Throttle::idleSpeed = Param::GetInt(Param::idlespeed);
       Throttle::speedkp = Param::Get(Param::speedkp);
       Throttle::speedflt = Param::GetInt(Param::speedflt);
