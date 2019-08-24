@@ -72,6 +72,7 @@ static enum Encoder::mode encMode = Encoder::INVALID;
 static bool seenNorthSignal = false;
 static uint32_t turnsSinceLastSample = 0;
 static int32_t minSin = 0, maxSin = 0, startupDelay;
+static int sinChan = 3, cosChan = 2;
 
 void Encoder::Reset()
 {
@@ -80,7 +81,7 @@ void Encoder::Reset()
    minSin = 0;
    maxSin = 0;
    lastFrequency = 0;
-   startupDelay = 2000;
+   startupDelay = 4000;
    for (uint32_t i = 0; i < MAX_REVCNT_VALUES; i++)
       timdata[i] = MAX_CNT;
 }
@@ -140,6 +141,20 @@ void Encoder::SetImpulsesPerTurn(uint16_t imp)
 
    if (encMode == AB || encMode == ABZ)
       InitTimerABZMode();
+}
+
+void Encoder::SwapSinCos(bool swap)
+{
+   if (swap)
+   {
+      sinChan = 2;
+      cosChan = 3;
+   }
+   else
+   {
+      sinChan = 3;
+      cosChan = 2;
+   }
 }
 
 void Encoder::UpdateRotorAngle(int dir)
@@ -405,7 +420,7 @@ void Encoder::InitTimerABZMode()
 
 void Encoder::InitResolverMode()
 {
-   uint8_t channels[] = { 0, 6, 7 };
+   uint8_t channels[3] = { 0, 6, 7 };
 
    adc_set_injected_sequence(ADC1, sizeof(channels), channels);
    adc_enable_external_trigger_injected(ADC1, ADC_CR2_JEXTSEL_JSWSTART);
@@ -415,7 +430,7 @@ void Encoder::InitResolverMode()
    gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_ANALOG, GPIO6 | GPIO7);
    exti_disable_request(NORTH_EXC_EXTI);
 
-   if (encMode == Encoder::RESOLVER)
+   if (encMode == RESOLVER)
    {
       rcc_periph_reset_pulse(REV_CNT_TIMRST);
       timer_set_prescaler(REV_CNT_TIMER, 71); //run at 1MHz
@@ -427,18 +442,20 @@ void Encoder::InitResolverMode()
       timer_direction_up(REV_CNT_TIMER);
       timer_generate_event(REV_CNT_TIMER, TIM_EGR_UG);
       gpio_set_mode(NORTH_EXC_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, NORTH_EXC_PIN);
+      adc_set_injected_offset(ADC1, 2, 0);
+      adc_set_injected_offset(ADC1, 3, 0);
 
       adc_start_conversion_injected(ADC1); //Determine offset
 
       while (!adc_eoc_injected(ADC1));
 
-      int sin = adc_read_injected(ADC1, 2);
-      int cos = adc_read_injected(ADC1, 3);
-      adc_set_injected_offset(ADC1, 2, sin);
-      adc_set_injected_offset(ADC1, 3, cos);
+      int ch1 = adc_read_injected(ADC1, 2);
+      int ch2 = adc_read_injected(ADC1, 3);
+      adc_set_injected_offset(ADC1, 2, ch1);
+      adc_set_injected_offset(ADC1, 3, ch2);
       adc_enable_external_trigger_injected(ADC1, ADC_CR2_JEXTSEL_TIM3_CC4);
 
-      if (CHK_BIPOLAR_OFS(sin) || CHK_BIPOLAR_OFS(cos))
+      if (CHK_BIPOLAR_OFS(ch1) || CHK_BIPOLAR_OFS(ch2))
       {
          ErrorMessage::Post(ERR_HIRESOFS);
       }
@@ -465,7 +482,6 @@ uint16_t Encoder::GetAngleSPI()
    {
       GPIO_BRR(GPIOA) = GPIO7;
       uint32_t bit = ((uint32_t)GPIO_IDR(GPIOA) & GPIO6);
-      //d |= ((uint32_t)GPIO_IDR(GPIOA) & GPIO6) << i;
       GPIO_BSRR(GPIOA) = GPIO7;
       d |= bit << i;
    }
@@ -494,11 +510,14 @@ uint16_t Encoder::GetAngleResolver()
       timer_set_oc_value(REV_CNT_TIMER, TIM_OC4, resolverSampleDelay);
       timer_set_counter(REV_CNT_TIMER, 0);
       timer_enable_counter(REV_CNT_TIMER);
+      angle = DecodeAngle(true);
    }
    else
    {
       gpio_set(NORTH_EXC_PORT, NORTH_EXC_PIN);
-      angle = DecodeAngle();
+      timer_set_counter(REV_CNT_TIMER, 0);
+      timer_enable_counter(REV_CNT_TIMER);
+      angle = DecodeAngle(false);
    }
 
    return angle;
@@ -507,19 +526,17 @@ uint16_t Encoder::GetAngleResolver()
 /** Calculates angle from a Hall sin/cos encoder like MLX90380 */
 uint16_t Encoder::GetAngleSinCos()
 {
-   uint16_t calcAngle = DecodeAngle();
+   uint16_t calcAngle = DecodeAngle(false);
 
    adc_start_conversion_injected(ADC1);
 
    return calcAngle;
 }
 
-uint16_t Encoder::DecodeAngle()
+uint16_t Encoder::DecodeAngle(bool invert)
 {
-   int sin = adc_read_injected(ADC1, 2);
-   int cos = adc_read_injected(ADC1, 3);
-   //Param::SetInt(Param::sin, sin);
-   //Param::SetInt(Param::cos, cos);
+   int sin = adc_read_injected(ADC1, sinChan);
+   int cos = adc_read_injected(ADC1, cosChan);
 
    minSin = MIN(sin, minSin);
    maxSin = MAX(sin, maxSin);
@@ -527,7 +544,9 @@ uint16_t Encoder::DecodeAngle()
    //Wait for signal to reach usable amplitude
    if ((maxSin - minSin) > MIN_RES_AMP)
    {
-      return SineCore::Atan2(cos, sin);
+      if (invert)
+         return SineCore::Atan2(-sin, -cos);
+      return SineCore::Atan2(sin, cos);
    }
    else
    {

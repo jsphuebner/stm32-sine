@@ -20,7 +20,6 @@
 #define TEMP_MEAS_H_INCLUDED
 
 #include "my_fp.h"
-#define NUM_HS_SENSORS 6
 
 class TempMeas
 {
@@ -33,6 +32,8 @@ public:
       TEMP_KTY81 = 3,
       TEMP_PT1000 = 4,
       TEMP_NTCK45 = 5, /*hier muss ein NTC K45 2k2 verwendet werden, der mit einem Parallelwiderstand mit 2k verschaltet wird. Achtung: Der Parallelwiderstand ist im Schaltplan und Layout nicht vorhanden! */
+      TEMP_LEAFHS = 6,
+      NUM_HS_SENSORS = 7,
       TEMP_KTY83 = 12,
       TEMP_KTY84 = 13,
       TEMP_LEAF = 14,
@@ -118,6 +119,24 @@ public:
 871	,\
 955	,\
 1039
+
+#define LEAFHS \
+1929	, \
+2044	, \
+2256	, \
+2338	, \
+2387	, \
+2497	, \
+2576	, \
+2666	, \
+2744	, \
+2861	, \
+3025	, \
+3188	, \
+3352	, \
+3516	, \
+3679
+
 
 #define SEMIKRON \
 3767	,\

@@ -207,89 +207,6 @@ static void GetDigInputs()
    }
 }
 
-static void CalcAmpAndSlip()
-{
-   s32fp fslipmin = Param::Get(Param::fslipmin);
-   s32fp ampmin = Param::Get(Param::ampmin);
-   s32fp potnom = Param::Get(Param::potnom);
-   s32fp slipstart = Param::Get(Param::slipstart);
-   s32fp ampnom;
-   s32fp fslipspnt = 0;
-
-   if (potnom >= 0)
-   {
-      /* In sync mode throttle only commands amplitude. Above back-EMF is acceleration, below is regen */
-      if (Encoder::IsSyncMode())
-      {
-         ampnom = ampmin + FP_DIV(FP_MUL((FP_FROMINT(100) - ampmin), potnom), FP_FROMINT(100));
-      }
-      else
-      {/* In async mode first X% throttle commands amplitude, X-100% raises slip */
-         ampnom = ampmin + (100 - FP_TOINT(ampmin)) * FP_DIV(potnom, slipstart);
-
-         if (potnom >= slipstart)
-         {
-            s32fp fstat = Param::Get(Param::fstat);
-            s32fp fweak = Param::Get(Param::fweakcalc);
-            s32fp fslipmax = Param::Get(Param::fslipmax);
-
-            if (fstat > fweak)
-            {
-               s32fp fconst = Param::Get(Param::fconst);
-               s32fp fslipconstmax = Param::Get(Param::fslipconstmax);
-               //Basically, for every Hz above fweak we get a fraction of
-               //the difference between fslipconstmax and fslipmax
-               //of additional slip
-               fslipmax += FP_MUL(FP_DIV(fstat - fweak, fconst - fweak), fslipconstmax - fslipmax);
-               fslipmax = MIN(fslipmax, fslipconstmax); //never exceed fslipconstmax!
-            }
-
-            s32fp fslipdiff = fslipmax - fslipmin;
-            fslipspnt = fslipmin + (FP_MUL(fslipdiff, (potnom - slipstart)) / (100 - FP_TOINT(slipstart)));
-         }
-         else
-         {
-            fslipspnt = fslipmin;
-         }
-      }
-      DigIo::Clear(Pin::brk_out);
-   }
-   else
-   {
-      u32fp brkrampstr = (u32fp)Param::Get(Param::brkrampstr);
-
-      if (Encoder::IsSyncMode())
-      {
-         ampnom = ampmin + FP_MUL(ampmin, potnom) / 100;
-         //ampnom = ampmin + FP_DIV(FP_MUL((FP_FROMINT(100) - ampmin), -potnom), FP_FROMINT(100));
-      }
-      else
-      {
-         ampnom = -potnom;
-
-         fslipspnt = -fslipmin;
-         if (Encoder::GetRotorFrequency() < brkrampstr)
-         {
-            ampnom = FP_TOINT(FP_DIV(Encoder::GetRotorFrequency(), brkrampstr) * ampnom);
-         }
-      }
-      //This works because ampnom = -potnom
-      if (ampnom >= -Param::Get(Param::brkout))
-         DigIo::Set(Pin::brk_out);
-      else
-         DigIo::Clear(Pin::brk_out);
-   }
-
-   ampnom = MIN(ampnom, FP_FROMINT(100));
-   //anticipate sudden changes by filtering
-   s32fp ampnomLast = Param::Get(Param::ampnom);
-   s32fp fslipLast = Param::Get(Param::fslipspnt);
-   ampnomLast = IIRFILTER(ampnomLast, ampnom, 4);
-   fslipLast = IIRFILTER(fslipLast, fslipspnt, 4);
-   Param::Set(Param::ampnom, ampnomLast);
-   Param::Set(Param::fslipspnt, fslipLast);
-}
-
 static void GetTemps(s32fp& tmphs, s32fp &tmpm)
 {
    if (hwRev == HW_TESLA)
@@ -402,9 +319,6 @@ static s32fp ProcessUdc()
    s32fp udcmax = Param::Get(Param::udcmax);
    s32fp udclim = Param::Get(Param::udclim);
    s32fp udcgain = Param::Get(Param::udcgain);
-   s32fp udcnom = Param::Get(Param::udcnom);
-   s32fp fweak = Param::Get(Param::fweak);
-   s32fp boost = Param::Get(Param::boost);
    s32fp udcsw = Param::Get(Param::udcsw);
    int udcofs = Param::GetInt(Param::udcofs);
 
@@ -441,21 +355,30 @@ static s32fp ProcessUdc()
       ErrorMessage::Post(ERR_PRECHARGE);
    }
 
-   if (udcnom > 0)
+   #if CONTROL == CTRL_SINE
    {
-      s32fp udcdiff = udcfp - udcnom;
-      s32fp factor = FP_FROMINT(1) + FP_DIV(udcdiff, udcnom);
-      //increase fweak on voltage above nominal
-      fweak = FP_MUL(fweak, factor);
-      //decrease boost on voltage below nominal
-      boost = FP_DIV(boost, factor);
+      s32fp udcnom = Param::Get(Param::udcnom);
+      s32fp fweak = Param::Get(Param::fweak);
+      s32fp boost = Param::Get(Param::boost);
+
+      if (udcnom > 0)
+      {
+         s32fp udcdiff = udcfp - udcnom;
+         s32fp factor = FP_FROMINT(1) + FP_DIV(udcdiff, udcnom);
+         //increase fweak on voltage above nominal
+         fweak = FP_MUL(fweak, factor);
+         //decrease boost on voltage below nominal
+         boost = FP_DIV(boost, factor);
+      }
    }
 
-   Param::SetFlt(Param::udc, udcfp);
    Param::SetFlt(Param::fweakcalc, fweak);
    Param::SetFlt(Param::boostcalc, boost);
    MotorVoltage::SetWeakeningFrq(fweak);
    MotorVoltage::SetBoost(FP_TOINT(boost));
+   #endif // CONTROL
+
+   Param::SetFlt(Param::udc, udcfp);
 
    return udcfp;
 }
@@ -517,21 +440,19 @@ static int GetUserThrottleCommand()
    return Throttle::CalcThrottle(potval, pot2val, brake);
 }
 
-static void GetCruiseCreepCommand(int& finalSpnt, int throtSpnt)
+static void GetCruiseCreepCommand(s32fp& finalSpnt, int throtSpnt)
 {
    bool brake = Param::GetBool(Param::din_brake);
    int cruiseSpnt = Throttle::CalcCruiseSpeed(Encoder::GetSpeed());
    int idleSpnt = Throttle::CalcIdleSpeed(Encoder::GetSpeed());
+
+   finalSpnt = throtSpnt; //assume no regulation
 
    if (Param::GetInt(Param::idlemode) == IDLE_MODE_ALWAYS ||
       (Param::GetInt(Param::idlemode) == IDLE_MODE_NOBRAKE && !brake) ||
       (Param::GetInt(Param::idlemode) == IDLE_MODE_CRUISE && !brake && Param::GetBool(Param::din_cruise)))
    {
       finalSpnt = MAX(throtSpnt, idleSpnt);
-   }
-   else
-   {
-      finalSpnt = throtSpnt;
    }
 
    if (Throttle::cruiseSpeed > 0 && Throttle::cruiseSpeed > Throttle::idleSpeed)
@@ -543,9 +464,9 @@ static void GetCruiseCreepCommand(int& finalSpnt, int throtSpnt)
    }
 }
 
-static void ProcessThrottle()
+static s32fp ProcessThrottle()
 {
-   int throtSpnt, finalSpnt;
+   s32fp throtSpnt, finalSpnt;
 
    if ((int)Encoder::GetSpeed() < Param::GetInt(Param::throtramprpm))
       Throttle::throttleRamp = Param::GetInt(Param::throtramp);
@@ -560,6 +481,7 @@ static void ProcessThrottle()
 
    Throttle::UdcLimitCommand(finalSpnt, Param::Get(Param::udc));
    Throttle::IdcLimitCommand(finalSpnt, Param::Get(Param::idc));
+   Throttle::FrequencyLimitCommand(finalSpnt, Param::Get(Param::fstat));
 
    if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), finalSpnt))
    {
@@ -568,6 +490,13 @@ static void ProcessThrottle()
    }
 
    Param::SetInt(Param::potnom, finalSpnt);
+
+   if (finalSpnt < Param::Get(Param::brkout))
+      DigIo::Set(Pin::brk_out);
+   else
+      DigIo::Clear(Pin::brk_out);
+
+   return finalSpnt;
 }
 
 static void SetContactorsOffState()
@@ -606,13 +535,13 @@ static void Ms10Task(void)
 
    Encoder::UpdateRotorFrequency(100);
    GetDigInputs();
-   ProcessThrottle();
+   s32fp torquePercent = ProcessThrottle();
    CalcAndOutputTemp();
    Param::SetInt(Param::speed, Encoder::GetSpeed());
 
    if (MOD_RUN == opmode)
    {
-      CalcAmpAndSlip();
+      PwmGeneration::SetTorquePercent(torquePercent);
    }
    else if (MOD_OFF == opmode)
    {
@@ -736,7 +665,7 @@ static void Ms1Task(void)
    if (runChargeControl)
    {
       s32fp chargeCurSpnt = Param::Get(Param::chargecur) << 8;
-      int dummy = 50;
+      s32fp dummy = 50;
 
       if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), dummy))
          chargeCurSpnt = 0;
@@ -775,6 +704,13 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
    {
       PwmGeneration::SetCurrentLimitThreshold(Param::Get(Param::ocurlim));
 
+      #if CONTROL == CTRL_FOC
+      PwmGeneration::SetControllerGains(Param::GetInt(Param::curdkp), Param::GetInt(Param::curdki),
+                                  Param::GetInt(Param::curqkp), Param::GetInt(Param::curqki));
+
+      Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
+      #endif // CONTROL
+
       Encoder::SetMode((enum Encoder::mode)Param::GetInt(Param::encmode));
       Encoder::SetImpulsesPerTurn(Param::GetInt(Param::numimp));
 
@@ -801,6 +737,7 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
       Throttle::udcmax = FP_MUL(Param::Get(Param::udcmax), FP_FROMFLT(1.05));
       Throttle::idcmin = Param::Get(Param::idcmin);
       Throttle::idcmax = Param::Get(Param::idcmax);
+      Throttle::fmax = Param::Get(Param::fmax);
 
       if (Param::GetInt(Param::pwmfunc) == PWM_FUNC_SPEEDFRQ)
          gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO9);

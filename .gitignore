@@ -2,4 +2,6 @@
 obj
 linker.map
 sinus.layout
-stm32_sine*
+stm32_*
+sinus.cscope_file_list
+updater.py

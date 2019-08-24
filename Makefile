@@ -17,11 +17,13 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-BINARY		= stm32_sine
 OUT_DIR  = obj
 space :=
 space +=
 PREFIX		?= arm-none-eabi
+CONTROL     ?= SINE
+CONTROLLC   := $(shell echo $(CONTROL) | tr A-Z a-z)
+BINARY		= stm32_$(CONTROLLC)
 SIZE  = $(PREFIX)-size
 CC		= $(PREFIX)-gcc
 CPP	= $(PREFIX)-g++
@@ -31,16 +33,26 @@ OBJDUMP		= $(PREFIX)-objdump
 MKDIR_P     = mkdir -p
 TERMINAL_DEBUG ?= 0
 CFLAGS		= -Os -Wall -Wextra -Iinclude/generic -Iinclude/project -Ilibopencm3/include \
-             -fno-common -fno-builtin -pedantic -DSTM32F1 -DT_DEBUG=$(TERMINAL_DEBUG)  \
+             -fno-common -fno-builtin -pedantic -DSTM32F1 -DT_DEBUG=$(TERMINAL_DEBUG) \
+             -DCONTROL=CTRL_$(CONTROL) -DCTRL_SINE=0 -DCTRL_FOC=1 \
 				 -mcpu=cortex-m3 -mthumb -std=gnu99 -ffunction-sections -fdata-sections
 CPPFLAGS    = -Os -Wall -Wextra -Iinclude -Iinclude/generic -Iinclude/project -Ilibopencm3/include \
-            -fno-common -std=c++11 -pedantic -DSTM32F1 -DT_DEBUG=$(TERMINAL_DEBUG)  \
-		 -ffunction-sections -fdata-sections -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -mcpu=cortex-m3 -mthumb
-LDSCRIPT	= $(BINARY).ld
+            -fno-common -std=c++11 -pedantic -DSTM32F1 -DT_DEBUG=$(TERMINAL_DEBUG) \
+             -DCONTROL=CTRL_$(CONTROL) -DCTRL_SINE=0 -DCTRL_FOC=1 \
+				-ffunction-sections -fdata-sections -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -mcpu=cortex-m3 -mthumb
+LDSCRIPT	= stm32_sine.ld
 LDFLAGS  = -Llibopencm3/lib -T$(LDSCRIPT) -nostartfiles -Wl,--gc-sections,-Map,linker.map
-OBJSL		= $(BINARY).o hwinit.o stm32scheduler.o params.o terminal.o terminal_prj.o \
+OBJSL		= stm32_sine.o hwinit.o stm32scheduler.o params.o terminal.o terminal_prj.o \
            my_string.o digio.o sine_core.o my_fp.o fu.o inc_encoder.o printf.o anain.o \
            temp_meas.o param_save.o throttle.o errormessage.o stm32_can.o pwmgeneration.o
+
+ifeq ($(CONTROL), SINE)
+	OBJSL += pwmgeneration-sine.o
+endif
+ifeq ($(CONTROL), FOC)
+	OBJSL += pwmgeneration-foc.o foc.o picontroller.o
+endif
+
 OBJS     = $(subst $(space),$(space)$(OUT_DIR)/, $(OBJSL))
 vpath %.c src/project src/generic
 vpath %.cpp src/project src/generic

@@ -51,8 +51,11 @@ static const uint16_t Kty83[] = { KTY83 };
 /* Temp sensor KTY84-130 */
 static const uint16_t Kty84[] = { KTY84 };
 
-/* Temp sensor in MBB600 IGBT module */
+/* Temp sensor in Nissan Leaf motor */
 static const uint16_t leaf[] = { LEAF };
+
+/* Temp sensor in Nissan Leaf Gen 2 inverter heat sink */
+static const uint16_t leafhs[] = { LEAFHS };
 
 /* Temp sensor embedded in Tesla rear motor */
 static const uint16_t Tesla100k[] = { TESLA_100K };
@@ -78,6 +81,7 @@ static const TEMP_SENSOR sensors[] =
    { -50, 150, 10, TABLEN(Kty81),     PTC, Kty81      },
    { -50, 150, 10, TABLEN(Pt1000),    PTC, Pt1000     },
    { -50, 150, 5,  TABLEN(NtcK45),    NTC, NtcK45     },
+   { -10, 100, 10, TABLEN(leafhs),    NTC, leafhs     },
    { -50, 170, 10, TABLEN(Kty83),     PTC, Kty83      },
    { -40, 300, 10, TABLEN(Kty84),     PTC, Kty84      },
    { -20, 150, 10, TABLEN(leaf),      NTC, leaf       },
@@ -88,7 +92,7 @@ static const TEMP_SENSOR sensors[] =
 s32fp TempMeas::Lookup(int digit, Sensors sensorId)
 {
    if (sensorId >= TEMP_LAST) return 0;
-   int index = sensorId >= TEMP_KTY83 ? sensorId - NUM_HS_SENSORS : sensorId;
+   int index = sensorId >= TEMP_KTY83 ? sensorId - TEMP_KTY83 + NUM_HS_SENSORS : sensorId;
 
    const TEMP_SENSOR * sensor = &sensors[index];
    uint16_t last = sensor->lookup[0] + (sensor->coeff == NTC?-1:+1);

@@ -21,25 +21,52 @@
 
 #include <stdint.h>
 #include "my_fp.h"
+#include "anain.h"
 
 class PwmGeneration
 {
    public:
+      static void Run();
       static uint16_t GetAngle();
       static bool Tripped();
       static void SetOpmode(int);
       static void SetAmpnom(s32fp amp);
       static void SetFslip(s32fp fslip);
+      static void SetTorquePercent(s32fp torque);
       static void SetCurrentOffset(int offset1, int offset2);
       static void SetCurrentLimitThreshold(s32fp ocurlim);
+      static void SetControllerGains(int dkp, int dki, int qkp, int qki);
       static int GetCpuLoad();
       //static void SetCurrentLimit(s32fp limit);
    private:
+      enum EdgeType { NoEdge, PosEdge, NegEdge };
+
       static void PwmInit();
       static void EnableOutput();
       static void DisableOutput();
       static uint16_t TimerSetup(uint16_t deadtime, int pwmpol);
       static void AcHeatTimerSetup();
+      static s32fp ProcessCurrents();
+      static s32fp ProcessCurrents(s32fp& id, s32fp& iq);
+      static void CalcNextAngleSync(int dir);
+      static void CalcNextAngleAsync(int dir);
+      static void CalcNextAngleConstant(int dir);
+      static void Charge();
+      static void AcHeat();
+      static s32fp GetIlMax(s32fp il1, s32fp il2);
+      static s32fp GetCurrent(AnaIn::AnaIns input, s32fp offset, s32fp gain);
+      static s32fp LimitCurrent();
+      static EdgeType CalcRms(s32fp il, EdgeType& lastEdge, s32fp& max, s32fp& rms, int& samples, s32fp prevRms);
+
+      static uint16_t pwmfrq;
+      static uint16_t angle;
+      static s32fp ampnom;
+      static uint16_t slipIncr;
+      static s32fp fslip;
+      static s32fp frq;
+      static uint8_t shiftForTimer;
+      static int opmode;
+      static s32fp ilofs[2];
 };
 
 #endif // PWMGENERATION_H

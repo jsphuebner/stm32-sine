@@ -23,6 +23,7 @@ public:
    static uint32_t GetFullTurns();
    static u32fp GetRotorFrequency();
    static void SetImpulsesPerTurn(uint16_t imp);
+   static void SwapSinCos(bool swap);
    static bool IsSyncMode();
 
 private:
@@ -34,7 +35,7 @@ private:
    static uint16_t GetAngleSPI();
    static uint16_t GetAngleResolver();
    static uint16_t GetAngleSinCos();
-   static uint16_t DecodeAngle();
+   static uint16_t DecodeAngle(bool invert);
    static int GetPulseTimeFiltered();
    static void GetMinMaxTime(uint32_t& min, uint32_t& max);
    static void DMASetup();

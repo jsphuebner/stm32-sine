@@ -29,26 +29,27 @@ class Throttle
    public:
       static bool CheckAndLimitRange(int* potval, int potIdx);
       static bool CheckDualThrottle(int* potval, int pot2val);
-      static int CalcThrottle(int potval, int pot2val, bool brkpedal);
-      static int CalcIdleSpeed(int speed);
-      static int CalcCruiseSpeed(int speed);
-      static bool TemperatureDerate(s32fp tmphs, int& finalSpnt);
-      static void BmsLimitCommand(int& finalSpnt, bool dinbms);
-      static void UdcLimitCommand(int& finalSpnt, s32fp udc);
-      static void IdcLimitCommand(int& finalSpnt, s32fp idc);
+      static s32fp CalcThrottle(int potval, int pot2val, bool brkpedal);
+      static s32fp CalcIdleSpeed(int speed);
+      static s32fp CalcCruiseSpeed(int speed);
+      static bool TemperatureDerate(s32fp tmphs, s32fp& finalSpnt);
+      static void BmsLimitCommand(s32fp& finalSpnt, bool dinbms);
+      static void UdcLimitCommand(s32fp& finalSpnt, s32fp udc);
+      static void IdcLimitCommand(s32fp& finalSpnt, s32fp idc);
+      static void FrequencyLimitCommand(s32fp& finalSpnt, s32fp frequency);
       static int potmin[2];
       static int potmax[2];
-      static int brknom;
-      static int brknompedal;
-      static int brkmax;
-      static int throtmax;
+      static s32fp brknom;
+      static s32fp brknompedal;
+      static s32fp brkmax;
+      static s32fp throtmax;
       static int idleSpeed;
       static int cruiseSpeed;
       static s32fp speedkp;
       static int speedflt;
       static s32fp idleThrotLim;
-      static int brkPedalRamp;
-      static int throttleRamp;
+      static s32fp brkPedalRamp;
+      static s32fp throttleRamp;
       static int bmslimhigh;
       static int bmslimlow;
       static int accelmax;
@@ -57,11 +58,13 @@ class Throttle
       static s32fp udcmax;
       static s32fp idcmin;
       static s32fp idcmax;
+      static s32fp fmax;
 
    private:
       static int speedFiltered;
-      static int brkRamped;
-      static int throttleRamped;
+      static s32fp potnomFiltered;
+      static s32fp brkRamped;
+      static s32fp throttleRamped;
 };
 
 #endif // THROTTLE_H
