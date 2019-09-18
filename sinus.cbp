@@ -57,12 +57,20 @@
 		<Unit filename="include/generic/anain.h" />
 		<Unit filename="include/generic/digio.h" />
 		<Unit filename="include/generic/errormessage.h" />
+		<Unit filename="include/generic/foc.h">
+			<Option target="FieldOrientedControl" />
+			<Option target="Test" />
+		</Unit>
 		<Unit filename="include/generic/fu.h" />
 		<Unit filename="include/generic/my_fp.h" />
 		<Unit filename="include/generic/my_math.h" />
 		<Unit filename="include/generic/my_string.h" />
 		<Unit filename="include/generic/param_save.h" />
 		<Unit filename="include/generic/params.h" />
+		<Unit filename="include/generic/picontroller.h">
+			<Option target="FieldOrientedControl" />
+			<Option target="Test" />
+		</Unit>
 		<Unit filename="include/generic/printf.h" />
 		<Unit filename="include/generic/sine_core.h" />
 		<Unit filename="include/generic/stm32scheduler.h" />
@@ -81,6 +89,10 @@
 		<Unit filename="src/generic/anain.cpp" />
 		<Unit filename="src/generic/digio.cpp" />
 		<Unit filename="src/generic/errormessage.cpp" />
+		<Unit filename="src/generic/foc.cpp">
+			<Option target="FieldOrientedControl" />
+			<Option target="Test" />
+		</Unit>
 		<Unit filename="src/generic/fu.cpp" />
 		<Unit filename="src/generic/my_fp.c">
 			<Option compilerVar="CC" />
@@ -90,6 +102,10 @@
 		</Unit>
 		<Unit filename="src/generic/param_save.cpp" />
 		<Unit filename="src/generic/params.cpp" />
+		<Unit filename="src/generic/picontroller.cpp">
+			<Option target="FieldOrientedControl" />
+			<Option target="Test" />
+		</Unit>
 		<Unit filename="src/generic/printf.c">
 			<Option compilerVar="CC" />
 		</Unit>

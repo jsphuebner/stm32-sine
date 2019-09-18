@@ -783,7 +783,6 @@ static void ConfigureVariantIO()
          analogInputs[AnaIn::il2].pin = 6;
          break;
       case HW_REV2:
-         break;
       case HW_REV3:
          break;
       case HW_TESLA:

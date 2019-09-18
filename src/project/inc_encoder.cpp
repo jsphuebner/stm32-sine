@@ -357,8 +357,18 @@ void Encoder::InitTimerSingleChannelMode()
       So that the counter value is first saved, then reset */
    timer_slave_set_mode(REV_CNT_TIMER, TIM_SMCR_SMS_RM); // reset mode
    timer_slave_set_polarity(REV_CNT_TIMER, TIM_ET_FALLING);
-   timer_slave_set_trigger(REV_CNT_TIMER, TIM_SMCR_TS_ETRF);
-   timer_slave_set_filter(REV_CNT_TIMER, selectedConfig->resetFilter);
+
+   if (hwRev == HW_REV1)
+   {
+      //Since channel 3 is not connected to slave mmode controller, we have to use the ETR pin
+      timer_slave_set_trigger(REV_CNT_TIMER, TIM_SMCR_TS_ETRF);
+      timer_slave_set_filter(REV_CNT_TIMER, selectedConfig->resetFilter);
+   }
+   else
+   {
+      //ETR pin not needed, can use channel 1 (after filter)
+      timer_slave_set_trigger(REV_CNT_TIMER, TIM_SMCR_TS_TI1FP1);
+   }
 
    /* Save timer value on input pulse with smaller filter constant */
    timer_ic_set_filter(REV_CNT_TIMER, REV_CNT_IC, selectedConfig->captureFilter);
