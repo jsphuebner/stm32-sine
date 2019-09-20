@@ -215,7 +215,7 @@ void PwmGeneration::CalcNextAngleSync(int dir)
    if (Encoder::SeenNorthSignal())
    {
       uint32_t polePairs = Param::GetInt(Param::polepairs) / Param::GetInt(Param::respolepairs);
-      uint16_t syncOfs = /*potnom < 0 ? Param::GetInt(Param::syncofsregen) :*/ Param::GetInt(Param::syncofs);
+      uint16_t syncOfs = Param::GetInt(Param::syncofs);
       uint16_t rotorAngle = Encoder::GetRotorAngle();
 
       angle = polePairs * rotorAngle + syncOfs;

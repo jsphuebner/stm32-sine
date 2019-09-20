@@ -1,13 +1,10 @@
 #include "fu.h"
 
-#define FRQ_DRT_STR FP_FROMINT(20)
-
 uint32_t MotorVoltage::boost;
 u32fp MotorVoltage::fac;
 uint32_t MotorVoltage::maxAmp;
 u32fp MotorVoltage::endFrq = 1; //avoid division by 0 when not set
 u32fp MotorVoltage::minFrq;
-u32fp MotorVoltage::maxFrq;
 
 /** Set 0 Hz boost to overcome winding resistance */
 void MotorVoltage::SetBoost(uint32_t boost /**< amplitude in digit */)
@@ -41,12 +38,7 @@ uint32_t MotorVoltage::GetAmpPerc(u32fp frq, u32fp perc)
    {
       amp = maxAmp;
    }
-   if ((s32fp)frq > (s32fp)(maxFrq - FRQ_DRT_STR))
-   {
-      s32fp diff = maxFrq - frq;
-      diff = diff < 0 ? 0 : diff;
-      amp = FP_TOINT(FP_MUL(FP_FROMINT(amp), FP_DIV(diff, FRQ_DRT_STR)));
-   }
+
    return amp;
 }
 
@@ -59,11 +51,6 @@ void MotorVoltage::SetMaxAmp(uint32_t maxAmp)
 void MotorVoltage::SetMinFrq(u32fp frq)
 {
    minFrq = frq;
-}
-
-void MotorVoltage::SetMaxFrq(u32fp frq)
-{
-   maxFrq = frq;
 }
 
 /** Calculate slope of u/f */

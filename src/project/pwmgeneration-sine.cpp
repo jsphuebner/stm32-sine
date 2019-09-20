@@ -135,7 +135,6 @@ void PwmGeneration::SetTorquePercent(s32fp torque)
             fslipspnt = fslipmin;
          }
       }
-      DigIo::Clear(Pin::brk_out);
    }
    else
    {
@@ -156,11 +155,6 @@ void PwmGeneration::SetTorquePercent(s32fp torque)
             ampnomLocal = FP_TOINT(FP_DIV(Encoder::GetRotorFrequency(), brkrampstr) * ampnomLocal);
          }
       }
-      //This works because ampnom = -torque
-      if (ampnom >= -Param::Get(Param::brkout))
-         DigIo::Set(Pin::brk_out);
-      else
-         DigIo::Clear(Pin::brk_out);
    }
 
    ampnomLocal = MIN(ampnomLocal, FP_FROMINT(100));

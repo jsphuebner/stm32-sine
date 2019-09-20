@@ -317,9 +317,9 @@
 #define CAN_PERIOD_10MS     1
 
 #if CONTROL == CTRL_SINE
-#define VERSTR STRINGIFY(4=SINE.VER)
+#define VERSTR STRINGIFY(4=VER-sine)
 #elif CONTROL == CTRL_FOC
-#define VERSTR STRINGIFY(4=FOC.VER)
+#define VERSTR STRINGIFY(4=VER-foc)
 #endif // CONTROL
 
 enum _potmodes

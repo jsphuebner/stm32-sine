@@ -131,7 +131,6 @@ void PwmGeneration::Run()
    }
 }
 
-
 void PwmGeneration::SetTorquePercent(s32fp torquePercent)
 {
    s32fp id = FP_MUL(Param::Get(Param::throtid), ABS(torquePercent));

@@ -718,7 +718,6 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
       Encoder::SetImpulsesPerTurn(Param::GetInt(Param::numimp));
 
       MotorVoltage::SetMinFrq(Param::Get(Param::fmin));
-      MotorVoltage::SetMaxFrq(Param::Get(Param::fmax));
       SineCore::SetMinPulseWidth(Param::GetInt(Param::minpulse));
 
       Throttle::potmin[0] = Param::GetInt(Param::potmin);

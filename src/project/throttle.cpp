@@ -218,7 +218,7 @@ void Throttle::IdcLimitCommand(s32fp& finalSpnt, s32fp idc)
 
 void Throttle::FrequencyLimitCommand(s32fp& finalSpnt, s32fp frequency)
 {
-   if (finalSpnt >= 0)
+   if (finalSpnt > 0)
    {
       s32fp frqerr = fmax - frequency;
       s32fp res = frqerr * 10;
