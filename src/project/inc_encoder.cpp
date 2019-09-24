@@ -400,7 +400,7 @@ void Encoder::InitSPIMode()
 void Encoder::InitTimerABZMode()
 {
    rcc_periph_reset_pulse(REV_CNT_TIMRST);
-   timer_set_period(REV_CNT_TIMER, 4 * pulsesPerTurn); //2 channels and 2 edges -> 4 times the number of base pulses
+   timer_set_period(REV_CNT_TIMER, 4 * pulsesPerTurn - 1); //2 channels and 2 edges -> 4 times the number of base pulses
 
    //In sync mode start out in reset mode and switch to encoder
    //mode once the north marker has been detected
