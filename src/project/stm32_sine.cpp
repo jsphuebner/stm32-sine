@@ -791,6 +791,7 @@ static void ConfigureVariantIO()
          break;
       case HW_BLUEPILL:
          selectedAnalogInputs = analogInputsBluePill;
+         DigIo::Configure(Pin::bk_in, GPIOB, GPIO12, PinMode::INPUT_PU);
          DigIo::Configure(Pin::brake_in, GPIOB, GPIO9, PinMode::INPUT_FLT);
          DigIo::Configure(Pin::mprot_in, GPIOB, GPIO1, PinMode::INPUT_FLT);
          DigIo::Configure(Pin::emcystop_in, GPIOB, GPIO1, PinMode::INPUT_FLT);

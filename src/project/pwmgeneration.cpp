@@ -134,11 +134,11 @@ void PwmGeneration::SetOpmode(int _opmode)
 
 extern "C" void tim1_brk_isr(void)
 {
-   if (!DigIo::Get(Pin::desat_in) && hwRev != HW_REV1)
+   if (!DigIo::Get(Pin::desat_in) && hwRev != HW_REV1 && hwRev != HW_BLUEPILL)
       ErrorMessage::Post(ERR_DESAT);
    else if (!DigIo::Get(Pin::emcystop_in) && hwRev != HW_REV3)
       ErrorMessage::Post(ERR_EMCYSTOP);
-   else if (!DigIo::Get(Pin::mprot_in))
+   else if (!DigIo::Get(Pin::mprot_in) && hwRev != HW_BLUEPILL)
       ErrorMessage::Post(ERR_MPROT);
    else //if (ocur || hwRev == HW_REV1)
       ErrorMessage::Post(ERR_OVERCURRENT);
@@ -299,7 +299,7 @@ s32fp PwmGeneration::GetCurrent(AnaIn::AnaIns input, s32fp offset, s32fp gain)
 uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
 {
    const uint16_t pwmmax = 1U << pwmdigits;
-   uint8_t outputMode;
+   uint8_t outputMode = pwmpol ? GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN : GPIO_CNF_OUTPUT_ALTFN_PUSHPULL;
 
    rcc_periph_reset_pulse(PWM_TIMRST);
    /* disable timer */
@@ -307,34 +307,21 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
    /* Center aligned PWM */
    timer_set_alignment(PWM_TIMER, TIM_CR1_CMS_CENTER_1);
    timer_enable_preload(PWM_TIMER);
-   /* PWM mode 1 and preload enable */
-   TIM_CCMR1(PWM_TIMER) = TIM_CCMR1_OC1M_PWM1 | TIM_CCMR1_OC1PE |
-                          TIM_CCMR1_OC2M_PWM1 | TIM_CCMR1_OC2PE;
-   TIM_CCMR2(PWM_TIMER) = TIM_CCMR2_OC3M_PWM1 | TIM_CCMR2_OC3PE;
 
-   if (pwmpol)
+   for (int channel = TIM_OC1; channel <= TIM_OC3N; channel++)
    {
-      timer_set_oc_polarity_low(PWM_TIMER, TIM_OC1);
-      timer_set_oc_polarity_low(PWM_TIMER, TIM_OC2);
-      timer_set_oc_polarity_low(PWM_TIMER, TIM_OC3);
-      timer_set_oc_polarity_low(PWM_TIMER, TIM_OC1N);
-      timer_set_oc_polarity_low(PWM_TIMER, TIM_OC2N);
-      timer_set_oc_polarity_low(PWM_TIMER, TIM_OC3N);
-      outputMode = GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN;
-   }
-   else
-   {
-      timer_set_oc_polarity_high(PWM_TIMER, TIM_OC1);
-      timer_set_oc_polarity_high(PWM_TIMER, TIM_OC2);
-      timer_set_oc_polarity_high(PWM_TIMER, TIM_OC3);
-      timer_set_oc_polarity_high(PWM_TIMER, TIM_OC1N);
-      timer_set_oc_polarity_high(PWM_TIMER, TIM_OC2N);
-      timer_set_oc_polarity_high(PWM_TIMER, TIM_OC3N);
-      outputMode = GPIO_CNF_OUTPUT_ALTFN_PUSHPULL;
+      timer_enable_oc_preload(PWM_TIMER, (tim_oc_id)channel);
+      timer_set_oc_mode(PWM_TIMER, (tim_oc_id)channel, TIM_OCM_PWM1);
+      timer_set_oc_idle_state_unset(PWM_TIMER, (tim_oc_id)channel);
+      timer_set_oc_value(PWM_TIMER, (tim_oc_id)channel, 0);
+
+      if (pwmpol)
+         timer_set_oc_polarity_low(PWM_TIMER, (tim_oc_id)channel);
+      else
+         timer_set_oc_polarity_high(PWM_TIMER, (tim_oc_id)channel);
    }
 
    timer_disable_break_automatic_output(PWM_TIMER);
-   timer_enable_break_main_output(PWM_TIMER);
 
    if (hwRev == HW_BLUEPILL)
       timer_set_break_polarity_low(PWM_TIMER);
@@ -344,16 +331,7 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
    timer_enable_break(PWM_TIMER);
    timer_set_enabled_off_state_in_run_mode(PWM_TIMER);
    timer_set_enabled_off_state_in_idle_mode(PWM_TIMER);
-
    timer_set_deadtime(PWM_TIMER, deadtime);
-
-   timer_set_oc_idle_state_unset(PWM_TIMER, TIM_OC1);
-   timer_set_oc_idle_state_unset(PWM_TIMER, TIM_OC2);
-   timer_set_oc_idle_state_unset(PWM_TIMER, TIM_OC3);
-   timer_set_oc_idle_state_unset(PWM_TIMER, TIM_OC1N);
-   timer_set_oc_idle_state_unset(PWM_TIMER, TIM_OC2N);
-   timer_set_oc_idle_state_unset(PWM_TIMER, TIM_OC3N);
-
    timer_clear_flag(PWM_TIMER, TIM_SR_BIF);
    timer_enable_irq(PWM_TIMER, TIM_DIER_UIE);
    timer_enable_irq(PWM_TIMER, TIM_DIER_BIE);
@@ -363,9 +341,6 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
    timer_set_period(PWM_TIMER, pwmmax);
    timer_set_repetition_counter(PWM_TIMER, 1);
 
-   timer_set_oc_value(PWM_TIMER, TIM_OC1, 0);
-   timer_set_oc_value(PWM_TIMER, TIM_OC2, 0);
-   timer_set_oc_value(PWM_TIMER, TIM_OC3, 0);
    timer_generate_event(PWM_TIMER, TIM_EGR_UG);
 
    timer_enable_counter(PWM_TIMER);
