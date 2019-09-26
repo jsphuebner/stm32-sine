@@ -48,7 +48,7 @@ class Throttle
       static s32fp speedkp;
       static int speedflt;
       static s32fp idleThrotLim;
-      static s32fp brkPedalRamp;
+      static s32fp regenRamp;
       static s32fp throttleRamp;
       static int bmslimhigh;
       static int bmslimlow;

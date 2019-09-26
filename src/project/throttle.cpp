@@ -35,8 +35,7 @@ int Throttle::speedFiltered;
 s32fp Throttle::idleThrotLim;
 s32fp Throttle::potnomFiltered;
 s32fp Throttle::throtmax;
-s32fp Throttle::brkPedalRamp;
-s32fp Throttle::brkRamped;
+s32fp Throttle::regenRamp;
 s32fp Throttle::throttleRamp;
 s32fp Throttle::throttleRamped;
 int Throttle::bmslimhigh;
@@ -121,15 +120,20 @@ s32fp Throttle::CalcThrottle(int potval, int pot2val, bool brkpedal)
       }
    }
 
-   if (potnom > throttleRamped)
+   if (potnom >= throttleRamped)
    {
       throttleRamped = RAMPUP(throttleRamped, potnom, throttleRamp);
-      potnom = throttleRamped; // FP_MUL(throttleRamped, throtmax) / 100;
+      potnom = throttleRamped;
    }
-   else
+   else if (potnom < throttleRamped && potnom > 0)
    {
-      throttleRamped = RAMPDOWN(throttleRamped, potnom, throttleRamp);
-      potnom = throttleRamped; // FP_MUL(throttleRamped, throtmax) / 100;
+      throttleRamped = potnom; //No ramping from high throttle to low throttle
+   }
+   else //potnom < throttleRamped && potnom <= 0
+   {
+      throttleRamped = MIN(0, throttleRamped); //start ramping at 0
+      throttleRamped = RAMPDOWN(throttleRamped, potnom, regenRamp);
+      potnom = throttleRamped;
    }
 
    potnom = MIN(potnom, throtmax);

@@ -726,7 +726,7 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
       Throttle::potmax[1] = Param::GetInt(Param::pot2max);
       Throttle::brknom = Param::Get(Param::brknom);
       Throttle::brknompedal = Param::Get(Param::brknompedal);
-      Throttle::brkPedalRamp = Param::Get(Param::brkpedalramp);
+      Throttle::regenRamp = Param::Get(Param::regenramp);
       Throttle::brkmax = Param::Get(Param::brkmax);
       Throttle::throtmax = Param::Get(Param::throtmax);
       Throttle::idleSpeed = Param::GetInt(Param::idlespeed);

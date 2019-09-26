@@ -159,8 +159,8 @@ void PwmGeneration::SetTorquePercent(s32fp torque)
 
    ampnomLocal = MIN(ampnomLocal, FP_FROMINT(100));
    //anticipate sudden changes by filtering
-   ampnom = IIRFILTER(ampnom, ampnomLocal, 3);
-   fslip = IIRFILTER(fslip, fslipspnt, 3);
+   ampnom = IIRFILTER(ampnom, ampnomLocal, 4);
+   fslip = IIRFILTER(fslip, fslipspnt, 4);
    Param::Set(Param::ampnom, ampnom);
    Param::Set(Param::fslipspnt, fslip);
 
