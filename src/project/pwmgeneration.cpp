@@ -115,14 +115,17 @@ void PwmGeneration::SetOpmode(int _opmode)
          DisableOutput();
          timer_enable_oc_output(PWM_TIMER, TIM_OC2N);
          timer_enable_oc_output(PWM_TIMER, TIM_OC2);
+         timer_enable_break_main_output(PWM_TIMER);
          break;
       case MOD_BOOST:
          DisableOutput();
          timer_enable_oc_output(PWM_TIMER, TIM_OC2N);
+         timer_enable_break_main_output(PWM_TIMER);
          break;
       case MOD_BUCK:
          DisableOutput();
          timer_enable_oc_output(PWM_TIMER, TIM_OC2);
+         timer_enable_break_main_output(PWM_TIMER);
          break;
       case MOD_MANUAL:
       case MOD_RUN:
