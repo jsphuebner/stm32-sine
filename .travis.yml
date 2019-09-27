@@ -3,6 +3,7 @@ install: make get-deps
 
 script:
   - make
+  - CONTROL=FOC make
 
 addons:
   apt:

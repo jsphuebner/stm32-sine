@@ -34,7 +34,7 @@ static void TestSetup()
       Throttle::potmax[1] = 4000;
       Throttle::brknom = 30;
       Throttle::brknompedal = -60;
-      Throttle::brkPedalRamp = 25;
+      Throttle::regenRamp = 25;
       Throttle::brkmax = 50;
       Throttle::idleSpeed = 100;
       Throttle::speedkp = FP_FROMFLT(0.25);
