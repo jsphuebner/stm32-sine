@@ -73,9 +73,9 @@ void PwmGeneration::Run()
       ProcessCurrents(id, iq);
 
       int32_t ud = dController.Run(id);
-      int32_t uq = qController.Run(iq);
-      int32_t qlimit = FOC::GetQLimit(maxVd);
+      int32_t qlimit = FOC::GetQLimit(ud);
       qController.SetMinMaxY(-qlimit, qlimit);
+      int32_t uq = qController.Run(iq);
       FOC::InvParkClarke(ud, uq, angle);
 
       s32fp idc = (iq * uq) / FOC::GetMaximumModulationIndex();
@@ -133,6 +133,13 @@ void PwmGeneration::Run()
 
 void PwmGeneration::SetTorquePercent(s32fp torquePercent)
 {
+   s32fp brkrampstr = Param::Get(Param::brkrampstr);
+
+   if (frq < brkrampstr && torquePercent < 0)
+   {
+      torquePercent = FP_MUL(FP_DIV(frq, brkrampstr), torquePercent);
+   }
+
    s32fp id = FP_MUL(Param::Get(Param::throtid), ABS(torquePercent));
    s32fp iq = FP_MUL(Param::Get(Param::throtiq), Param::GetInt(Param::dir) * torquePercent);
 
