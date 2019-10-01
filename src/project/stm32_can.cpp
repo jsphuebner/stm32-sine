@@ -256,7 +256,7 @@ void SetBaudrate(enum baudrates baudrate)
 		     false,          // TTCM: Time triggered comm mode?
 		     true,           // ABOM: Automatic bus-off management?
 		     false,          // AWUM: Automatic wakeup mode?
-		     true,           // NART: No automatic retransmission?
+		     false,          // NART: No automatic retransmission?
 		     false,          // RFLM: Receive FIFO locked mode?
 		     false,          // TXFP: Transmit FIFO priority?
 		     CAN_BTR_SJW_1TQ,
