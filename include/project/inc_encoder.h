@@ -22,6 +22,7 @@ public:
    static uint32_t GetSpeed();
    static uint32_t GetFullTurns();
    static u32fp GetRotorFrequency();
+   static int GetRotorDirection();
    static void SetImpulsesPerTurn(uint16_t imp);
    static void SwapSinCos(bool swap);
    static bool IsSyncMode();

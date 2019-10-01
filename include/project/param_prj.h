@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.56.R
+#define VER 4.57.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -149,19 +149,17 @@
 //Next value Id: 2040
 
 #elif CONTROL == CTRL_FOC
-//Next param id (increase when adding new parameter!): 112
+//Next param id (increase when adding new parameter!): 113
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
-    PARAM_ENTRY(CAT_MOTOR,   curqkp,       "",       0,      10000,  128,    107 ) \
-    PARAM_ENTRY(CAT_MOTOR,   curqki,       "",       0,      10000,  256,    108 ) \
-    PARAM_ENTRY(CAT_MOTOR,   curdkp,       "",       0,      10000,  128,    110 ) \
-    PARAM_ENTRY(CAT_MOTOR,   curdki,       "",       0,      10000,  256,    111 ) \
+    PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      10000,  64,     107 ) \
+    PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      10000,  256,    108 ) \
+    PARAM_ENTRY(CAT_MOTOR,   dmargin,     "Hz",      -10000, 0,      -1000,  113 ) \
     PARAM_ENTRY(CAT_MOTOR,   fweak,       "Hz",      0,      1000,   90,     2   ) \
     PARAM_ENTRY(CAT_MOTOR,   idweak,      "A/Hz",    -2,     2,      0,      112 ) \
     PARAM_ENTRY(CAT_MOTOR,   polepairs,   "",        1,      16,     2,      32  ) \
     PARAM_ENTRY(CAT_MOTOR,   respolepairs,"",        1,      16,     1,      93  ) \
     PARAM_ENTRY(CAT_MOTOR,   encmode,     ENCMODES,  0,      5,      0,      75  ) \
-    PARAM_ENTRY(CAT_MOTOR,   fmin,        "Hz",      0,      400,    1,      34  ) \
     PARAM_ENTRY(CAT_MOTOR,   fmax,        "Hz",      21,     1000,   200,    9   ) \
     PARAM_ENTRY(CAT_MOTOR,   numimp,      "ppr",     8,      8192,   60,     15  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirchrpm,    "rpm",     0,      2000,   100,    87  ) \
@@ -172,7 +170,6 @@
     PARAM_ENTRY(CAT_INVERTER,pwmpol,      PWMPOLS,   0,      1,      0,      52  ) \
     PARAM_ENTRY(CAT_INVERTER,deadtime,    "dig",     0,      255,    63,     14  ) \
     PARAM_ENTRY(CAT_INVERTER,ocurlim,     "A",       -65536, 65536,  100,    22  ) \
-    PARAM_ENTRY(CAT_INVERTER,minpulse,    "dig",     0,      4095,   1000,   24  ) \
     PARAM_ENTRY(CAT_INVERTER,il1gain,     "dig/A",   -100,   100,    4.7,    27  ) \
     PARAM_ENTRY(CAT_INVERTER,il2gain,     "dig/A",   -100,   100,    4.7,    28  ) \
     PARAM_ENTRY(CAT_INVERTER,udcgain,     "dig/V",   0,      4095,   6.175,  29  ) \
@@ -200,8 +197,6 @@
     PARAM_ENTRY(CAT_THROTTLE,potmode,     POTMODES,  0,      2,      0,      82  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtramp,   "%/10ms",  0.1,    100,    100,    81  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtramprpm,"rpm",     0,      20000,  20000,  85  ) \
-    PARAM_ENTRY(CAT_THROTTLE,ampmin,      "%",       0,      100,    10,     4   ) \
-    PARAM_ENTRY(CAT_THROTTLE,slipstart,   "%",       10,     100,    50,     90  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtiq,     "A/%",     -1000,  1000,   1,     105  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtid,     "A/%",     -1000,  1000,   1,     106  ) \
     PARAM_ENTRY(CAT_REGEN,   brknompedal, "%",       -100,   0,      -50,    38  ) \
@@ -224,8 +219,6 @@
     PARAM_ENTRY(CAT_PWM,     pwmofs,      "dig",     -65535, 65535,  0,      41  ) \
     PARAM_ENTRY(CAT_COMM,    canspeed,    CANSPEEDS, 0,      3,      0,      83  ) \
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      88  ) \
-    PARAM_ENTRY(CAT_TEST,    fslipspnt,   "Hz",      -100,   1000,   0,      0   ) \
-    PARAM_ENTRY(CAT_TEST,    ampnom,      "%",       0,      100,    0,      0   ) \
     VALUE_ENTRY(version,     VERSTR,  2039 ) \
     VALUE_ENTRY(hwver,       HWREVS,  2036 ) \
     VALUE_ENTRY(opmode,      OPMODES, 2000 ) \
@@ -242,6 +235,7 @@
     VALUE_ENTRY(speed,       "rpm",   2012 ) \
     VALUE_ENTRY(turns,       "",      2037 ) \
     VALUE_ENTRY(amp,         "dig",   2013 ) \
+    VALUE_ENTRY(ampnom,      "dig",   2040 ) \
     VALUE_ENTRY(angle,       "°",     2014 ) \
     VALUE_ENTRY(pot,         "dig",   2015 ) \
     VALUE_ENTRY(pot2,        "dig",   2016 ) \
@@ -265,15 +259,12 @@
     VALUE_ENTRY(dout_prec,   "",      2033 ) \
     VALUE_ENTRY(dout_dcsw,   "",      2034 ) \
     VALUE_ENTRY(cpuload,     "%",     2035 ) \
-    VALUE_ENTRY(dc1,     "dig",     22035 ) \
-    VALUE_ENTRY(dc2,     "dig",     22035 ) \
-    VALUE_ENTRY(dc3,     "dig",     22035 ) \
     VALUE_ENTRY(ud,     "dig",     22035 ) \
     VALUE_ENTRY(uq,     "dig",     22035 ) \
 
 /*    VALUE_ENTRY(sin,     "", 2100    ) \
     VALUE_ENTRY(cos,     "", 2101    )*/
-//Next value Id: 2040
+//Next value Id: 2041
 #endif // CONTROL
 
 /***** Enum String definitions *****/

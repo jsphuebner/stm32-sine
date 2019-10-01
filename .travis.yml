@@ -2,7 +2,8 @@ language: cpp
 install: make get-deps
 
 script:
-  - make
+  - CONTROL=SINE make
+  - make clean
   - CONTROL=FOC make
 
 addons:

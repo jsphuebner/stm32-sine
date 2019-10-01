@@ -101,7 +101,6 @@ void PwmGeneration::Run()
       for (int i = 0; i < 3; i++)
       {
          dc[i] = FOC::DutyCycles[i] >> shiftForTimer;
-         Param::SetInt((Param::PARAM_NUM)(Param::dc1+i), dc[i]);
       }
 
       if ((Param::GetInt(Param::pinswap) & SWAP_PWM) > 0)
@@ -134,28 +133,34 @@ void PwmGeneration::Run()
 void PwmGeneration::SetTorquePercent(s32fp torquePercent)
 {
    s32fp brkrampstr = Param::Get(Param::brkrampstr);
+   int direction = Param::GetInt(Param::dir);
 
    if (frq < brkrampstr && torquePercent < 0)
    {
       torquePercent = FP_MUL(FP_DIV(frq, brkrampstr), torquePercent);
    }
 
+   if (torquePercent < 0)
+   {
+      direction = Encoder::GetRotorDirection();
+   }
+
    s32fp id = FP_MUL(Param::Get(Param::throtid), ABS(torquePercent));
-   s32fp iq = FP_MUL(Param::Get(Param::throtiq), Param::GetInt(Param::dir) * torquePercent);
+   s32fp iq = FP_MUL(Param::Get(Param::throtiq), direction * torquePercent);
 
    idref = id; //d-regulator set point is programmed in Run()
    qController.Setpoint(iq);
 }
 
-void PwmGeneration::SetControllerGains(int dkp, int dki, int qkp, int qki)
+void PwmGeneration::SetControllerGains(int kp, int ki)
 {
-   qController.SetGains(qkp, qki);
-   dController.SetGains(dkp, dki);
+   qController.SetGains(kp, ki);
+   dController.SetGains(kp, ki);
 }
 
 void PwmGeneration::PwmInit()
 {
-   maxVd = FOC::GetMaximumModulationIndex() - 4000;
+   maxVd = FOC::GetMaximumModulationIndex() + Param::GetInt(Param::dmargin);
    pwmfrq = TimerSetup(Param::GetInt(Param::deadtime), Param::GetInt(Param::pwmpol));
    slipIncr = FRQ_TO_ANGLE(fslip);
    Encoder::SetPwmFrequency(pwmfrq);

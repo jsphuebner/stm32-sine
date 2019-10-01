@@ -32,7 +32,8 @@
 #include "printf.h"
 
 #define TWO_PI            65536
-#define TEN_DEGREE        ((10 * TWO_PI) / 360)
+//Angle difference at which we assume jitter to become irrelevant
+#define STABLE_ANGLE      ((30 * TWO_PI) / 360)
 #define MAX_CNT           TWO_PI - 1
 #define MAX_REVCNT_VALUES 5
 #define MIN_RES_AMP       1000
@@ -73,6 +74,7 @@ static bool seenNorthSignal = false;
 static uint32_t turnsSinceLastSample = 0;
 static int32_t minSin = 0, maxSin = 0, startupDelay;
 static int sinChan = 3, cosChan = 2;
+static int detectedDirection = 0;
 
 void Encoder::Reset()
 {
@@ -176,7 +178,8 @@ void Encoder::UpdateRotorAngle(int dir)
          cntVal *= TWO_PI;
          cntVal /= pulsesPerTurn * 4;
          angle = (uint16_t)cntVal;
-         angleDiff = ((TIM_CR1(REV_CNT_TIMER) & TIM_CR1_DIR_DOWN) ?
+         detectedDirection = (TIM_CR1(REV_CNT_TIMER) & TIM_CR1_DIR_DOWN) ? -1 : 1;
+         angleDiff = (detectedDirection < 0 ?
                      (lastAngle - angle) : (angle - lastAngle)) & 0xFFFF;
          turnsSinceLastSample += angleDiff;
          break;
@@ -187,6 +190,7 @@ void Encoder::UpdateRotorAngle(int dir)
          accumulatedAngle += (int16_t)(dir * numPulses * anglePerPulse);
          angle = accumulatedAngle + dir * interpolatedAngle;
          lastFrequency = ignore ? lastFrequency : FP_FROMINT(pulseMeasFrq) / (lastPulseTimespan * pulsesPerTurn);
+         detectedDirection = 1;
          break;
       case SPI:
          angle = GetAngleSPI();
@@ -249,6 +253,11 @@ u32fp Encoder::GetRotorFrequency()
    return lastFrequency;
 }
 
+int Encoder::GetRotorDirection()
+{
+   return detectedDirection;
+}
+
 /** Get current speed in rpm */
 uint32_t Encoder::GetSpeed()
 {
@@ -278,9 +287,9 @@ u32fp Encoder::CalcFrequencyFromAngleDifference(uint16_t angle)
    static uint32_t samples = 0;
    static int lastAngle = 0;
    u32fp frq = lastFrequency;
-   uint16_t diffPos = (lastAngle - angle) & 0xFFFF;
-   uint16_t diffNeg = (angle - lastAngle) & 0xFFFF;
-   uint16_t angleDiff = MIN(diffNeg, diffPos);
+   int signedDiff = ((int)angle) - lastAngle;
+   int absDiff = ABS(signedDiff);
+   int sign = signedDiff < 0 ? -1 : 1;
 
    if (startupDelay > 0)
    {
@@ -291,16 +300,25 @@ u32fp Encoder::CalcFrequencyFromAngleDifference(uint16_t angle)
 
    samples++;
 
-   if (angleDiff > TEN_DEGREE && samples > 0)
+   if (absDiff > (TWO_PI / 2)) //wrap detection
    {
-      //We don't make assumption about the rotation direction but we
+      sign = -sign;
+      signedDiff += sign * TWO_PI;
+      absDiff = ABS(signedDiff);
+   }
+
+   if (absDiff > STABLE_ANGLE && samples > 0)
+   {
+      //We don't make assumptions about the rotation direction but we
       //do assume less than 180° in one PWM cycle
-      frq = (pwmFrq * angleDiff) / FP_TOINT(TWO_PI * samples);
+      frq = (pwmFrq * absDiff) / FP_TOINT(TWO_PI * samples);
+
+      detectedDirection = sign;
 
       lastAngle = angle;
       samples = 0;
    }
-   else if (samples > (pwmFrq >> 5))
+   else if (samples > (pwmFrq >> 5)) //Timeout
    {
       frq = 0;
    }

@@ -697,28 +697,31 @@ static void Ms1Task(void)
 /** This function is called when the user changes a parameter */
 extern void parm_Change(Param::PARAM_NUM paramNum)
 {
+   #if CONTROL == CTRL_SINE
    if (Param::fslipspnt == paramNum)
       PwmGeneration::SetFslip(Param::Get(Param::fslipspnt));
    else if (Param::ampnom == paramNum)
       PwmGeneration::SetAmpnom(Param::Get(Param::ampnom));
-   else if (Param::canspeed == paramNum)
+   else
+   #endif
+   if (Param::canspeed == paramNum)
       Can::SetBaudrate((enum Can::baudrates)Param::GetInt(Param::canspeed));
    else
    {
       PwmGeneration::SetCurrentLimitThreshold(Param::Get(Param::ocurlim));
 
       #if CONTROL == CTRL_FOC
-      PwmGeneration::SetControllerGains(Param::GetInt(Param::curdkp), Param::GetInt(Param::curdki),
-                                  Param::GetInt(Param::curqkp), Param::GetInt(Param::curqki));
+      PwmGeneration::SetControllerGains(Param::GetInt(Param::curkp), Param::GetInt(Param::curki));
 
       Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
+      #elif CONTROL == CTRL_SINE
+      MotorVoltage::SetMinFrq(Param::Get(Param::fmin));
+      SineCore::SetMinPulseWidth(Param::GetInt(Param::minpulse));
       #endif // CONTROL
 
       Encoder::SetMode((enum Encoder::mode)Param::GetInt(Param::encmode));
       Encoder::SetImpulsesPerTurn(Param::GetInt(Param::numimp));
 
-      MotorVoltage::SetMinFrq(Param::Get(Param::fmin));
-      SineCore::SetMinPulseWidth(Param::GetInt(Param::minpulse));
 
       Throttle::potmin[0] = Param::GetInt(Param::potmin);
       Throttle::potmax[0] = Param::GetInt(Param::potmax);

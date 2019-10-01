@@ -41,9 +41,12 @@ int main()
    }
 
    if (_failedAssertions > 0)
+   {
       cout << _failedAssertions << " assertions failed" << endl;
-   else
-      cout << "All tests passed" << endl;
+      return -1;
+   }
+
+   cout << "All tests passed" << endl;
 
    return 0;
 }

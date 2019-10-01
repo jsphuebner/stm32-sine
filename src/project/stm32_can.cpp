@@ -381,9 +381,9 @@ static void ProcessSDO(uint32_t data[2])
       if (sdo->cmd == SDO_WRITE)
       {
          int result;
-         int offset = data[4];
-         int len = data[5];
-         s32fp gain = data[6];
+         int offset = sdo->data & 0xFF;
+         int len = (sdo->data >> 8) & 0xFF;
+         s32fp gain = sdo->data >> 16;
 
          if ((sdo->index & 0x4000) == 0x4000)
          {
