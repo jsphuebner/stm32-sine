@@ -711,8 +711,7 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
       PwmGeneration::SetCurrentLimitThreshold(Param::Get(Param::ocurlim));
 
       #if CONTROL == CTRL_FOC
-      PwmGeneration::SetControllerGains(Param::GetInt(Param::curkp), Param::GetInt(Param::curki));
-
+      PwmGeneration::SetControllerGains(Param::GetInt(Param::curkp), Param::GetInt(Param::curki), Param::GetInt(Param::fwkp));
       Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
       #elif CONTROL == CTRL_SINE
       MotorVoltage::SetMinFrq(Param::Get(Param::fmin));
@@ -721,7 +720,6 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
 
       Encoder::SetMode((enum Encoder::mode)Param::GetInt(Param::encmode));
       Encoder::SetImpulsesPerTurn(Param::GetInt(Param::numimp));
-
 
       Throttle::potmin[0] = Param::GetInt(Param::potmin);
       Throttle::potmax[0] = Param::GetInt(Param::potmax);

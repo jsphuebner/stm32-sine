@@ -33,7 +33,7 @@ int32_t PiController::Run(s32fp curVal)
       esum += err;
    }
 
-   y = FP_TOINT(err * kp + (esum / frequency) * ki);
+   y = offset + FP_TOINT(err * kp + (esum / frequency) * ki);
 
    y = MAX(y, minY);
    y = MIN(y, maxY);

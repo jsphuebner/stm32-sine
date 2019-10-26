@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.57.R
+#define VER 4.62.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -149,11 +149,14 @@
 //Next value Id: 2040
 
 #elif CONTROL == CTRL_FOC
-//Next param id (increase when adding new parameter!): 113
+//Next param id (increase when adding new parameter!): 118
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      10000,  64,     107 ) \
     PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      10000,  256,    108 ) \
+    PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        0,      10000,  1,      114 ) \
+    PARAM_ENTRY(CAT_MOTOR,   dofsramp,    "",        0,      10000,  1000,   117 ) \
+    PARAM_ENTRY(CAT_MOTOR,   frqfac,      "dig/Hz",  -10000, 10000,  10,     116 ) \
     PARAM_ENTRY(CAT_MOTOR,   dmargin,     "Hz",      -10000, 0,      -1000,  113 ) \
     PARAM_ENTRY(CAT_MOTOR,   fweak,       "Hz",      0,      1000,   90,     2   ) \
     PARAM_ENTRY(CAT_MOTOR,   idweak,      "A/Hz",    -2,     2,      0,      112 ) \
@@ -197,8 +200,7 @@
     PARAM_ENTRY(CAT_THROTTLE,potmode,     POTMODES,  0,      2,      0,      82  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtramp,   "%/10ms",  0.1,    100,    100,    81  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtramprpm,"rpm",     0,      20000,  20000,  85  ) \
-    PARAM_ENTRY(CAT_THROTTLE,throtiq,     "A/%",     -1000,  1000,   1,     105  ) \
-    PARAM_ENTRY(CAT_THROTTLE,throtid,     "A/%",     -1000,  1000,   1,     106  ) \
+    PARAM_ENTRY(CAT_THROTTLE,throtcur,    "A/%",     -10,    10,     1,     105  ) \
     PARAM_ENTRY(CAT_REGEN,   brknompedal, "%",       -100,   0,      -50,    38  ) \
     PARAM_ENTRY(CAT_REGEN,   regenramp,   "%/10ms",  0.1,    100,    100,    68  ) \
     PARAM_ENTRY(CAT_REGEN,   brknom,      "%",       0,      100,    30,     19  ) \
@@ -261,6 +263,10 @@
     VALUE_ENTRY(cpuload,     "%",     2035 ) \
     VALUE_ENTRY(ud,     "dig",     22035 ) \
     VALUE_ENTRY(uq,     "dig",     22035 ) \
+    VALUE_ENTRY(dofs,     "dig",     22035 ) \
+    VALUE_ENTRY(qofs,     "dig",     22035 ) \
+    VALUE_ENTRY(dspnt,     "dig",     22035 ) \
+    VALUE_ENTRY(qspnt,     "dig",     22035 ) \
 
 /*    VALUE_ENTRY(sin,     "", 2100    ) \
     VALUE_ENTRY(cos,     "", 2101    )*/

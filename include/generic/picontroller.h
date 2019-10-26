@@ -40,7 +40,11 @@ class PiController
       /** Set regulator target set point
        * \param val regulator target
        */
-      void Setpoint(s32fp val) { refVal = val; }
+      void SetRef(s32fp val) { refVal = val; }
+
+      void SetOffset(int32_t ofs) { offset = ofs; }
+
+      s32fp GetRef() { return refVal; }
 
       /** Set maximum regulator output
         * \param val actuator saturation value
@@ -65,11 +69,12 @@ class PiController
    protected:
 
    private:
-      int kp; //!< Member variable "kp"
-      int ki; //!< Member variable "ki"
+      int32_t kp; //!< Member variable "kp"
+      int32_t ki; //!< Member variable "ki"
       s32fp esum; //!< Member variable "esum"
       s32fp refVal;
-      int frequency; //!< Calling frequency
+      int32_t offset;
+      int32_t frequency; //!< Calling frequency
       int32_t maxY;
       int32_t minY;
       int32_t y; //!< Member variable "y"

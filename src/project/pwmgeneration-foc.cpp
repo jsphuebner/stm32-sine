@@ -36,11 +36,12 @@
 #define FRQ_TO_ANGLE(frq) FP_TOINT((frq << SineCore::BITS) / pwmfrq)
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
 
-static s32fp idref = 0;
 static int initwait = 0;
-static int32_t maxVd = 0;
+static bool regen = false;
+static s32fp idref = 0;
 static PiController qController;
 static PiController dController;
+static PiController fwController;
 
 void PwmGeneration::Run()
 {
@@ -49,7 +50,7 @@ void PwmGeneration::Run()
       int dir = Param::GetInt(Param::dir);
       uint16_t dc[3];
       s32fp id, iq;
-      s32fp fweak = Param::Get(Param::fweak);
+      static int32_t offsetRamped = 0, fwIdRef = 0;
 
       Encoder::UpdateRotorAngle(dir);
 
@@ -60,23 +61,31 @@ void PwmGeneration::Run()
       else
          CalcNextAngleAsync(dir);
 
-      if (frq > fweak)
+      ProcessCurrents(id, iq);
+
+      int32_t dofs = regen ? 0 : FP_TOINT(-Param::GetInt(Param::frqfac) * frq);
+      int32_t qofs = FP_TOINT(Param::GetInt(Param::frqfac) * frq);
+
+      if (dofs < offsetRamped)
       {
-         s32fp idweak = FP_MUL(Param::Get(Param::idweak), frq - fweak);
-         dController.Setpoint(idweak + idref);
+         offsetRamped = RAMPDOWN(offsetRamped, dofs, Param::GetInt(Param::dofsramp));
       }
       else
       {
-         dController.Setpoint(idref);
+         offsetRamped = RAMPUP(offsetRamped, dofs, Param::GetInt(Param::dofsramp));
       }
 
-      ProcessCurrents(id, iq);
+      dController.SetOffset(offsetRamped);
+      qController.SetOffset(qofs);
 
+      dController.SetRef(idref + fwIdRef);
       int32_t ud = dController.Run(id);
       int32_t qlimit = FOC::GetQLimit(ud);
       qController.SetMinMaxY(-qlimit, qlimit);
       int32_t uq = qController.Run(iq);
       FOC::InvParkClarke(ud, uq, angle);
+      //Calculate extra field weakening current for the next cycle
+      fwIdRef = fwController.Run(FOC::GetTotalVoltage(ud, uq) >> 5);
 
       s32fp idc = (iq * uq) / FOC::GetMaximumModulationIndex();
 
@@ -84,7 +93,11 @@ void PwmGeneration::Run()
       Param::SetFlt(Param::angle, DIGIT_TO_DEGREE(angle));
       Param::SetInt(Param::ud, ud);
       Param::SetInt(Param::uq, uq);
+      Param::SetInt(Param::qofs, qofs);
+      Param::SetInt(Param::dofs, dofs);
       Param::SetFlt(Param::idc, idc);
+      Param::SetFlt(Param::dspnt, dController.GetRef());
+      Param::SetFlt(Param::qspnt, qController.GetRef());
 
       /* Shut down PWM on stopped motor, neutral gear or init phase */
       if ((0 == frq && 0 == idref) || 0 == dir || initwait > 0)
@@ -92,6 +105,7 @@ void PwmGeneration::Run()
          timer_disable_break_main_output(PWM_TIMER);
          dController.ResetIntegrator();
          qController.ResetIntegrator();
+         fwController.ResetIntegrator();
       }
       else
       {
@@ -120,6 +134,7 @@ void PwmGeneration::Run()
    {
       s32fp id, iq;
       initwait = 0;
+      timer_enable_break_main_output(PWM_TIMER);
       ProcessCurrents(id, iq);
       Charge();
    }
@@ -143,34 +158,49 @@ void PwmGeneration::SetTorquePercent(s32fp torquePercent)
    if (torquePercent < 0)
    {
       direction = Encoder::GetRotorDirection();
+      regen = true;
+   }
+   else
+   {
+      regen = false;
    }
 
-   s32fp id = FP_MUL(Param::Get(Param::throtid), ABS(torquePercent));
-   s32fp iq = FP_MUL(Param::Get(Param::throtiq), direction * torquePercent);
+   //s32fp id = FP_MUL(Param::Get(Param::throtid), ABS(torquePercent));
+   int32_t is = FP_TOINT(FP_MUL(Param::Get(Param::throtcur), direction * torquePercent));
+   int32_t id, iq;
 
-   idref = id; //d-regulator set point is programmed in Run()
-   qController.Setpoint(iq);
+   FOC::Mtpa(is, id, iq);
+
+   qController.SetRef(FP_FROMINT(iq));
+   //dController.SetRef(id);
+   idref = FP_FROMINT(id);
+   //dController.SetRef(idref);
 }
 
-void PwmGeneration::SetControllerGains(int kp, int ki)
+void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp)
 {
    qController.SetGains(kp, ki);
    dController.SetGains(kp, ki);
+   fwController.SetGains(fwkp, 0);
 }
 
 void PwmGeneration::PwmInit()
 {
-   maxVd = FOC::GetMaximumModulationIndex() + Param::GetInt(Param::dmargin);
+   int32_t maxVd = FOC::GetMaximumModulationIndex() + Param::GetInt(Param::dmargin);
    pwmfrq = TimerSetup(Param::GetInt(Param::deadtime), Param::GetInt(Param::pwmpol));
    slipIncr = FRQ_TO_ANGLE(fslip);
    Encoder::SetPwmFrequency(pwmfrq);
-   initwait = 5000;
+   initwait = pwmfrq / 2; //0.5s
    qController.ResetIntegrator();
    qController.SetCallingFrequency(pwmfrq);
    qController.SetMinMaxY(-maxVd, maxVd);
    dController.ResetIntegrator();
    dController.SetCallingFrequency(pwmfrq);
    dController.SetMinMaxY(-maxVd, maxVd);
+   fwController.ResetIntegrator();
+   fwController.SetCallingFrequency(pwmfrq);
+   fwController.SetMinMaxY(-FP_FROMINT(500), 0);
+   fwController.SetRef(1024); //We right shift the modulation index by 5 to effectively have less gain
 
    if (opmode == MOD_ACHEAT)
       AcHeatTimerSetup();

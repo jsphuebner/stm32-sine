@@ -351,7 +351,7 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, outputMode, GPIO8 | GPIO9 | GPIO10);
    gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, outputMode, GPIO13 | GPIO14 | GPIO15);
 
-   return PERIPH_CLK / (uint32_t)pwmmax;
+   return rcc_apb2_frequency / (uint32_t)(2 * pwmmax);
 }
 
 void PwmGeneration::AcHeatTimerSetup()

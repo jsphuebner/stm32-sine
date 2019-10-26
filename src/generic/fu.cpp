@@ -1,6 +1,6 @@
 #include "fu.h"
 
-uint32_t MotorVoltage::boost;
+uint32_t MotorVoltage::boost = 0;
 u32fp MotorVoltage::fac;
 uint32_t MotorVoltage::maxAmp;
 u32fp MotorVoltage::endFrq = 1; //avoid division by 0 when not set

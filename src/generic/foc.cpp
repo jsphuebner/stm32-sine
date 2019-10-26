@@ -24,6 +24,10 @@
 
 #define SQRT3 FP_FROMFLT(1.732050807568877293527446315059)
 
+static const s32fp fluxLinkage = FP_FROMFLT(0.09);
+static const s32fp fluxLinkage2 = FP_MUL(fluxLinkage, fluxLinkage);
+static const s32fp lqminusldSquaredBs10 = FP_FROMFLT(0.01722); //additional 10-bit left shift because otherwise it can't be represented
+static const s32fp lqminusld = FP_FROMFLT(0.0058);
 static const u32fp sqrt3 = SQRT3;
 static const s32fp sqrt3inv1 = FP_FROMFLT(0.57735026919); //1/sqrt(3)
 static const s32fp sqrt3inv2 = 2*sqrt3inv1; //2/sqrt(2)
@@ -53,9 +57,30 @@ void FOC::ParkClarke(s32fp il1, s32fp il2, uint16_t angle)
    iq = FP_MUL(cos, ib) - FP_MUL(sin, ia);
 }
 
-int32_t FOC::GetQLimit(int32_t maxVd)
+void FOC::Mtpa(int32_t is, int32_t& idref, int32_t& iqref)
 {
-   return sqrt(modMaxPow2 - maxVd * maxVd);
+   int32_t isSquared = is * is;
+   int32_t sign = is < 0 ? -1 : 1;
+   s32fp term1 = fpsqrt(fluxLinkage2 + ((lqminusldSquaredBs10 * isSquared) >> 10));
+   idref = FP_TOINT(FP_DIV(fluxLinkage - term1, lqminusld));
+   iqref = sign * (int32_t)sqrt(isSquared - idref * idref);
+}
+
+int32_t FOC::GetQLimit(int32_t ud)
+{
+   return sqrt(modMaxPow2 - ud * ud);
+}
+
+/** \brief Returns the resulting modulation index from uq and ud
+ *
+ * \param ud d voltage modulation index
+ * \param uq q voltage modulation index
+ * \return sqrt(ud²+uq²)
+ *
+ */
+int32_t FOC::GetTotalVoltage(int32_t ud, int32_t uq)
+{
+   return sqrt((uint32_t)(ud * ud) + (uint32_t)(uq * uq));
 }
 
 void FOC::InvParkClarke(int32_t ud, int32_t uq, uint16_t angle)
@@ -105,6 +130,26 @@ uint32_t FOC::sqrt(uint32_t rad)
    do {
       sqrtl = sqrt;
       sqrt = (sqrt + rad / sqrt) / 2;
+   } while ((sqrtl - sqrt) > 1);
+
+   return sqrt;
+}
+
+#define R1 FP_FROMFLT(0.03)
+#define S1 FP_FROMFLT(0.15)
+#define R2 FP_FROMFLT(0.5)
+#define S2 FP_FROMFLT(0.5)
+#define S3 FP_FROMFLT(1)
+#define RADSTART(x) x < R1 ? S1 : (x < R2 ? S2 : S3)
+
+u32fp FOC::fpsqrt(u32fp rad)
+{
+   u32fp sqrt = RADSTART(rad);
+   u32fp sqrtl;
+
+   do {
+      sqrtl = sqrt;
+      sqrt = (sqrt + FP_DIV(rad, sqrt)) >> 1;
    } while ((sqrtl - sqrt) > 1);
 
    return sqrt;
