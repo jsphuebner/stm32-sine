@@ -742,10 +742,13 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
       Throttle::idcmax = Param::Get(Param::idcmax);
       Throttle::fmax = Param::Get(Param::fmax);
 
-      if (Param::GetInt(Param::pwmfunc) == PWM_FUNC_SPEEDFRQ)
-         gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO9);
-      else
-         gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO9);
+      if (hwRev != HW_BLUEPILL)
+      {
+         if (Param::GetInt(Param::pwmfunc) == PWM_FUNC_SPEEDFRQ)
+            gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO9);
+         else
+            gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO9);
+      }
    }
 }
 
