@@ -221,6 +221,10 @@ void PwmGeneration::CalcNextAngleSync(int dir)
       uint16_t syncOfs = Param::GetInt(Param::syncofs);
       uint16_t rotorAngle = Encoder::GetRotorAngle();
 
+#if CONTROL == CTRL_FOC
+      syncOfs += FP_TOINT(frq * Param::GetInt(Param::syncadv));
+#endif // CONTROL
+
       angle = polePairs * rotorAngle + syncOfs;
       frq = polePairs * Encoder::GetRotorFrequency();
    }

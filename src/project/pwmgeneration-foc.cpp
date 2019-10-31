@@ -31,8 +31,6 @@
 #include "foc.h"
 #include "picontroller.h"
 
-#define SHIFT_180DEG (uint16_t)32768
-#define SHIFT_90DEG  (uint16_t)16384
 #define FRQ_TO_ANGLE(frq) FP_TOINT((frq << SineCore::BITS) / pwmfrq)
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
 
@@ -134,7 +132,6 @@ void PwmGeneration::Run()
    {
       s32fp id, iq;
       initwait = 0;
-      timer_enable_break_main_output(PWM_TIMER);
       ProcessCurrents(id, iq);
       Charge();
    }
