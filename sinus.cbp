@@ -54,82 +54,64 @@
 			<Option target="SlipControl" />
 			<Option target="FieldOrientedControl" />
 		</Unit>
-		<Unit filename="include/generic/anain.h" />
-		<Unit filename="include/generic/digio.h" />
-		<Unit filename="include/generic/errormessage.h" />
-		<Unit filename="include/generic/foc.h">
-			<Option target="FieldOrientedControl" />
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="include/generic/fu.h" />
-		<Unit filename="include/generic/my_fp.h" />
-		<Unit filename="include/generic/my_math.h" />
-		<Unit filename="include/generic/my_string.h" />
-		<Unit filename="include/generic/param_save.h" />
-		<Unit filename="include/generic/params.h" />
-		<Unit filename="include/generic/picontroller.h">
-			<Option target="FieldOrientedControl" />
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="include/generic/printf.h" />
-		<Unit filename="include/generic/sine_core.h" />
-		<Unit filename="include/generic/stm32scheduler.h" />
-		<Unit filename="include/generic/terminal.h" />
-		<Unit filename="include/project/anain_prj.h" />
-		<Unit filename="include/project/digio_prj.h" />
-		<Unit filename="include/project/errormessage_prj.h" />
-		<Unit filename="include/project/hwdefs.h" />
-		<Unit filename="include/project/hwinit.h" />
-		<Unit filename="include/project/inc_encoder.h" />
-		<Unit filename="include/project/param_prj.h" />
-		<Unit filename="include/project/pwmgeneration.h" />
-		<Unit filename="include/project/stm32_can.h" />
-		<Unit filename="include/project/temp_meas.h" />
-		<Unit filename="include/project/throttle.h" />
-		<Unit filename="src/generic/anain.cpp" />
-		<Unit filename="src/generic/digio.cpp" />
-		<Unit filename="src/generic/errormessage.cpp" />
-		<Unit filename="src/generic/foc.cpp">
-			<Option target="FieldOrientedControl" />
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="src/generic/fu.cpp" />
-		<Unit filename="src/generic/my_fp.c">
+		<Unit filename="include/anain_prj.h" />
+		<Unit filename="include/digio_prj.h" />
+		<Unit filename="include/errormessage_prj.h" />
+		<Unit filename="include/hwdefs.h" />
+		<Unit filename="include/hwinit.h" />
+		<Unit filename="include/inc_encoder.h" />
+		<Unit filename="include/param_prj.h" />
+		<Unit filename="include/pwmgeneration.h" />
+		<Unit filename="include/temp_meas.h" />
+		<Unit filename="include/throttle.h" />
+		<Unit filename="libopeninv/include/anain.h" />
+		<Unit filename="libopeninv/include/digio.h" />
+		<Unit filename="libopeninv/include/errormessage.h" />
+		<Unit filename="libopeninv/include/foc.h" />
+		<Unit filename="libopeninv/include/fu.h" />
+		<Unit filename="libopeninv/include/my_fp.h" />
+		<Unit filename="libopeninv/include/my_math.h" />
+		<Unit filename="libopeninv/include/my_string.h" />
+		<Unit filename="libopeninv/include/param_save.h" />
+		<Unit filename="libopeninv/include/params.h" />
+		<Unit filename="libopeninv/include/picontroller.h" />
+		<Unit filename="libopeninv/include/printf.h" />
+		<Unit filename="libopeninv/include/sine_core.h" />
+		<Unit filename="libopeninv/include/stm32_can.h" />
+		<Unit filename="libopeninv/include/stm32scheduler.h" />
+		<Unit filename="libopeninv/include/terminal.h" />
+		<Unit filename="libopeninv/src/anain.cpp" />
+		<Unit filename="libopeninv/src/digio.cpp" />
+		<Unit filename="libopeninv/src/errormessage.cpp" />
+		<Unit filename="libopeninv/src/foc.cpp" />
+		<Unit filename="libopeninv/src/fu.cpp" />
+		<Unit filename="libopeninv/src/my_fp.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/generic/my_string.c">
+		<Unit filename="libopeninv/src/my_string.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/generic/param_save.cpp" />
-		<Unit filename="src/generic/params.cpp" />
-		<Unit filename="src/generic/picontroller.cpp">
-			<Option target="FieldOrientedControl" />
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="src/generic/printf.c">
+		<Unit filename="libopeninv/src/param_save.cpp" />
+		<Unit filename="libopeninv/src/params.cpp" />
+		<Unit filename="libopeninv/src/picontroller.cpp" />
+		<Unit filename="libopeninv/src/printf.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/generic/sine_core.cpp" />
-		<Unit filename="src/generic/stm32scheduler.cpp" />
-		<Unit filename="src/generic/terminal.c">
+		<Unit filename="libopeninv/src/sine_core.cpp" />
+		<Unit filename="libopeninv/src/stm32_can.cpp" />
+		<Unit filename="libopeninv/src/stm32scheduler.cpp" />
+		<Unit filename="libopeninv/src/terminal.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/project/hwinit.cpp" />
-		<Unit filename="src/project/inc_encoder.cpp" />
-		<Unit filename="src/project/pwmgeneration-foc.cpp">
-			<Option target="FieldOrientedControl" />
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="src/project/pwmgeneration-sine.cpp">
-			<Option target="SlipControl" />
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="src/project/pwmgeneration.cpp" />
-		<Unit filename="src/project/stm32_can.cpp" />
-		<Unit filename="src/project/stm32_sine.cpp" />
-		<Unit filename="src/project/temp_meas.cpp" />
-		<Unit filename="src/project/terminal_prj.cpp" />
-		<Unit filename="src/project/throttle.cpp" />
+		<Unit filename="src/hwinit.cpp" />
+		<Unit filename="src/inc_encoder.cpp" />
+		<Unit filename="src/pwmgeneration-foc.cpp" />
+		<Unit filename="src/pwmgeneration-sine.cpp" />
+		<Unit filename="src/pwmgeneration.cpp" />
+		<Unit filename="src/stm32_sine.cpp" />
+		<Unit filename="src/temp_meas.cpp" />
+		<Unit filename="src/terminal_prj.cpp" />
+		<Unit filename="src/throttle.cpp" />
 		<Unit filename="stm32_sine.ld">
 			<Option target="SlipControl" />
 			<Option target="FieldOrientedControl" />
@@ -158,13 +140,13 @@
 		<Extensions>
 			<code_completion />
 			<debugger>
+				<remote_debugging target="FieldOrientedControl">
+					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" />
+				</remote_debugging>
 				<remote_debugging target="SlipControl">
 					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" />
 				</remote_debugging>
 				<remote_debugging target="Test">
-					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" />
-				</remote_debugging>
-				<remote_debugging target="FieldOrientedControl">
 					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" />
 				</remote_debugging>
 			</debugger>
