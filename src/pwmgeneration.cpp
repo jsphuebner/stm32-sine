@@ -137,18 +137,18 @@ void PwmGeneration::SetOpmode(int _opmode)
 
 extern "C" void tim1_brk_isr(void)
 {
-   if (!DigIo::Get(Pin::desat_in) && hwRev != HW_REV1 && hwRev != HW_BLUEPILL)
+   if (!DigIo::desat_in.Get() && hwRev != HW_REV1 && hwRev != HW_BLUEPILL)
       ErrorMessage::Post(ERR_DESAT);
-   else if (!DigIo::Get(Pin::emcystop_in) && hwRev != HW_REV3)
+   else if (!DigIo::emcystop_in.Get() && hwRev != HW_REV3)
       ErrorMessage::Post(ERR_EMCYSTOP);
-   else if (!DigIo::Get(Pin::mprot_in) && hwRev != HW_BLUEPILL)
+   else if (!DigIo::mprot_in.Get() && hwRev != HW_BLUEPILL)
       ErrorMessage::Post(ERR_MPROT);
    else //if (ocur || hwRev == HW_REV1)
       ErrorMessage::Post(ERR_OVERCURRENT);
 
    timer_disable_irq(PWM_TIMER, TIM_DIER_BIE);
    Param::SetInt(Param::opmode, MOD_OFF);
-   DigIo::Set(Pin::err_out);
+   DigIo::err_out.Set();
    tripped = true;
 }
 

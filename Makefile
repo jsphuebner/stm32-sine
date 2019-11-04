@@ -32,11 +32,11 @@ OBJCOPY		= $(PREFIX)-objcopy
 OBJDUMP		= $(PREFIX)-objdump
 MKDIR_P     = mkdir -p
 TERMINAL_DEBUG ?= 0
-CFLAGS		= -Os -Wall -Wextra -Iinclude/generic -Iinclude/project -Ilibopencm3/include \
+CFLAGS		= -Os -Wall -Wextra -Iinclude/ -Ilibopeninv/include -Ilibopencm3/include \
              -fno-common -fno-builtin -pedantic -DSTM32F1 -DT_DEBUG=$(TERMINAL_DEBUG) \
              -DCONTROL=CTRL_$(CONTROL) -DCTRL_SINE=0 -DCTRL_FOC=1 \
 				 -mcpu=cortex-m3 -mthumb -std=gnu99 -ffunction-sections -fdata-sections
-CPPFLAGS    = -Os -Wall -Wextra -Iinclude -Iinclude/generic -Iinclude/project -Ilibopencm3/include \
+CPPFLAGS    = -Os -Wall -Wextra -Iinclude/ -Ilibopeninv/include -Ilibopencm3/include \
             -fno-common -std=c++11 -pedantic -DSTM32F1 -DT_DEBUG=$(TERMINAL_DEBUG) \
              -DCONTROL=CTRL_$(CONTROL) -DCTRL_SINE=0 -DCTRL_FOC=1 \
 				-ffunction-sections -fdata-sections -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -mcpu=cortex-m3 -mthumb
@@ -54,8 +54,8 @@ ifeq ($(CONTROL), FOC)
 endif
 
 OBJS     = $(subst $(space),$(space)$(OUT_DIR)/, $(OBJSL))
-vpath %.c src/project src/generic
-vpath %.cpp src/project src/generic
+vpath %.c src/ libopeninv/src
+vpath %.cpp src/ libopeninv/src
 
 OPENOCD_BASE	= /usr
 OPENOCD		= $(OPENOCD_BASE)/bin/openocd
