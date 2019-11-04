@@ -2,6 +2,7 @@
 obj
 linker.map
 sinus.layout
-stm32_*
 sinus.cscope_file_list
 updater.py
+*.hex
+*.bin
