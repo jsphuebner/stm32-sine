@@ -378,7 +378,7 @@ void Encoder::InitTimerSingleChannelMode()
    /* Save timer value on input pulse with smaller filter constant */
    timer_ic_set_filter(REV_CNT_TIMER, REV_CNT_IC, selectedConfig->captureFilter);
    timer_ic_set_input(REV_CNT_TIMER, REV_CNT_IC, TIM_IC_IN_TI1);
-   timer_set_oc_polarity_high(REV_CNT_TIMER, REV_CNT_OC);
+   timer_set_oc_polarity_low(REV_CNT_TIMER, REV_CNT_OC);
    timer_ic_enable(REV_CNT_TIMER, REV_CNT_IC);
 
    timer_enable_irq(REV_CNT_TIMER, REV_CNT_DMAEN);
@@ -444,6 +444,7 @@ void Encoder::InitTimerABZMode()
 
 void Encoder::InitResolverMode()
 {
+   //The first injected channel is always noisy, so we insert one dummy channel
    uint8_t channels[3] = { 0, 6, 7 };
 
    adc_set_injected_sequence(ADC1, sizeof(channels), channels);
@@ -586,11 +587,11 @@ int Encoder::GetPulseTimeFiltered()
 {
    static int lastN = 0;
    static int noMovement = 0;
-   uint16_t n = REV_CNT_DMA_CNDTR;
-   uint16_t measTm = REV_CNT_CCR;
+   int n = dma_get_number_of_data(DMA1, REV_CNT_DMACHAN);
+   int measTm = timer_get_ic_value(REV_CNT_TIMER, REV_CNT_IC);
    int pulses = n <= lastN ? lastN - n : lastN + MAX_REVCNT_VALUES - n;
-   uint32_t max = 0;
-   uint32_t min = 0xFFFF;
+   int max = 0;
+   int min = 0xFFFF;
    lastN = n;
 
    GetMinMaxTime(min, max);
@@ -632,9 +633,9 @@ int Encoder::GetPulseTimeFiltered()
    return pulses;
 }
 
-void Encoder::GetMinMaxTime(uint32_t& min, uint32_t& max)
+void Encoder::GetMinMaxTime(int& min, int& max)
 {
-   for (uint32_t i = 0; i < MAX_REVCNT_VALUES; i++)
+   for (int i = 0; i < MAX_REVCNT_VALUES; i++)
    {
       min = MIN(min, timdata[i]);
       max = MAX(max, timdata[i]);
