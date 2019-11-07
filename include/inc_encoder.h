@@ -39,7 +39,6 @@ private:
    static uint16_t DecodeAngle(bool invert);
    static int GetPulseTimeFiltered();
    static void GetMinMaxTime(uint32_t& min, uint32_t& max);
-   static void DMASetup();
 };
 
 #endif // INC_ENCODER_H_INCLUDED

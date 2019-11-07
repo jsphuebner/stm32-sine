@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.62.R
+#define VER 4.64.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -158,8 +158,6 @@
     PARAM_ENTRY(CAT_MOTOR,   dofsramp,    "",        0,      10000,  1000,   117 ) \
     PARAM_ENTRY(CAT_MOTOR,   frqfac,      "dig/Hz",  -10000, 10000,  10,     116 ) \
     PARAM_ENTRY(CAT_MOTOR,   dmargin,     "Hz",      -10000, 0,      -1000,  113 ) \
-    PARAM_ENTRY(CAT_MOTOR,   fweak,       "Hz",      0,      1000,   90,     2   ) \
-    PARAM_ENTRY(CAT_MOTOR,   idweak,      "A/Hz",    -2,     2,      0,      112 ) \
     PARAM_ENTRY(CAT_MOTOR,   polepairs,   "",        1,      16,     2,      32  ) \
     PARAM_ENTRY(CAT_MOTOR,   respolepairs,"",        1,      16,     1,      93  ) \
     PARAM_ENTRY(CAT_MOTOR,   encmode,     ENCMODES,  0,      5,      0,      75  ) \
@@ -185,7 +183,6 @@
     PARAM_ENTRY(CAT_DERATE,  bmslimlow,   "%",       -100,   0,      -1,     56  ) \
     PARAM_ENTRY(CAT_DERATE,  udcmin,      "V",       0,      1000,   450,    42  ) \
     PARAM_ENTRY(CAT_DERATE,  udcmax,      "V",       0,      1000,   520,    43  ) \
-    PARAM_ENTRY(CAT_DERATE,  iacmax,      "A",       0,      5000,   5000,   89  ) \
     PARAM_ENTRY(CAT_DERATE,  idcmax,      "A",       0,      5000,   5000,   96  ) \
     PARAM_ENTRY(CAT_DERATE,  idcmin,      "A",       -5000,  0,     -5000,   98  ) \
     PARAM_ENTRY(CAT_DERATE,  throtmax,    "%",       0,      100,   100,     97  ) \

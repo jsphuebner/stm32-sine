@@ -327,19 +327,6 @@ u32fp Encoder::CalcFrequencyFromAngleDifference(uint16_t angle)
    return frq;
 }
 
-void Encoder::DMASetup()
-{
-   dma_disable_channel(DMA1, REV_CNT_DMACHAN);
-   dma_set_peripheral_address(DMA1, REV_CNT_DMACHAN, REV_CNT_CCR_PTR);
-   dma_set_memory_address(DMA1, REV_CNT_DMACHAN, (uint32_t)timdata);
-   dma_set_peripheral_size(DMA1, REV_CNT_DMACHAN, DMA_CCR_PSIZE_16BIT);
-   dma_set_memory_size(DMA1, REV_CNT_DMACHAN, DMA_CCR_MSIZE_16BIT);
-   dma_set_number_of_data(DMA1, REV_CNT_DMACHAN, MAX_REVCNT_VALUES);
-   dma_enable_memory_increment_mode(DMA1, REV_CNT_DMACHAN);
-   dma_enable_circular_mode(DMA1, REV_CNT_DMACHAN);
-   dma_enable_channel(DMA1, REV_CNT_DMACHAN);
-}
-
 void Encoder::InitTimerSingleChannelMode()
 {
    const ENCODER_CONFIG* currentConfig = &encoderConfigurations[0];
@@ -391,7 +378,7 @@ void Encoder::InitTimerSingleChannelMode()
    /* Save timer value on input pulse with smaller filter constant */
    timer_ic_set_filter(REV_CNT_TIMER, REV_CNT_IC, selectedConfig->captureFilter);
    timer_ic_set_input(REV_CNT_TIMER, REV_CNT_IC, TIM_IC_IN_TI1);
-   TIM_CCER(REV_CNT_TIMER) |= REV_CNT_CCER; //No API function yet available
+   timer_set_oc_polarity_high(REV_CNT_TIMER, REV_CNT_OC);
    timer_ic_enable(REV_CNT_TIMER, REV_CNT_IC);
 
    timer_enable_irq(REV_CNT_TIMER, REV_CNT_DMAEN);
@@ -401,8 +388,17 @@ void Encoder::InitTimerSingleChannelMode()
    timer_enable_counter(REV_CNT_TIMER);
    gpio_set_mode(NORTH_EXC_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, NORTH_EXC_PIN);
    gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO6 | GPIO7);
-   DMASetup();
-   exti_disable_request(EXTI2);
+   exti_disable_request(NORTH_EXC_EXTI);
+
+   dma_disable_channel(DMA1, REV_CNT_DMACHAN);
+   dma_set_peripheral_address(DMA1, REV_CNT_DMACHAN, REV_CNT_CCR_PTR);
+   dma_set_memory_address(DMA1, REV_CNT_DMACHAN, (uint32_t)timdata);
+   dma_set_peripheral_size(DMA1, REV_CNT_DMACHAN, DMA_CCR_PSIZE_16BIT);
+   dma_set_memory_size(DMA1, REV_CNT_DMACHAN, DMA_CCR_MSIZE_16BIT);
+   dma_set_number_of_data(DMA1, REV_CNT_DMACHAN, MAX_REVCNT_VALUES);
+   dma_enable_memory_increment_mode(DMA1, REV_CNT_DMACHAN);
+   dma_enable_circular_mode(DMA1, REV_CNT_DMACHAN);
+   dma_enable_channel(DMA1, REV_CNT_DMACHAN);
 }
 
 void Encoder::InitSPIMode()
