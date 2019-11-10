@@ -39,6 +39,7 @@ static bool regen = false;
 static s32fp idref = 0;
 static PiController qController;
 static PiController dController;
+static PiController dControllerRegen;
 static PiController fwController;
 
 void PwmGeneration::Run()
@@ -48,7 +49,7 @@ void PwmGeneration::Run()
       int dir = Param::GetInt(Param::dir);
       uint16_t dc[3];
       s32fp id, iq;
-      static int32_t offsetRamped = 0, fwIdRef = 0;
+      static int32_t fwIdRef = 0, udRamped = 0;
 
       Encoder::UpdateRotorAngle(dir);
 
@@ -61,40 +62,42 @@ void PwmGeneration::Run()
 
       ProcessCurrents(id, iq);
 
-      int32_t dofs = regen ? 0 : FP_TOINT(-Param::GetInt(Param::frqfac) * frq);
+      int32_t dofs = FP_TOINT(-Param::GetInt(Param::frqfac) * frq);
       int32_t qofs = FP_TOINT(Param::GetInt(Param::frqfac) * frq);
 
-      if (dofs < offsetRamped)
-      {
-         offsetRamped = RAMPDOWN(offsetRamped, dofs, Param::GetInt(Param::dofsramp));
-      }
-      else
-      {
-         offsetRamped = RAMPUP(offsetRamped, dofs, Param::GetInt(Param::dofsramp));
-      }
-
-      dController.SetOffset(offsetRamped);
+      dController.SetOffset(dofs);
       qController.SetOffset(qofs);
 
       dController.SetRef(idref + fwIdRef);
-      int32_t ud = dController.Run(id);
-      int32_t qlimit = FOC::GetQLimit(ud);
+      dControllerRegen.SetRef(idref + fwIdRef);
+      int32_t ud = regen ? dControllerRegen.Run(id) : dController.Run(id);
+
+      if (ud < udRamped)
+      {
+         udRamped = RAMPDOWN(udRamped, ud, Param::GetInt(Param::dofsramp));
+      }
+      else
+      {
+         udRamped = RAMPUP(udRamped, ud, Param::GetInt(Param::dofsramp));
+      }
+
+      int32_t qlimit = FOC::GetQLimit(udRamped);
       qController.SetMinMaxY(-qlimit, qlimit);
       int32_t uq = qController.Run(iq);
-      FOC::InvParkClarke(ud, uq, angle);
+      FOC::InvParkClarke(udRamped, uq, angle);
       //Calculate extra field weakening current for the next cycle
-      fwIdRef = fwController.Run(FOC::GetTotalVoltage(ud, uq) >> 5);
+      fwIdRef = fwController.Run(FOC::GetTotalVoltage(udRamped, uq) >> 5);
 
       s32fp idc = (iq * uq) / FOC::GetMaximumModulationIndex();
 
       Param::SetFlt(Param::fstat, frq);
       Param::SetFlt(Param::angle, DIGIT_TO_DEGREE(angle));
-      Param::SetInt(Param::ud, ud);
+      Param::SetInt(Param::ud, udRamped);
       Param::SetInt(Param::uq, uq);
       Param::SetInt(Param::qofs, qofs);
       Param::SetInt(Param::dofs, dofs);
       Param::SetFlt(Param::idc, idc);
-      Param::SetFlt(Param::dspnt, dController.GetRef());
+      Param::SetFlt(Param::dspnt, fwIdRef);
       Param::SetFlt(Param::qspnt, qController.GetRef());
 
       /* Shut down PWM on stopped motor, neutral gear or init phase */
@@ -102,6 +105,7 @@ void PwmGeneration::Run()
       {
          timer_disable_break_main_output(PWM_TIMER);
          dController.ResetIntegrator();
+         dControllerRegen.ResetIntegrator();
          qController.ResetIntegrator();
          fwController.ResetIntegrator();
       }
@@ -178,6 +182,7 @@ void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp)
 {
    qController.SetGains(kp, ki);
    dController.SetGains(kp, ki);
+   dControllerRegen.SetGains(kp, ki);
    fwController.SetGains(fwkp, 0);
 }
 
@@ -194,6 +199,9 @@ void PwmGeneration::PwmInit()
    dController.ResetIntegrator();
    dController.SetCallingFrequency(pwmfrq);
    dController.SetMinMaxY(-maxVd, maxVd);
+   dControllerRegen.ResetIntegrator();
+   dControllerRegen.SetCallingFrequency(pwmfrq);
+   dControllerRegen.SetMinMaxY(-maxVd, maxVd);
    fwController.ResetIntegrator();
    fwController.SetCallingFrequency(pwmfrq);
    fwController.SetMinMaxY(-FP_FROMINT(500), 0);

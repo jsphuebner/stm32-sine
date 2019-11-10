@@ -32,7 +32,7 @@
     DIG_IO_ENTRY(cruise_in,   GPIOB, GPIO5,  PinMode::INPUT_FLT)   \
     DIG_IO_ENTRY(mprot_in,    GPIOB, GPIO1,  PinMode::INPUT_FLT)    \
     DIG_IO_ENTRY(emcystop_in, GPIOB, GPIO1,  PinMode::INPUT_FLT)   \
-    DIG_IO_ENTRY(bk_in,       GPIOB, GPIO12, PinMode::INPUT_FLT)   \
+    DIG_IO_ENTRY(bk_in,       GPIOB, GPIO12, PinMode::INPUT_PU)   \
     DIG_IO_ENTRY(bms_in,      GPIOD, GPIO15, PinMode::INPUT_FLT) /* non-existant */  \
     DIG_IO_ENTRY(ocur_in,     GPIOD, GPIO15, PinMode::INPUT_FLT) /* non-existant */  \
     DIG_IO_ENTRY(desat_in,    GPIOD, GPIO15, PinMode::INPUT_FLT) /* non-existant */  \

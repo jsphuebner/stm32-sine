@@ -33,6 +33,7 @@
 #define SHIFT_90DEG  (uint16_t)16384
 #define FRQ_TO_ANGLE(frq) FP_TOINT((frq << SineCore::BITS) / pwmfrq)
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
+#define FRQ_DIVIDER 8192 //PWM ISR callback frequency divider
 
 uint16_t PwmGeneration::pwmfrq;
 uint16_t PwmGeneration::angle;
@@ -89,7 +90,7 @@ void PwmGeneration::SetCurrentOffset(int offset1, int offset2)
 int PwmGeneration::GetCpuLoad()
 {
    //PWM period 2x counter because of center aligned mode
-   return (1000 * execTicks) / (2 << pwmdigits);
+   return (1000 * execTicks) / FRQ_DIVIDER;
 }
 
 void PwmGeneration::SetOpmode(int _opmode)
@@ -301,16 +302,30 @@ s32fp PwmGeneration::GetCurrent(AnaIn::AnaIns input, s32fp offset, s32fp gain)
 *
 * @param[in] deadtime Deadtime between bottom and top (coded value, consult STM32 manual)
 * @param[in] pwmpol Output Polarity. 0=Active High, 1=Active Low
-* @return PWM frequency
+* @return PWM ISR callback frequency
 */
 uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
 {
+   ///There are two update events per PWM period
+   ///One when counter reaches top, one when it reaches bottom
+   ///We set the repetition counter in a way, that the ISR
+   ///Callback frequency is constant i.e. independent from PWM frequency
+   ///- for 17.6 kHz: call ISR every four update events (that is every other period)
+   ///- for 8.8kHz: call ISR every other update event (that is once per PWM period)
+   ///- for 4.4kHz: call ISR on every update event (that is twice per period)
+   const uint8_t repCounters[] = { 3, 1, 0 };
    const uint16_t pwmmax = 1U << pwmdigits;
-   uint8_t outputMode = pwmpol ? GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN : GPIO_CNF_OUTPUT_ALTFN_PUSHPULL;
+   const uint8_t outputMode = pwmpol ? GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN : GPIO_CNF_OUTPUT_ALTFN_PUSHPULL;
+
+   //Disable output in active low mode before resetting timer, otherwise shoot through will occur!
+   if (pwmpol)
+   {
+      gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO8 | GPIO9 | GPIO10);
+      gpio_set_mode(GPIOB, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO13 | GPIO14 | GPIO15);
+   }
 
    rcc_periph_reset_pulse(PWM_TIMRST);
-   /* disable timer */
-   timer_disable_counter(PWM_TIMER);
+
    /* Center aligned PWM */
    timer_set_alignment(PWM_TIMER, TIM_CR1_CMS_CENTER_1);
    timer_enable_preload(PWM_TIMER);
@@ -322,7 +337,7 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
       timer_set_oc_idle_state_unset(PWM_TIMER, (tim_oc_id)channel);
       timer_set_oc_value(PWM_TIMER, (tim_oc_id)channel, 0);
 
-      if (pwmpol)
+      if (pwmpol) //Active low
          timer_set_oc_polarity_low(PWM_TIMER, (tim_oc_id)channel);
       else
          timer_set_oc_polarity_high(PWM_TIMER, (tim_oc_id)channel);
@@ -339,14 +354,13 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
    timer_set_enabled_off_state_in_run_mode(PWM_TIMER);
    timer_set_enabled_off_state_in_idle_mode(PWM_TIMER);
    timer_set_deadtime(PWM_TIMER, deadtime);
-   timer_clear_flag(PWM_TIMER, TIM_SR_BIF);
-   timer_enable_irq(PWM_TIMER, TIM_DIER_UIE);
-   timer_enable_irq(PWM_TIMER, TIM_DIER_BIE);
+   timer_clear_flag(PWM_TIMER, TIM_SR_UIF | TIM_SR_BIF);
+   timer_enable_irq(PWM_TIMER, TIM_DIER_UIE | TIM_DIER_BIE);
 
    timer_set_prescaler(PWM_TIMER, 0);
    /* PWM frequency */
    timer_set_period(PWM_TIMER, pwmmax);
-   timer_set_repetition_counter(PWM_TIMER, 1);
+   timer_set_repetition_counter(PWM_TIMER, repCounters[pwmdigits - MIN_PWM_DIGITS]);
 
    timer_generate_event(PWM_TIMER, TIM_EGR_UG);
 
@@ -354,8 +368,8 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
 
    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, outputMode, GPIO8 | GPIO9 | GPIO10);
    gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, outputMode, GPIO13 | GPIO14 | GPIO15);
-
-   return rcc_apb2_frequency / (uint32_t)(2 * pwmmax);
+   //Callback frequency is constant because we use the repetition counter
+   return rcc_apb2_frequency / FRQ_DIVIDER;
 }
 
 void PwmGeneration::AcHeatTimerSetup()

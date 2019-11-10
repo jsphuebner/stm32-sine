@@ -140,11 +140,11 @@
 		<Extensions>
 			<code_completion />
 			<debugger>
-				<remote_debugging target="FieldOrientedControl">
-					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" />
-				</remote_debugging>
 				<remote_debugging target="SlipControl">
-					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" />
+					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" additional_cmds="load&#x0A;r" />
+				</remote_debugging>
+				<remote_debugging target="FieldOrientedControl">
+					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" additional_cmds="load&#x0A;r" />
 				</remote_debugging>
 				<remote_debugging target="Test">
 					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" />
