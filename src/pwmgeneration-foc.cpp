@@ -41,6 +41,7 @@ static PiController qController;
 static PiController dController;
 static PiController dControllerRegen;
 static PiController fwController;
+static PiController fwController2;
 
 void PwmGeneration::Run()
 {
@@ -68,8 +69,9 @@ void PwmGeneration::Run()
       dController.SetOffset(dofs);
       qController.SetOffset(qofs);
 
-      dController.SetRef(idref + fwIdRef);
-      dControllerRegen.SetRef(idref + fwIdRef);
+      s32fp fwIdRef2 = fwController2.Run(iq);
+      dController.SetRef(idref + fwIdRef + fwIdRef2);
+      dControllerRegen.SetRef(idref + fwIdRef + fwIdRef2);
       int32_t ud = regen ? dControllerRegen.Run(id) : dController.Run(id);
 
       if (ud < udRamped)
@@ -97,7 +99,7 @@ void PwmGeneration::Run()
       Param::SetInt(Param::qofs, qofs);
       Param::SetInt(Param::dofs, dofs);
       Param::SetFlt(Param::idc, idc);
-      Param::SetFlt(Param::dspnt, fwIdRef);
+      Param::SetFlt(Param::dspnt, fwIdRef2);
       Param::SetFlt(Param::qspnt, qController.GetRef());
 
       /* Shut down PWM on stopped motor, neutral gear or init phase */
@@ -108,6 +110,7 @@ void PwmGeneration::Run()
          dControllerRegen.ResetIntegrator();
          qController.ResetIntegrator();
          fwController.ResetIntegrator();
+         fwController2.ResetIntegrator();
       }
       else
       {
@@ -173,17 +176,19 @@ void PwmGeneration::SetTorquePercent(s32fp torquePercent)
    FOC::Mtpa(is, id, iq);
 
    qController.SetRef(FP_FROMINT(iq));
+   fwController2.SetRef(FP_FROMINT(iq));
    //dController.SetRef(id);
    idref = FP_FROMINT(id);
    //dController.SetRef(idref);
 }
 
-void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp)
+void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp, int fwkp2)
 {
    qController.SetGains(kp, ki);
    dController.SetGains(kp, ki);
    dControllerRegen.SetGains(kp, ki);
    fwController.SetGains(fwkp, 0);
+   fwController2.SetGains(fwkp2, 0);
 }
 
 void PwmGeneration::PwmInit()
@@ -206,6 +211,9 @@ void PwmGeneration::PwmInit()
    fwController.SetCallingFrequency(pwmfrq);
    fwController.SetMinMaxY(-FP_FROMINT(500), 0);
    fwController.SetRef(1024); //We right shift the modulation index by 5 to effectively have less gain
+   fwController2.ResetIntegrator();
+   fwController2.SetCallingFrequency(pwmfrq);
+   fwController2.SetMinMaxY(-FP_FROMINT(500), 0);
 
    if (opmode == MOD_ACHEAT)
       AcHeatTimerSetup();

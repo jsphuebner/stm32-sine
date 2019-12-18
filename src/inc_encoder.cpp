@@ -59,6 +59,9 @@ static const ENCODER_CONFIG encoderConfigurations[] =
 static const ENCODER_CONFIG * selectedConfig = &encoderConfigurations[0];
 static uint32_t pulseMeasFrq = selectedConfig->pulseMeasFrequency;
 
+//Delay in µs between generating an edge on the exciter output and measuring the
+//Return values via ADC - Found this by scoping
+static const uint16_t resolverSampleDelay = 40;
 static volatile uint16_t timdata[MAX_REVCNT_VALUES];
 static volatile uint16_t angle = 0;
 static uint16_t pulsesPerTurn = 0;
@@ -66,7 +69,6 @@ static uint32_t lastPulseTimespan = 0;
 static uint32_t anglePerPulse = 0;
 static uint32_t fullTurns = 0;
 static uint32_t pwmFrq = 1;
-static uint32_t resolverSampleDelay = 0;
 static u32fp lastFrequency = 0;
 static bool ignore = true;
 static enum Encoder::mode encMode = Encoder::INVALID;
@@ -126,7 +128,6 @@ void Encoder::SetMode(Encoder::mode mode)
 void Encoder::SetPwmFrequency(uint32_t frq)
 {
    pwmFrq = frq;
-   resolverSampleDelay = (40 * 8800) / frq; //We know at 8.8kHz we need a delay of 40µs
 }
 
 /** set number of impulses per shaft rotation
@@ -519,11 +520,6 @@ uint16_t Encoder::GetAngleSPI()
 /** Calculates current angle and velocity from resolver feedback
  *  and generates square wave that is filtered
  *  into a sine wave for resolver excitation
- *
- * For different PWM frequencies you need to populate different
- * resistor values on the 3-pole filter.
- * PWM Frequency  8.8kHz: (510+10k), 3k3, 3k3
- * PWM Frequency 17.6kHz: (3k3+3k3), 1k2, 1k2
  */
 uint16_t Encoder::GetAngleResolver()
 {

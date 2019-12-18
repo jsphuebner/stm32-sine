@@ -149,12 +149,13 @@
 //Next value Id: 2040
 
 #elif CONTROL == CTRL_FOC
-//Next param id (increase when adding new parameter!): 118
+//Next param id (increase when adding new parameter!): 119
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      10000,  64,     107 ) \
     PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      10000,  256,    108 ) \
     PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        0,      10000,  1,      114 ) \
+    PARAM_ENTRY(CAT_MOTOR,   fwkp2,       "",        -10000, 0,      -1,     118 ) \
     PARAM_ENTRY(CAT_MOTOR,   dofsramp,    "",        0,      10000,  1000,   117 ) \
     PARAM_ENTRY(CAT_MOTOR,   frqfac,      "dig/Hz",  -10000, 10000,  10,     116 ) \
     PARAM_ENTRY(CAT_MOTOR,   dmargin,     "Hz",      -10000, 0,      -1000,  113 ) \
