@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.65.R
+#define VER 4.67.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -93,7 +93,7 @@
     PARAM_ENTRY(CAT_AUTOM,   idlemode,    IDLEMODS,  0,      2,      0,      66  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedkp,     "",        0,      100,    0.25,   53  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedflt,    "",        0,      16,     5,      57  ) \
-    PARAM_ENTRY(CAT_AUTOM,   cruisemode,  BTNSWITCH, 0,      1,      0,      62  ) \
+    PARAM_ENTRY(CAT_AUTOM,   cruisemode,  BTNSWITCH, 0,      2,      0,      62  ) \
     PARAM_ENTRY(CAT_CONTACT, udcsw,       "V",       0,      1000,   330,    20  ) \
     PARAM_ENTRY(CAT_CONTACT, udcswbuck,   "V",       0,      1000,   540,    80  ) \
     PARAM_ENTRY(CAT_CONTACT, tripmode,    TRIPMODES, 0,      2,      0,      86  ) \
@@ -120,6 +120,7 @@
     VALUE_ENTRY(fweakcalc,   "Hz",    2010 ) \
     VALUE_ENTRY(fstat,       "Hz",    2011 ) \
     VALUE_ENTRY(speed,       "rpm",   2012 ) \
+    VALUE_ENTRY(cruisespeed, "rpm",   2041 ) \
     VALUE_ENTRY(turns,       "",      2037 ) \
     VALUE_ENTRY(amp,         "dig",   2013 ) \
     VALUE_ENTRY(angle,       "°",     2014 ) \
@@ -142,11 +143,7 @@
     VALUE_ENTRY(din_ocur,    OKERR,   2030 ) \
     VALUE_ENTRY(din_desat,   OKERR,   2031 ) \
     VALUE_ENTRY(din_bms,     ONOFF,   2032 ) \
-    VALUE_ENTRY(cpuload,     "%",     2035 ) \
-
-/*    VALUE_ENTRY(sin,     "", 2100    ) \
-    VALUE_ENTRY(cos,     "", 2101    )*/
-//Next value Id: 2040
+    VALUE_ENTRY(cpuload,     "%",     2035 )
 
 #elif CONTROL == CTRL_FOC
 //Next param id (increase when adding new parameter!): 119
@@ -211,7 +208,7 @@
     PARAM_ENTRY(CAT_AUTOM,   idlemode,    IDLEMODS,  0,      3,      0,      66  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedkp,     "",        0,      100,    0.25,   53  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedflt,    "",        0,      16,     5,      57  ) \
-    PARAM_ENTRY(CAT_AUTOM,   cruisemode,  BTNSWITCH, 0,      1,      0,      62  ) \
+    PARAM_ENTRY(CAT_AUTOM,   cruisemode,  BTNSWITCH, 0,      2,      0,      62  ) \
     PARAM_ENTRY(CAT_CONTACT, udcsw,       "V",       0,      1000,   330,    20  ) \
     PARAM_ENTRY(CAT_CONTACT, udcswbuck,   "V",       0,      1000,   540,    80  ) \
     PARAM_ENTRY(CAT_CONTACT, tripmode,    TRIPMODES, 0,      2,      0,      86  ) \
@@ -220,6 +217,8 @@
     PARAM_ENTRY(CAT_PWM,     pwmofs,      "dig",     -65535, 65535,  0,      41  ) \
     PARAM_ENTRY(CAT_COMM,    canspeed,    CANSPEEDS, 0,      3,      0,      83  ) \
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      88  ) \
+    PARAM_ENTRY(CAT_TEST,    manualiq,    "A",       -200,   200,    0,      0  ) \
+    PARAM_ENTRY(CAT_TEST,    manualid,    "A",       -200,   200,    0,      0  ) \
     VALUE_ENTRY(version,     VERSTR,  2039 ) \
     VALUE_ENTRY(hwver,       HWREVS,  2036 ) \
     VALUE_ENTRY(opmode,      OPMODES, 2000 ) \
@@ -234,6 +233,7 @@
     VALUE_ENTRY(uac,         "V",     2006 ) \
     VALUE_ENTRY(fstat,       "Hz",    2011 ) \
     VALUE_ENTRY(speed,       "rpm",   2012 ) \
+    VALUE_ENTRY(cruisespeed, "rpm",   2041 ) \
     VALUE_ENTRY(turns,       "",      2037 ) \
     VALUE_ENTRY(amp,         "dig",   2013 ) \
     VALUE_ENTRY(ampnom,      "dig",   2040 ) \
@@ -265,11 +265,9 @@
     VALUE_ENTRY(dofs,     "dig",     22035 ) \
     VALUE_ENTRY(qofs,     "dig",     22035 ) \
     VALUE_ENTRY(dspnt,     "dig",     22035 ) \
-    VALUE_ENTRY(qspnt,     "dig",     22035 ) \
+    VALUE_ENTRY(qspnt,     "dig",     22035 )
 
-/*    VALUE_ENTRY(sin,     "", 2100    ) \
-    VALUE_ENTRY(cos,     "", 2101    )*/
-//Next value Id: 2041
+//Next value Id: 2042
 #endif // CONTROL
 
 /***** Enum String definitions *****/
@@ -281,7 +279,7 @@
 #define SNS_HS       "0=JCurve, 1=Semikron, 2=MBB600, 3=KTY81, 4=PT1000, 5=NTCK45_2k2, 6=Leaf"
 #define SNS_M        "12=KTY83-110, 13=KTY84-130, 14=Leaf"
 #define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=speedfrq"
-#define BTNSWITCH    "0=Button, 1=Switch"
+#define BTNSWITCH    "0=Button, 1=Switch, 2=CAN"
 #define DIRMODES     "0=Button, 1=Switch, 2=ButtonReversed, 3=SwitchReversed"
 #define IDLEMODS     "0=always, 1=nobrake, 2=cruise, 3=off"
 #define ONOFF        "0=Off, 1=On, 2=na"
@@ -307,7 +305,6 @@
 #define CAT_COMM     "Communication"
 
 /***** enums ******/
-#define BUTTON 0
 
 #define CAN_PERIOD_100MS    0
 #define CAN_PERIOD_10MS     1
@@ -317,6 +314,13 @@
 #elif CONTROL == CTRL_FOC
 #define VERSTR STRINGIFY(4=VER-foc)
 #endif // CONTROL
+
+enum cruisemodes
+{
+   CRUISE_BUTTON = 0,
+   CRUISE_SWITCH = 1,
+   CRUISE_CAN = 2
+};
 
 enum _potmodes
 {

@@ -72,7 +72,7 @@ static void CruiseControl()
    }
    else
    {
-      if (Param::GetInt(Param::cruisemode) == BUTTON)
+      if (Param::GetInt(Param::cruisemode) == CRUISE_BUTTON)
       {
          //Enable/update cruise control when button is pressed
          if (Param::GetBool(Param::din_cruise))
@@ -80,7 +80,7 @@ static void CruiseControl()
             Throttle::cruiseSpeed = Encoder::GetSpeed();
          }
       }
-      else //if cruiseMode == SWITCH
+      else if (Param::GetInt(Param::cruisemode) == CRUISE_SWITCH)
       {
          //Enable/update cruise control when switch is toggled on
          if (Param::GetBool(Param::din_cruise) && !lastState)
@@ -94,6 +94,15 @@ static void CruiseControl()
             Throttle::cruiseSpeed = -1;
          }
       }
+      else if (Param::GetInt(Param::cruisemode) == CRUISE_CAN)
+      {
+         Throttle::cruiseSpeed = Param::GetInt(Param::cruisespeed);
+      }
+   }
+
+   if (Param::GetInt(Param::cruisemode) != CRUISE_CAN)
+   {
+      Param::SetInt(Param::cruisespeed, Throttle::cruiseSpeed);
    }
 
    lastState = Param::GetBool(Param::din_cruise);

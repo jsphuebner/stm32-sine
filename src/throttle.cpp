@@ -151,7 +151,18 @@ s32fp Throttle::CalcCruiseSpeed(int speed)
 {
    speedFiltered = IIRFILTER(speedFiltered, speed, speedflt);
    int speederr = cruiseSpeed - speedFiltered;
-   return MAX(FP_FROMINT(brkmax), MIN(FP_FROMINT(100), speedkp * speederr));
+   s32fp potnom = MAX(FP_FROMINT(brkmax), MIN(FP_FROMINT(100), speedkp * speederr));
+
+   if (potnom >= throttleRamped)
+   {
+      throttleRamped = RAMPUP(throttleRamped, potnom, throttleRamp);
+   }
+   else
+   {
+      throttleRamped = RAMPDOWN(throttleRamped, potnom, throttleRamp);
+   }
+
+   return throttleRamped;
 }
 
 bool Throttle::TemperatureDerate(s32fp tmphs, s32fp& finalSpnt)

@@ -54,9 +54,7 @@ void PwmGeneration::Run()
 
       Encoder::UpdateRotorAngle(dir);
 
-      if (opmode == MOD_SINE)
-         CalcNextAngleConstant(dir);
-      else if (Encoder::IsSyncMode())
+      if (Encoder::IsSyncMode())
          CalcNextAngleSync(dir);
       else
          CalcNextAngleAsync(dir);
@@ -69,18 +67,27 @@ void PwmGeneration::Run()
       dController.SetOffset(dofs);
       qController.SetOffset(qofs);
 
-      s32fp fwIdRef2 = fwController2.Run(iq);
-      dController.SetRef(idref + fwIdRef + fwIdRef2);
-      dControllerRegen.SetRef(idref + fwIdRef + fwIdRef2);
-      int32_t ud = regen ? dControllerRegen.Run(id) : dController.Run(id);
+      if (opmode == MOD_RUN)
+      {
+         s32fp fwIdRef2 = fwController2.Run(iq);
+         dController.SetRef(idref + fwIdRef + fwIdRef2);
+         dControllerRegen.SetRef(idref + fwIdRef + fwIdRef2);
+         int32_t ud = regen ? dControllerRegen.Run(id) : dController.Run(id);
 
-      if (ud < udRamped)
-      {
-         udRamped = RAMPDOWN(udRamped, ud, Param::GetInt(Param::dofsramp));
+         if (ud < udRamped)
+         {
+            udRamped = RAMPDOWN(udRamped, ud, Param::GetInt(Param::dofsramp));
+         }
+         else
+         {
+            udRamped = RAMPUP(udRamped, ud, Param::GetInt(Param::dofsramp));
+         }
       }
-      else
+      else if (opmode == MOD_MANUAL)
       {
-         udRamped = RAMPUP(udRamped, ud, Param::GetInt(Param::dofsramp));
+         dController.SetRef(Param::Get(Param::manualid));
+         qController.SetRef(Param::Get(Param::manualiq));
+         udRamped = dController.Run(id);
       }
 
       int32_t qlimit = FOC::GetQLimit(udRamped);
@@ -99,7 +106,7 @@ void PwmGeneration::Run()
       Param::SetInt(Param::qofs, qofs);
       Param::SetInt(Param::dofs, dofs);
       Param::SetFlt(Param::idc, idc);
-      Param::SetFlt(Param::dspnt, fwIdRef2);
+      Param::SetFlt(Param::dspnt, dController.GetRef());
       Param::SetFlt(Param::qspnt, qController.GetRef());
 
       /* Shut down PWM on stopped motor, neutral gear or init phase */
