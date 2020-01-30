@@ -85,9 +85,11 @@ void PwmGeneration::Run()
       }
       else if (opmode == MOD_MANUAL)
       {
-         dController.SetRef(Param::Get(Param::manualid));
+         idref = Param::Get(Param::manualid);
+         dController.SetRef(idref);
          qController.SetRef(Param::Get(Param::manualiq));
          udRamped = dController.Run(id);
+
       }
 
       int32_t qlimit = FOC::GetQLimit(udRamped);

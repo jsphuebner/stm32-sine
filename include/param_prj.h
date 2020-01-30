@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.67.R
+#define VER 4.69.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -217,8 +217,8 @@
     PARAM_ENTRY(CAT_PWM,     pwmofs,      "dig",     -65535, 65535,  0,      41  ) \
     PARAM_ENTRY(CAT_COMM,    canspeed,    CANSPEEDS, 0,      3,      0,      83  ) \
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      88  ) \
-    PARAM_ENTRY(CAT_TEST,    manualiq,    "A",       -200,   200,    0,      0  ) \
-    PARAM_ENTRY(CAT_TEST,    manualid,    "A",       -200,   200,    0,      0  ) \
+    PARAM_ENTRY(CAT_TEST,    manualiq,    "A",       -400,   400,    0,      0  ) \
+    PARAM_ENTRY(CAT_TEST,    manualid,    "A",       -400,   400,    0,      0  ) \
     VALUE_ENTRY(version,     VERSTR,  2039 ) \
     VALUE_ENTRY(hwver,       HWREVS,  2036 ) \
     VALUE_ENTRY(opmode,      OPMODES, 2000 ) \

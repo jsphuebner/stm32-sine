@@ -37,6 +37,7 @@ class Throttle
       static void UdcLimitCommand(s32fp& finalSpnt, s32fp udc);
       static void IdcLimitCommand(s32fp& finalSpnt, s32fp idc);
       static void FrequencyLimitCommand(s32fp& finalSpnt, s32fp frequency);
+      static s32fp RampThrottle(s32fp finalSpnt);
       static int potmin[2];
       static int potmax[2];
       static s32fp brknom;

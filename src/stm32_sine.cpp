@@ -449,11 +449,11 @@ static int GetUserThrottleCommand()
    return Throttle::CalcThrottle(potval, pot2val, brake);
 }
 
-static void GetCruiseCreepCommand(s32fp& finalSpnt, int throtSpnt)
+static void GetCruiseCreepCommand(s32fp& finalSpnt, s32fp throtSpnt)
 {
    bool brake = Param::GetBool(Param::din_brake);
-   int cruiseSpnt = Throttle::CalcCruiseSpeed(Encoder::GetSpeed());
-   int idleSpnt = Throttle::CalcIdleSpeed(Encoder::GetSpeed());
+   s32fp idleSpnt = Throttle::CalcIdleSpeed(Encoder::GetSpeed());
+   s32fp cruiseSpnt = Throttle::CalcCruiseSpeed(Encoder::GetSpeed());
 
    finalSpnt = throtSpnt; //assume no regulation
 
@@ -491,6 +491,7 @@ static s32fp ProcessThrottle()
    Throttle::UdcLimitCommand(finalSpnt, Param::Get(Param::udc));
    Throttle::IdcLimitCommand(finalSpnt, Param::Get(Param::idc));
    Throttle::FrequencyLimitCommand(finalSpnt, Param::Get(Param::fstat));
+   finalSpnt = Throttle::RampThrottle(finalSpnt);
 
    if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), finalSpnt))
    {
