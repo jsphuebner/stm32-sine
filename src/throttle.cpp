@@ -157,7 +157,9 @@ s32fp Throttle::CalcCruiseSpeed(int speed)
    speedFiltered = IIRFILTER(speedFiltered, speed, speedflt);
    int speederr = cruiseSpeed - speedFiltered;
 
-   s32fp potnom = MAX(FP_FROMINT(brkmax), MIN(FP_FROMINT(100), speedkp * speederr));
+   s32fp potnom = speedkp * speederr;
+   potnom = MIN(FP_FROMINT(100), potnom);
+   potnom = MAX(brkmax, potnom);
 
    return potnom;
 }

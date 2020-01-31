@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.70.R
+#define VER 4.71.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -149,12 +149,10 @@
 //Next param id (increase when adding new parameter!): 119
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
-    PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      10000,  64,     107 ) \
-    PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      10000,  256,    108 ) \
-    PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        0,      10000,  1,      114 ) \
-    PARAM_ENTRY(CAT_MOTOR,   fwkp2,       "",        -10000, 0,      -1,     118 ) \
-    PARAM_ENTRY(CAT_MOTOR,   dofsramp,    "",        0,      10000,  1000,   117 ) \
-    PARAM_ENTRY(CAT_MOTOR,   frqfac,      "dig/Hz",  -10000, 10000,  10,     116 ) \
+    PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      20000,  64,     107 ) \
+    PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      100000, 20000,    108 ) \
+    PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        0,      10000,  100,    114 ) \
+    PARAM_ENTRY(CAT_MOTOR,   fwkp2,       "",        -10000, 0,      -80,    118 ) \
     PARAM_ENTRY(CAT_MOTOR,   dmargin,     "Hz",      -10000, 0,      -1000,  113 ) \
     PARAM_ENTRY(CAT_MOTOR,   polepairs,   "",        1,      16,     2,      32  ) \
     PARAM_ENTRY(CAT_MOTOR,   respolepairs,"",        1,      16,     1,      93  ) \
@@ -262,8 +260,6 @@
     VALUE_ENTRY(cpuload,     "%",     2035 ) \
     VALUE_ENTRY(ud,     "dig",     22035 ) \
     VALUE_ENTRY(uq,     "dig",     22035 ) \
-    VALUE_ENTRY(dofs,     "dig",     22035 ) \
-    VALUE_ENTRY(qofs,     "dig",     22035 ) \
     VALUE_ENTRY(dspnt,     "dig",     22035 ) \
     VALUE_ENTRY(qspnt,     "dig",     22035 )
 

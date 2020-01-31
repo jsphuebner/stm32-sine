@@ -35,22 +35,20 @@
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
 
 static int initwait = 0;
-static bool regen = false;
 static s32fp idref = 0;
 static PiController qController;
 static PiController dController;
-static PiController dControllerRegen;
 static PiController fwController;
 static PiController fwController2;
 
 void PwmGeneration::Run()
 {
-   if (opmode == MOD_MANUAL || opmode == MOD_RUN || opmode == MOD_SINE)
+   if (opmode == MOD_MANUAL || opmode == MOD_RUN)
    {
       int dir = Param::GetInt(Param::dir);
       uint16_t dc[3];
       s32fp id, iq;
-      static int32_t fwIdRef = 0, udRamped = 0;
+      static int32_t fwIdRef = 0;
 
       Encoder::UpdateRotorAngle(dir);
 
@@ -61,52 +59,32 @@ void PwmGeneration::Run()
 
       ProcessCurrents(id, iq);
 
-      int32_t dofs = FP_TOINT(-Param::GetInt(Param::frqfac) * frq);
-      int32_t qofs = FP_TOINT(Param::GetInt(Param::frqfac) * frq);
-
-      dController.SetOffset(dofs);
-      qController.SetOffset(qofs);
-
       if (opmode == MOD_RUN)
       {
          s32fp fwIdRef2 = fwController2.Run(iq);
          dController.SetRef(idref + fwIdRef + fwIdRef2);
-         dControllerRegen.SetRef(idref + fwIdRef + fwIdRef2);
-         int32_t ud = regen ? dControllerRegen.Run(id) : dController.Run(id);
-
-         if (ud < udRamped)
-         {
-            udRamped = RAMPDOWN(udRamped, ud, Param::GetInt(Param::dofsramp));
-         }
-         else
-         {
-            udRamped = RAMPUP(udRamped, ud, Param::GetInt(Param::dofsramp));
-         }
       }
       else if (opmode == MOD_MANUAL)
       {
          idref = Param::Get(Param::manualid);
          dController.SetRef(idref);
          qController.SetRef(Param::Get(Param::manualiq));
-         udRamped = dController.Run(id);
-
       }
 
-      int32_t qlimit = FOC::GetQLimit(udRamped);
+      int32_t ud = dController.Run(id);
+      int32_t qlimit = FOC::GetQLimit(ud);
       qController.SetMinMaxY(-qlimit, qlimit);
       int32_t uq = qController.Run(iq);
-      FOC::InvParkClarke(udRamped, uq, angle);
+      FOC::InvParkClarke(ud, uq, angle);
       //Calculate extra field weakening current for the next cycle
-      fwIdRef = fwController.Run(FOC::GetTotalVoltage(udRamped, uq) >> 5);
+      fwIdRef = fwController.Run(FOC::GetTotalVoltage(ud, uq) >> 5);
 
       s32fp idc = (iq * uq) / FOC::GetMaximumModulationIndex();
 
       Param::SetFlt(Param::fstat, frq);
       Param::SetFlt(Param::angle, DIGIT_TO_DEGREE(angle));
-      Param::SetInt(Param::ud, udRamped);
+      Param::SetInt(Param::ud, ud);
       Param::SetInt(Param::uq, uq);
-      Param::SetInt(Param::qofs, qofs);
-      Param::SetInt(Param::dofs, dofs);
       Param::SetFlt(Param::idc, idc);
       Param::SetFlt(Param::dspnt, dController.GetRef());
       Param::SetFlt(Param::qspnt, qController.GetRef());
@@ -116,7 +94,6 @@ void PwmGeneration::Run()
       {
          timer_disable_break_main_output(PWM_TIMER);
          dController.ResetIntegrator();
-         dControllerRegen.ResetIntegrator();
          qController.ResetIntegrator();
          fwController.ResetIntegrator();
          fwController2.ResetIntegrator();
@@ -171,14 +148,8 @@ void PwmGeneration::SetTorquePercent(s32fp torquePercent)
    if (torquePercent < 0)
    {
       direction = Encoder::GetRotorDirection();
-      regen = true;
-   }
-   else
-   {
-      regen = false;
    }
 
-   //s32fp id = FP_MUL(Param::Get(Param::throtid), ABS(torquePercent));
    int32_t is = FP_TOINT(FP_MUL(Param::Get(Param::throtcur), direction * torquePercent));
    int32_t id, iq;
 
@@ -186,16 +157,13 @@ void PwmGeneration::SetTorquePercent(s32fp torquePercent)
 
    qController.SetRef(FP_FROMINT(iq));
    fwController2.SetRef(FP_FROMINT(iq));
-   //dController.SetRef(id);
    idref = FP_FROMINT(id);
-   //dController.SetRef(idref);
 }
 
 void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp, int fwkp2)
 {
    qController.SetGains(kp, ki);
    dController.SetGains(kp, ki);
-   dControllerRegen.SetGains(kp, ki);
    fwController.SetGains(fwkp, 0);
    fwController2.SetGains(fwkp2, 0);
 }
@@ -213,9 +181,6 @@ void PwmGeneration::PwmInit()
    dController.ResetIntegrator();
    dController.SetCallingFrequency(pwmfrq);
    dController.SetMinMaxY(-maxVd, maxVd);
-   dControllerRegen.ResetIntegrator();
-   dControllerRegen.SetCallingFrequency(pwmfrq);
-   dControllerRegen.SetMinMaxY(-maxVd, maxVd);
    fwController.ResetIntegrator();
    fwController.SetCallingFrequency(pwmfrq);
    fwController.SetMinMaxY(-FP_FROMINT(500), 0);
