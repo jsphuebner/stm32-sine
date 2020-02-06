@@ -35,7 +35,7 @@ class PwmGeneration
       static void SetTorquePercent(s32fp torque);
       static void SetCurrentOffset(int offset1, int offset2);
       static void SetCurrentLimitThreshold(s32fp ocurlim);
-      static void SetControllerGains(int kp, int ki, int fwkp, int fwkp2);
+      static void SetControllerGains(int kp, int ki, int fwkp);
       static int GetCpuLoad();
       //static void SetCurrentLimit(s32fp limit);
    private:

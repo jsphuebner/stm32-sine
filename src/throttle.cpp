@@ -35,6 +35,7 @@ int Throttle::speedFiltered;
 s32fp Throttle::idleThrotLim;
 s32fp Throttle::potnomFiltered;
 s32fp Throttle::throtmax;
+s32fp Throttle::throtmin;
 s32fp Throttle::regenRamp;
 s32fp Throttle::throttleRamp;
 s32fp Throttle::throttleRamped;
@@ -120,13 +121,14 @@ s32fp Throttle::CalcThrottle(int potval, int pot2val, bool brkpedal)
       }
    }
 
-   potnom = MIN(potnom, throtmax);
-
    return potnom;
 }
 
 s32fp Throttle::RampThrottle(s32fp potnom)
 {
+   potnom = MIN(potnom, throtmax);
+   potnom = MAX(potnom, throtmin);
+
    if (potnom >= throttleRamped)
    {
       throttleRamped = RAMPUP(throttleRamped, potnom, throttleRamp);

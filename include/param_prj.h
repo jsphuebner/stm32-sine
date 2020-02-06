@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.71.R
+#define VER 4.73.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -27,7 +27,7 @@
 
 #if CONTROL == CTRL_SINE
 
-//Next param id (increase when adding new parameter!): 104
+//Next param id (increase when adding new parameter!): 120
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   boost,       "dig",     0,      37813,  1700,   1   ) \
@@ -66,6 +66,7 @@
     PARAM_ENTRY(CAT_DERATE,  idcmax,      "A",       0,      5000,   5000,   96  ) \
     PARAM_ENTRY(CAT_DERATE,  idcmin,      "A",       -5000,  0,     -5000,   98  ) \
     PARAM_ENTRY(CAT_DERATE,  throtmax,    "%",       0,      100,   100,     97  ) \
+    PARAM_ENTRY(CAT_DERATE,  throtmin,    "%",       -100,   0,     -100,    119 ) \
     PARAM_ENTRY(CAT_DERATE,  ifltrise,    "dig",     0,      32,    10,      91  ) \
     PARAM_ENTRY(CAT_DERATE,  ifltfall,    "dig",     0,      32,     3,      92  ) \
     PARAM_ENTRY(CAT_CHARGER, chargemode,  CHARGEMODS,0,      4,      0,      74  ) \
@@ -146,14 +147,14 @@
     VALUE_ENTRY(cpuload,     "%",     2035 )
 
 #elif CONTROL == CTRL_FOC
-//Next param id (increase when adding new parameter!): 119
+//Next param id (increase when adding new parameter!): 121
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      20000,  64,     107 ) \
-    PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      100000, 20000,    108 ) \
-    PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        0,      10000,  100,    114 ) \
-    PARAM_ENTRY(CAT_MOTOR,   fwkp2,       "",        -10000, 0,      -80,    118 ) \
-    PARAM_ENTRY(CAT_MOTOR,   dmargin,     "Hz",      -10000, 0,      -1000,  113 ) \
+    PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      100000, 20000,  108 ) \
+    PARAM_ENTRY(CAT_MOTOR,   curkifrqgain,"dig/Hz",  0,      1000,   0,      120 ) \
+    PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        -10000, 0,      -100,   118 ) \
+    PARAM_ENTRY(CAT_MOTOR,   dmargin,     "Hz",      -10000, 0,      -2000,  113 ) \
     PARAM_ENTRY(CAT_MOTOR,   polepairs,   "",        1,      16,     2,      32  ) \
     PARAM_ENTRY(CAT_MOTOR,   respolepairs,"",        1,      16,     1,      93  ) \
     PARAM_ENTRY(CAT_MOTOR,   encmode,     ENCMODES,  0,      5,      0,      75  ) \
@@ -162,7 +163,7 @@
     PARAM_ENTRY(CAT_MOTOR,   dirchrpm,    "rpm",     0,      2000,   100,    87  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirmode,     DIRMODES,  0,      3,      1,      95  ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
-    PARAM_ENTRY(CAT_MOTOR,   syncadv,     "dig/hz",-100,     100,    0,      101 ) \
+    PARAM_ENTRY(CAT_MOTOR,   syncadv,     "dig/hz",-100,     100,    10,     101 ) \
     PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     14,     12,     46  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmfrq,      PWMFRQS,   0,      2,      1,      13  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmpol,      PWMPOLS,   0,      1,      0,      52  ) \
@@ -182,6 +183,7 @@
     PARAM_ENTRY(CAT_DERATE,  idcmax,      "A",       0,      5000,   5000,   96  ) \
     PARAM_ENTRY(CAT_DERATE,  idcmin,      "A",       -5000,  0,     -5000,   98  ) \
     PARAM_ENTRY(CAT_DERATE,  throtmax,    "%",       0,      100,   100,     97  ) \
+    PARAM_ENTRY(CAT_DERATE,  throtmin,    "%",       -100,   0,     -100,    119 ) \
     PARAM_ENTRY(CAT_CHARGER, chargemode,  CHARGEMODS,0,      4,      0,      74  ) \
     PARAM_ENTRY(CAT_CHARGER, chargecur,   "A",       0,      50,     0,      71  ) \
     PARAM_ENTRY(CAT_CHARGER, chargekp,    "dig",     0,      100,    80,     72  ) \
