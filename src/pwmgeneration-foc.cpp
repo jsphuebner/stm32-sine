@@ -36,19 +36,19 @@
 
 static int initwait = 0;
 static s32fp idref = 0;
+static int curki = 0;
 static PiController qController;
 static PiController dController;
 static PiController fwController;
-static PiController fwController2;
 
 void PwmGeneration::Run()
 {
    if (opmode == MOD_MANUAL || opmode == MOD_RUN)
    {
       int dir = Param::GetInt(Param::dir);
+      int kifrqgain = Param::GetInt(Param::curkifrqgain);
       uint16_t dc[3];
       s32fp id, iq;
-      static int32_t fwIdRef = 0;
 
       Encoder::UpdateRotorAngle(dir);
 
@@ -57,12 +57,17 @@ void PwmGeneration::Run()
       else
          CalcNextAngleAsync(dir);
 
+      int moddedKi = curki + kifrqgain * FP_TOINT(frq);
+
+      qController.SetIntegralGain(moddedKi);
+      dController.SetIntegralGain(moddedKi);
+
       ProcessCurrents(id, iq);
 
       if (opmode == MOD_RUN)
       {
-         s32fp fwIdRef2 = fwController2.Run(iq);
-         dController.SetRef(idref + fwIdRef + fwIdRef2);
+         s32fp fwIdRef = fwController.Run(iq);
+         dController.SetRef(idref + fwIdRef);
       }
       else if (opmode == MOD_MANUAL)
       {
@@ -76,8 +81,6 @@ void PwmGeneration::Run()
       qController.SetMinMaxY(-qlimit, qlimit);
       int32_t uq = qController.Run(iq);
       FOC::InvParkClarke(ud, uq, angle);
-      //Calculate extra field weakening current for the next cycle
-      fwIdRef = fwController.Run(FOC::GetTotalVoltage(ud, uq) >> 5);
 
       s32fp idc = (iq * uq) / FOC::GetMaximumModulationIndex();
 
@@ -96,7 +99,6 @@ void PwmGeneration::Run()
          dController.ResetIntegrator();
          qController.ResetIntegrator();
          fwController.ResetIntegrator();
-         fwController2.ResetIntegrator();
       }
       else
       {
@@ -156,16 +158,16 @@ void PwmGeneration::SetTorquePercent(s32fp torquePercent)
    FOC::Mtpa(is, id, iq);
 
    qController.SetRef(FP_FROMINT(iq));
-   fwController2.SetRef(FP_FROMINT(iq));
+   fwController.SetRef(FP_FROMINT(iq));
    idref = FP_FROMINT(id);
 }
 
-void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp, int fwkp2)
+void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp)
 {
    qController.SetGains(kp, ki);
    dController.SetGains(kp, ki);
    fwController.SetGains(fwkp, 0);
-   fwController2.SetGains(fwkp2, 0);
+   curki = ki;
 }
 
 void PwmGeneration::PwmInit()
@@ -183,11 +185,7 @@ void PwmGeneration::PwmInit()
    dController.SetMinMaxY(-maxVd, maxVd);
    fwController.ResetIntegrator();
    fwController.SetCallingFrequency(pwmfrq);
-   fwController.SetMinMaxY(-FP_FROMINT(500), 0);
-   fwController.SetRef(1024); //We right shift the modulation index by 5 to effectively have less gain
-   fwController2.ResetIntegrator();
-   fwController2.SetCallingFrequency(pwmfrq);
-   fwController2.SetMinMaxY(-FP_FROMINT(500), 0);
+   fwController.SetMinMaxY(-50 * Param::Get(Param::throtcur), 0); //allow 50% of max current for extra field weakening
 
    if (opmode == MOD_ACHEAT)
       AcHeatTimerSetup();

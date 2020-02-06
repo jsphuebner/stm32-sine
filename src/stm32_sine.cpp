@@ -707,59 +707,69 @@ static void Ms1Task(void)
 /** This function is called when the user changes a parameter */
 extern void parm_Change(Param::PARAM_NUM paramNum)
 {
-   #if CONTROL == CTRL_SINE
-   if (Param::fslipspnt == paramNum)
-      PwmGeneration::SetFslip(Param::Get(Param::fslipspnt));
-   else if (Param::ampnom == paramNum)
-      PwmGeneration::SetAmpnom(Param::Get(Param::ampnom));
-   else
-   #endif
-   if (Param::canspeed == paramNum)
-      Can::SetBaudrate((enum Can::baudrates)Param::GetInt(Param::canspeed));
-   else
+   switch (paramNum)
    {
-      PwmGeneration::SetCurrentLimitThreshold(Param::Get(Param::ocurlim));
+   #if CONTROL == CTRL_SINE
+      case Param::fslipspnt:
+         PwmGeneration::SetFslip(Param::Get(Param::fslipspnt));
+         break;
+      case Param::ampnom:
+         PwmGeneration::SetAmpnom(Param::Get(Param::ampnom));
+         break;
+   #endif
+      case Param::canspeed:
+         Can::SetBaudrate((enum Can::baudrates)Param::GetInt(Param::canspeed));
+         break;
+      case Param::throtmax:
+      case Param::throtmin:
+         //These are candidates to be frequently set by CAN, so we handle them separately
+         Throttle::throtmax = Param::Get(Param::throtmax);
+         Throttle::throtmin = Param::Get(Param::throtmin);
+         break;
+      default:
+         PwmGeneration::SetCurrentLimitThreshold(Param::Get(Param::ocurlim));
 
-      #if CONTROL == CTRL_FOC
-      PwmGeneration::SetControllerGains(Param::GetInt(Param::curkp), Param::GetInt(Param::curki),
-                                        Param::GetInt(Param::fwkp), Param::GetInt(Param::fwkp2));
-      Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
-      #elif CONTROL == CTRL_SINE
-      MotorVoltage::SetMinFrq(Param::Get(Param::fmin));
-      SineCore::SetMinPulseWidth(Param::GetInt(Param::minpulse));
-      #endif // CONTROL
+         #if CONTROL == CTRL_FOC
+         PwmGeneration::SetControllerGains(Param::GetInt(Param::curkp), Param::GetInt(Param::curki), Param::GetInt(Param::fwkp));
+         Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
+         #elif CONTROL == CTRL_SINE
+         MotorVoltage::SetMinFrq(Param::Get(Param::fmin));
+         SineCore::SetMinPulseWidth(Param::GetInt(Param::minpulse));
+         #endif // CONTROL
 
-      Encoder::SetMode((enum Encoder::mode)Param::GetInt(Param::encmode));
-      Encoder::SetImpulsesPerTurn(Param::GetInt(Param::numimp));
+         Encoder::SetMode((enum Encoder::mode)Param::GetInt(Param::encmode));
+         Encoder::SetImpulsesPerTurn(Param::GetInt(Param::numimp));
 
-      Throttle::potmin[0] = Param::GetInt(Param::potmin);
-      Throttle::potmax[0] = Param::GetInt(Param::potmax);
-      Throttle::potmin[1] = Param::GetInt(Param::pot2min);
-      Throttle::potmax[1] = Param::GetInt(Param::pot2max);
-      Throttle::brknom = Param::Get(Param::brknom);
-      Throttle::brknompedal = Param::Get(Param::brknompedal);
-      Throttle::regenRamp = Param::Get(Param::regenramp);
-      Throttle::brkmax = Param::Get(Param::brkmax);
-      Throttle::throtmax = Param::Get(Param::throtmax);
-      Throttle::idleSpeed = Param::GetInt(Param::idlespeed);
-      Throttle::speedkp = Param::Get(Param::speedkp);
-      Throttle::speedflt = Param::GetInt(Param::speedflt);
-      Throttle::idleThrotLim = Param::Get(Param::idlethrotlim);
-      Throttle::bmslimlow = Param::GetInt(Param::bmslimlow);
-      Throttle::bmslimhigh = Param::GetInt(Param::bmslimhigh);
-      Throttle::udcmin = FP_MUL(Param::Get(Param::udcmin), FP_FROMFLT(0.95)); //Leave some room for the notification light
-      Throttle::udcmax = FP_MUL(Param::Get(Param::udcmax), FP_FROMFLT(1.05));
-      Throttle::idcmin = Param::Get(Param::idcmin);
-      Throttle::idcmax = Param::Get(Param::idcmax);
-      Throttle::fmax = Param::Get(Param::fmax);
+         Throttle::potmin[0] = Param::GetInt(Param::potmin);
+         Throttle::potmax[0] = Param::GetInt(Param::potmax);
+         Throttle::potmin[1] = Param::GetInt(Param::pot2min);
+         Throttle::potmax[1] = Param::GetInt(Param::pot2max);
+         Throttle::brknom = Param::Get(Param::brknom);
+         Throttle::brknompedal = Param::Get(Param::brknompedal);
+         Throttle::regenRamp = Param::Get(Param::regenramp);
+         Throttle::brkmax = Param::Get(Param::brkmax);
+         Throttle::throtmax = Param::Get(Param::throtmax);
+         Throttle::throtmin = Param::Get(Param::throtmin);
+         Throttle::idleSpeed = Param::GetInt(Param::idlespeed);
+         Throttle::speedkp = Param::Get(Param::speedkp);
+         Throttle::speedflt = Param::GetInt(Param::speedflt);
+         Throttle::idleThrotLim = Param::Get(Param::idlethrotlim);
+         Throttle::bmslimlow = Param::GetInt(Param::bmslimlow);
+         Throttle::bmslimhigh = Param::GetInt(Param::bmslimhigh);
+         Throttle::udcmin = FP_MUL(Param::Get(Param::udcmin), FP_FROMFLT(0.95)); //Leave some room for the notification light
+         Throttle::udcmax = FP_MUL(Param::Get(Param::udcmax), FP_FROMFLT(1.05));
+         Throttle::idcmin = Param::Get(Param::idcmin);
+         Throttle::idcmax = Param::Get(Param::idcmax);
+         Throttle::fmax = Param::Get(Param::fmax);
 
-      if (hwRev != HW_BLUEPILL)
-      {
-         if (Param::GetInt(Param::pwmfunc) == PWM_FUNC_SPEEDFRQ)
-            gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO9);
-         else
-            gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO9);
-      }
+         if (hwRev != HW_BLUEPILL)
+         {
+            if (Param::GetInt(Param::pwmfunc) == PWM_FUNC_SPEEDFRQ)
+               gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO9);
+            else
+               gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO9);
+         }
+         break;
    }
 }
 
