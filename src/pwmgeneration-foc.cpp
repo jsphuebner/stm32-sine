@@ -45,6 +45,7 @@ void PwmGeneration::Run()
 {
    if (opmode == MOD_MANUAL || opmode == MOD_RUN)
    {
+      static s32fp iqFiltered, frqFiltered;
       int dir = Param::GetInt(Param::dir);
       int kifrqgain = Param::GetInt(Param::curkifrqgain);
       uint16_t dc[3];
@@ -57,17 +58,21 @@ void PwmGeneration::Run()
       else
          CalcNextAngleAsync(dir);
 
-      int moddedKi = curki + kifrqgain * FP_TOINT(frq);
+      frqFiltered = IIRFILTER(frqFiltered, frq, 8);
+      int moddedKi = curki + kifrqgain * FP_TOINT(frqFiltered);
 
       qController.SetIntegralGain(moddedKi);
       dController.SetIntegralGain(moddedKi);
+      Param::SetInt(Param::ud, moddedKi);
 
       ProcessCurrents(id, iq);
 
       if (opmode == MOD_RUN)
       {
+         iqFiltered = IIRFILTER(iqFiltered, iq, 4);
          s32fp fwIdRef = fwController.Run(iq);
          dController.SetRef(idref + fwIdRef);
+         Param::SetFlt(Param::dspnt, fwIdRef);
       }
       else if (opmode == MOD_MANUAL)
       {
@@ -86,10 +91,10 @@ void PwmGeneration::Run()
 
       Param::SetFlt(Param::fstat, frq);
       Param::SetFlt(Param::angle, DIGIT_TO_DEGREE(angle));
-      Param::SetInt(Param::ud, ud);
+      //Param::SetInt(Param::ud, ud);
       Param::SetInt(Param::uq, uq);
       Param::SetFlt(Param::idc, idc);
-      Param::SetFlt(Param::dspnt, dController.GetRef());
+      //Param::SetFlt(Param::dspnt, dController.GetRef());
       Param::SetFlt(Param::qspnt, qController.GetRef());
 
       /* Shut down PWM on stopped motor, neutral gear or init phase */

@@ -53,7 +53,7 @@ ifeq ($(CONTROL), FOC)
 	OBJSL += pwmgeneration-foc.o foc.o picontroller.o
 endif
 
-OBJS     = $(subst $(space),$(space)$(OUT_DIR)/, $(OBJSL))
+OBJS     = $(patsubst %.o,obj/%.o, $(OBJSL))
 vpath %.c src/ libopeninv/src
 vpath %.cpp src/ libopeninv/src
 

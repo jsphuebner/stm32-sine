@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.73.R
+#define VER 4.76.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -152,7 +152,7 @@
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      20000,  64,     107 ) \
     PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      100000, 20000,  108 ) \
-    PARAM_ENTRY(CAT_MOTOR,   curkifrqgain,"dig/Hz",  0,      1000,   0,      120 ) \
+    PARAM_ENTRY(CAT_MOTOR,   curkifrqgain,"dig/Hz",  0,      1000,   50,     120 ) \
     PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        -10000, 0,      -100,   118 ) \
     PARAM_ENTRY(CAT_MOTOR,   dmargin,     "Hz",      -10000, 0,      -2000,  113 ) \
     PARAM_ENTRY(CAT_MOTOR,   polepairs,   "",        1,      16,     2,      32  ) \

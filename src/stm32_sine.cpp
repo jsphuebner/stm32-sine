@@ -484,6 +484,7 @@ static s32fp ProcessThrottle()
 
    throtSpnt = GetUserThrottleCommand();
    GetCruiseCreepCommand(finalSpnt, throtSpnt);
+   finalSpnt = Throttle::RampThrottle(finalSpnt);
 
    if (hwRev != HW_TESLA)
       Throttle::BmsLimitCommand(finalSpnt, Param::GetBool(Param::din_bms));
@@ -491,7 +492,6 @@ static s32fp ProcessThrottle()
    Throttle::UdcLimitCommand(finalSpnt, Param::Get(Param::udc));
    Throttle::IdcLimitCommand(finalSpnt, Param::Get(Param::idc));
    Throttle::FrequencyLimitCommand(finalSpnt, Param::Get(Param::fstat));
-   finalSpnt = Throttle::RampThrottle(finalSpnt);
 
    if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), finalSpnt))
    {
@@ -613,12 +613,6 @@ static void Ms10Task(void)
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
       runChargeControl = false;
-      /*Param::SetInt(Param::speed, 0);
-      Param::SetInt(Param::fstat, 0);
-      Param::SetInt(Param::il1, 0);
-      Param::SetInt(Param::il2, 0);
-      Param::SetInt(Param::il1rms, 0);
-      Param::SetInt(Param::il2rms, 0);*/
    }
    else if (0 == initWait)
    {
@@ -722,9 +716,13 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
          break;
       case Param::throtmax:
       case Param::throtmin:
+      case Param::idcmin:
+      case Param::idcmax:
          //These are candidates to be frequently set by CAN, so we handle them separately
          Throttle::throtmax = Param::Get(Param::throtmax);
          Throttle::throtmin = Param::Get(Param::throtmin);
+         Throttle::idcmin = Param::Get(Param::idcmin);
+         Throttle::idcmax = Param::Get(Param::idcmax);
          break;
       default:
          PwmGeneration::SetCurrentLimitThreshold(Param::Get(Param::ocurlim));

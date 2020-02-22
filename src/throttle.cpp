@@ -217,7 +217,7 @@ void Throttle::IdcLimitCommand(s32fp& finalSpnt, s32fp idc)
    if (finalSpnt >= 0)
    {
       s32fp idcerr = idcmax - idc;
-      s32fp res = idcerr * 10;
+      s32fp res = idcerr * 5;
 
       res = MAX(0, res);
       finalSpnt = MIN(res, finalSpnt);
@@ -225,7 +225,7 @@ void Throttle::IdcLimitCommand(s32fp& finalSpnt, s32fp idc)
    else
    {
       s32fp idcerr = idcmin - idc;
-      s32fp res = idcerr * 10;
+      s32fp res = idcerr * 5;
 
       res = MIN(0, res);
       finalSpnt = MAX(res, finalSpnt);
@@ -234,12 +234,16 @@ void Throttle::IdcLimitCommand(s32fp& finalSpnt, s32fp idc)
 
 void Throttle::FrequencyLimitCommand(s32fp& finalSpnt, s32fp frequency)
 {
+   static s32fp frqFiltered = 0;
+
+   frqFiltered = IIRFILTER(frqFiltered, frequency, 4);
+
    if (finalSpnt > 0)
    {
-      s32fp frqerr = fmax - frequency;
-      s32fp res = frqerr * 10;
+      s32fp frqerr = fmax - frqFiltered;
+      s32fp res = frqerr * 4;
 
-      res = MAX(0, res);
+      res = MAX(1, res);
       finalSpnt = MIN(res, finalSpnt);
    }
 }
