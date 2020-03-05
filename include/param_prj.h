@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.76.R
+#define VER 4.77.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -27,7 +27,7 @@
 
 #if CONTROL == CTRL_SINE
 
-//Next param id (increase when adding new parameter!): 120
+//Next param id (increase when adding new parameter!): 124
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   boost,       "dig",     0,      37813,  1700,   1   ) \
@@ -45,7 +45,6 @@
     PARAM_ENTRY(CAT_MOTOR,   numimp,      "ppr",     8,      8192,   60,     15  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirchrpm,    "rpm",     0,      2000,   100,    87  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirmode,     DIRMODES,  0,      3,      1,      95  ) \
-    PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
     PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     14,     12,     46  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmfrq,      PWMFRQS,   0,      2,      1,      13  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmpol,      PWMPOLS,   0,      1,      0,      52  ) \
@@ -88,6 +87,8 @@
     PARAM_ENTRY(CAT_REGEN,   brknom,      "%",       0,      100,    30,     19  ) \
     PARAM_ENTRY(CAT_REGEN,   brkmax,      "%",       -100,   0,      -30,    49  ) \
     PARAM_ENTRY(CAT_REGEN,   brkrampstr,  "Hz",      0,      400,    10,     39  ) \
+    PARAM_ENTRY(CAT_REGEN,   brkhistr,    "Hz",      20,     1000,   1000,   122 ) \
+    PARAM_ENTRY(CAT_REGEN,   brkhistp,    "Hz",      30,     1000,   1000,   123 ) \
     PARAM_ENTRY(CAT_REGEN,   brkout,      "%",       -100,   -1,     -50,    67  ) \
     PARAM_ENTRY(CAT_AUTOM,   idlespeed,   "rpm",     -100,   10000,  -100,   54  ) \
     PARAM_ENTRY(CAT_AUTOM,   idlethrotlim,"%",       0,      100,    50,     65  ) \
@@ -147,7 +148,7 @@
     VALUE_ENTRY(cpuload,     "%",     2035 )
 
 #elif CONTROL == CTRL_FOC
-//Next param id (increase when adding new parameter!): 121
+//Next param id (increase when adding new parameter!): 124
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      20000,  64,     107 ) \
@@ -202,6 +203,8 @@
     PARAM_ENTRY(CAT_REGEN,   brknom,      "%",       0,      100,    30,     19  ) \
     PARAM_ENTRY(CAT_REGEN,   brkmax,      "%",       -100,   0,      -30,    49  ) \
     PARAM_ENTRY(CAT_REGEN,   brkrampstr,  "Hz",      0,      400,    10,     39  ) \
+    PARAM_ENTRY(CAT_REGEN,   brkhistr,    "Hz",      20,     1000,   1000,   122 ) \
+    PARAM_ENTRY(CAT_REGEN,   brkhistp,    "Hz",      30,     1000,   1000,   123 ) \
     PARAM_ENTRY(CAT_REGEN,   brkout,      "%",       -100,   -1,     -50,    67  ) \
     PARAM_ENTRY(CAT_AUTOM,   idlespeed,   "rpm",     -100,   10000,  -100,   54  ) \
     PARAM_ENTRY(CAT_AUTOM,   idlethrotlim,"%",       0,      100,    50,     65  ) \
@@ -229,11 +232,11 @@
     VALUE_ENTRY(il2,         "A",     2004 ) \
     VALUE_ENTRY(id,          "A",     2003 ) \
     VALUE_ENTRY(iq,          "A",     2004 ) \
-    VALUE_ENTRY(ilmax,       "A",     2005 ) \
     VALUE_ENTRY(uac,         "V",     2006 ) \
     VALUE_ENTRY(fstat,       "Hz",    2011 ) \
     VALUE_ENTRY(speed,       "rpm",   2012 ) \
     VALUE_ENTRY(cruisespeed, "rpm",   2041 ) \
+    VALUE_ENTRY(heatcur,     "A",     2043 ) \
     VALUE_ENTRY(turns,       "",      2037 ) \
     VALUE_ENTRY(amp,         "dig",   2013 ) \
     VALUE_ENTRY(ampnom,      "dig",   2040 ) \
@@ -245,7 +248,7 @@
     VALUE_ENTRY(tmphs,       "°C",    2019 ) \
     VALUE_ENTRY(tmpm,        "°C",    2020 ) \
     VALUE_ENTRY(uaux,        "V",     2021 ) \
-    VALUE_ENTRY(pwmio,       "",      12022 ) \
+    VALUE_ENTRY(pwmio,       "",      2042 ) \
     VALUE_ENTRY(canio,       CANIOS,  2022 ) \
     VALUE_ENTRY(din_cruise,  ONOFF,   2023 ) \
     VALUE_ENTRY(din_start,   ONOFF,   2024 ) \
@@ -257,15 +260,11 @@
     VALUE_ENTRY(din_ocur,    OKERR,   2030 ) \
     VALUE_ENTRY(din_desat,   OKERR,   2031 ) \
     VALUE_ENTRY(din_bms,     ONOFF,   2032 ) \
-    VALUE_ENTRY(dout_prec,   "",      2033 ) \
-    VALUE_ENTRY(dout_dcsw,   "",      2034 ) \
     VALUE_ENTRY(cpuload,     "%",     2035 ) \
-    VALUE_ENTRY(ud,     "dig",     22035 ) \
-    VALUE_ENTRY(uq,     "dig",     22035 ) \
-    VALUE_ENTRY(dspnt,     "dig",     22035 ) \
-    VALUE_ENTRY(qspnt,     "dig",     22035 )
+    VALUE_ENTRY(ud,     "dig",     0 ) \
+    VALUE_ENTRY(uq,     "dig",     0 ) \
 
-//Next value Id: 2042
+//Next value Id: 2044
 #endif // CONTROL
 
 /***** Enum String definitions *****/

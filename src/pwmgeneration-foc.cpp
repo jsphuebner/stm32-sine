@@ -45,7 +45,7 @@ void PwmGeneration::Run()
 {
    if (opmode == MOD_MANUAL || opmode == MOD_RUN)
    {
-      static s32fp iqFiltered, frqFiltered;
+      static s32fp frqFiltered;
       int dir = Param::GetInt(Param::dir);
       int kifrqgain = Param::GetInt(Param::curkifrqgain);
       uint16_t dc[3];
@@ -53,26 +53,20 @@ void PwmGeneration::Run()
 
       Encoder::UpdateRotorAngle(dir);
 
-      if (Encoder::IsSyncMode())
-         CalcNextAngleSync(dir);
-      else
-         CalcNextAngleAsync(dir);
+      CalcNextAngleSync(dir);
 
       frqFiltered = IIRFILTER(frqFiltered, frq, 8);
       int moddedKi = curki + kifrqgain * FP_TOINT(frqFiltered);
 
       qController.SetIntegralGain(moddedKi);
       dController.SetIntegralGain(moddedKi);
-      Param::SetInt(Param::ud, moddedKi);
 
       ProcessCurrents(id, iq);
 
       if (opmode == MOD_RUN)
       {
-         iqFiltered = IIRFILTER(iqFiltered, iq, 4);
-         s32fp fwIdRef = fwController.Run(iq);
+         s32fp fwIdRef = idref <= 0 ? fwController.Run(iq) : 0;
          dController.SetRef(idref + fwIdRef);
-         Param::SetFlt(Param::dspnt, fwIdRef);
       }
       else if (opmode == MOD_MANUAL)
       {
@@ -91,11 +85,9 @@ void PwmGeneration::Run()
 
       Param::SetFlt(Param::fstat, frq);
       Param::SetFlt(Param::angle, DIGIT_TO_DEGREE(angle));
-      //Param::SetInt(Param::ud, ud);
-      Param::SetInt(Param::uq, uq);
       Param::SetFlt(Param::idc, idc);
-      //Param::SetFlt(Param::dspnt, dController.GetRef());
-      Param::SetFlt(Param::qspnt, qController.GetRef());
+      Param::SetInt(Param::uq, uq);
+      Param::SetInt(Param::ud, ud);
 
       /* Shut down PWM on stopped motor, neutral gear or init phase */
       if ((0 == frq && 0 == idref) || 0 == dir || initwait > 0)
@@ -145,11 +137,29 @@ void PwmGeneration::Run()
 void PwmGeneration::SetTorquePercent(s32fp torquePercent)
 {
    s32fp brkrampstr = Param::Get(Param::brkrampstr);
+   s32fp brkhistr = Param::Get(Param::brkhistr);
+   s32fp brkhistp = Param::Get(Param::brkhistp);
    int direction = Param::GetInt(Param::dir);
+   int heatCur = Param::GetInt(Param::heatcur);
+
+   heatCur = MIN(400, heatCur);
 
    if (frq < brkrampstr && torquePercent < 0)
    {
       torquePercent = FP_MUL(FP_DIV(frq, brkrampstr), torquePercent);
+   }
+
+   if (frq > brkhistr && torquePercent < 0)
+   {
+      if (frq >= brkhistp)
+      {
+         torquePercent = -1;
+      }
+      else
+      {
+         s32fp factor = FP_DIV((100 * (frq - brkhistr)), (brkhistp - brkhistr));
+         torquePercent = FP_MUL(factor, torquePercent) / 100;
+      }
    }
 
    if (torquePercent < 0)
@@ -160,11 +170,34 @@ void PwmGeneration::SetTorquePercent(s32fp torquePercent)
    int32_t is = FP_TOINT(FP_MUL(Param::Get(Param::throtcur), direction * torquePercent));
    int32_t id, iq;
 
-   FOC::Mtpa(is, id, iq);
+   if (heatCur > 0 && torquePercent < FP_FROMINT(30))
+   {
+      int speed = Param::GetInt(Param::speed);
+
+      //iq = is;
+
+      if (speed == 0 && torquePercent <= 0)
+      {
+         iq = 0;
+         id = (heatCur * 2) / 3;
+      }
+      /*else if (torquePercent > 0)
+      {
+         id = FP_TOINT((-heatCur * torquePercent) / 30);
+      }*/
+      else
+      {
+         FOC::Mtpa(is, id, iq);
+      }
+   }
+   else
+   {
+      FOC::Mtpa(is, id, iq);
+   }
 
    qController.SetRef(FP_FROMINT(iq));
    fwController.SetRef(FP_FROMINT(iq));
-   idref = FP_FROMINT(id);
+   idref = IIRFILTER(idref, FP_FROMINT(id), 4);
 }
 
 void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp)
@@ -222,4 +255,24 @@ s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
    }
 
    return 0;
+}
+
+void PwmGeneration::CalcNextAngleSync(int dir)
+{
+   if (Encoder::SeenNorthSignal())
+   {
+      uint32_t polePairs = Param::GetInt(Param::polepairs) / Param::GetInt(Param::respolepairs);
+      uint16_t syncOfs = Param::GetInt(Param::syncofs);
+      uint16_t rotorAngle = Encoder::GetRotorAngle();
+
+      syncOfs += FP_TOINT(dir * frq * Param::GetInt(Param::syncadv));
+
+      angle = polePairs * rotorAngle + syncOfs;
+      frq = polePairs * Encoder::GetRotorFrequency();
+   }
+   else
+   {
+      frq = fslip;
+      angle += dir * FRQ_TO_ANGLE(fslip);
+   }
 }

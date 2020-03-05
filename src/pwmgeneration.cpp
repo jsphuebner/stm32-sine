@@ -214,27 +214,6 @@ void PwmGeneration::SetCurrentLimitThreshold(s32fp ocurlim)
 
 
 /*----- Private methods ----------------------------------------- */
-void PwmGeneration::CalcNextAngleSync(int dir)
-{
-   if (Encoder::SeenNorthSignal())
-   {
-      uint32_t polePairs = Param::GetInt(Param::polepairs) / Param::GetInt(Param::respolepairs);
-      uint16_t syncOfs = Param::GetInt(Param::syncofs);
-      uint16_t rotorAngle = Encoder::GetRotorAngle();
-
-#if CONTROL == CTRL_FOC
-      syncOfs += FP_TOINT(dir * frq * Param::GetInt(Param::syncadv));
-#endif // CONTROL
-
-      angle = polePairs * rotorAngle + syncOfs;
-      frq = polePairs * Encoder::GetRotorFrequency();
-   }
-   else
-   {
-      frq = fslip;
-      angle += dir * FRQ_TO_ANGLE(fslip);
-   }
-}
 
 void PwmGeneration::CalcNextAngleAsync(int dir)
 {

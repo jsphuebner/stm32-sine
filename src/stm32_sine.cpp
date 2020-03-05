@@ -553,7 +553,7 @@ static void Ms10Task(void)
    {
       PwmGeneration::SetTorquePercent(torquePercent);
    }
-   else if (MOD_OFF == opmode)
+   else if (MOD_OFF == opmode && Encoder::GetSpeed() == 0)
    {
       PwmGeneration::SetCurrentOffset(AnaIn::Get(AnaIn::il1), AnaIn::Get(AnaIn::il2));
    }
@@ -609,7 +609,6 @@ static void Ms10Task(void)
       initWait = 50;
 
       SetContactorsOffState();
-      //Param::SetInt(Param::amp, 0);
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
       runChargeControl = false;

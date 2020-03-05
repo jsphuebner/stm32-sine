@@ -25,7 +25,6 @@ public:
    static int GetRotorDirection();
    static void SetImpulsesPerTurn(uint16_t imp);
    static void SwapSinCos(bool swap);
-   static bool IsSyncMode();
 
 private:
    static u32fp CalcFrequencyFromAngleDifference(uint16_t angle);

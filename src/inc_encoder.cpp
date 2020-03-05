@@ -278,11 +278,6 @@ uint32_t Encoder::GetFullTurns()
    return fullTurns;
 }
 
-bool Encoder::IsSyncMode()
-{
-   return encMode == ABZ || encMode == SPI || encMode == RESOLVER || encMode == SINCOS;
-}
-
 u32fp Encoder::CalcFrequencyFromAngleDifference(uint16_t angle)
 {
    static uint32_t samples = 0;

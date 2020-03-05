@@ -46,8 +46,6 @@ void PwmGeneration::Run()
 
       if (opmode == MOD_SINE)
          CalcNextAngleConstant(dir);
-      else if (Encoder::IsSyncMode())
-         CalcNextAngleSync(dir);
       else
          CalcNextAngleAsync(dir);
 
@@ -101,59 +99,44 @@ void PwmGeneration::SetTorquePercent(s32fp torque)
 
    if (torque >= 0)
    {
-      /* In sync mode throttle only commands amplitude. Above back-EMF is acceleration, below is regen */
-      if (Encoder::IsSyncMode())
+      /* In async mode first X% throttle commands amplitude, X-100% raises slip */
+      ampnomLocal = ampmin + (100 - FP_TOINT(ampmin)) * FP_DIV(torque, slipstart);
+
+      if (torque >= slipstart)
       {
-         ampnomLocal = ampmin + FP_DIV(FP_MUL((FP_FROMINT(100) - ampmin), torque), FP_FROMINT(100));
+         s32fp fstat = Param::Get(Param::fstat);
+         s32fp fweak = Param::Get(Param::fweakcalc);
+         s32fp fslipmax = Param::Get(Param::fslipmax);
+
+         if (fstat > fweak)
+         {
+            s32fp fconst = Param::Get(Param::fconst);
+            s32fp fslipconstmax = Param::Get(Param::fslipconstmax);
+            //Basically, for every Hz above fweak we get a fraction of
+            //the difference between fslipconstmax and fslipmax
+            //of additional slip
+            fslipmax += FP_MUL(FP_DIV(fstat - fweak, fconst - fweak), fslipconstmax - fslipmax);
+            fslipmax = MIN(fslipmax, fslipconstmax); //never exceed fslipconstmax!
+         }
+
+         s32fp fslipdiff = fslipmax - fslipmin;
+         fslipspnt = fslipmin + (FP_MUL(fslipdiff, (torque - slipstart)) / (100 - FP_TOINT(slipstart)));
       }
       else
-      {/* In async mode first X% throttle commands amplitude, X-100% raises slip */
-         ampnomLocal = ampmin + (100 - FP_TOINT(ampmin)) * FP_DIV(torque, slipstart);
-
-         if (torque >= slipstart)
-         {
-            s32fp fstat = Param::Get(Param::fstat);
-            s32fp fweak = Param::Get(Param::fweakcalc);
-            s32fp fslipmax = Param::Get(Param::fslipmax);
-
-            if (fstat > fweak)
-            {
-               s32fp fconst = Param::Get(Param::fconst);
-               s32fp fslipconstmax = Param::Get(Param::fslipconstmax);
-               //Basically, for every Hz above fweak we get a fraction of
-               //the difference between fslipconstmax and fslipmax
-               //of additional slip
-               fslipmax += FP_MUL(FP_DIV(fstat - fweak, fconst - fweak), fslipconstmax - fslipmax);
-               fslipmax = MIN(fslipmax, fslipconstmax); //never exceed fslipconstmax!
-            }
-
-            s32fp fslipdiff = fslipmax - fslipmin;
-            fslipspnt = fslipmin + (FP_MUL(fslipdiff, (torque - slipstart)) / (100 - FP_TOINT(slipstart)));
-         }
-         else
-         {
-            fslipspnt = fslipmin;
-         }
+      {
+         fslipspnt = fslipmin;
       }
    }
    else
    {
       u32fp brkrampstr = (u32fp)Param::Get(Param::brkrampstr);
 
-      if (Encoder::IsSyncMode())
-      {
-         ampnomLocal = ampmin + FP_MUL(ampmin, torque) / 100;
-         //ampnom = ampmin + FP_DIV(FP_MUL((FP_FROMINT(100) - ampmin), -potnom), FP_FROMINT(100));
-      }
-      else
-      {
-         ampnomLocal = -torque;
+      ampnomLocal = -torque;
 
-         fslipspnt = -fslipmin;
-         if (Encoder::GetRotorFrequency() < brkrampstr)
-         {
-            ampnomLocal = FP_TOINT(FP_DIV(Encoder::GetRotorFrequency(), brkrampstr) * ampnomLocal);
-         }
+      fslipspnt = -fslipmin;
+      if (Encoder::GetRotorFrequency() < brkrampstr)
+      {
+         ampnomLocal = FP_TOINT(FP_DIV(Encoder::GetRotorFrequency(), brkrampstr) * ampnomLocal);
       }
    }
 
