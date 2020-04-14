@@ -74,7 +74,7 @@ static bool ignore = true;
 static enum Encoder::mode encMode = Encoder::INVALID;
 static bool seenNorthSignal = false;
 static uint32_t turnsSinceLastSample = 0;
-static int32_t minSin = 0, maxSin = 0, startupDelay;
+static int32_t resolverMin = 0, resolverMax = 0, startupDelay;
 static int sinChan = 3, cosChan = 2;
 static int detectedDirection = 0;
 
@@ -82,8 +82,8 @@ void Encoder::Reset()
 {
    ignore = true;
    lastPulseTimespan = MAX_CNT;
-   minSin = 0;
-   maxSin = 0;
+   resolverMin = 0;
+   resolverMax = 0;
    lastFrequency = 0;
    startupDelay = 4000;
    for (uint32_t i = 0; i < MAX_REVCNT_VALUES; i++)
@@ -554,11 +554,13 @@ uint16_t Encoder::DecodeAngle(bool invert)
    int sin = adc_read_injected(ADC1, sinChan);
    int cos = adc_read_injected(ADC1, cosChan);
 
-   minSin = MIN(sin, minSin);
-   maxSin = MAX(sin, maxSin);
+   int temp = MIN(sin, cos);
+   resolverMin = MIN(temp, resolverMin);
+   temp = MAX(sin, cos);
+   resolverMax = MAX(temp, resolverMax);
 
    //Wait for signal to reach usable amplitude
-   if ((maxSin - minSin) > MIN_RES_AMP)
+   if ((resolverMax - resolverMin) > MIN_RES_AMP)
    {
       if (invert)
          return SineCore::Atan2(-sin, -cos);

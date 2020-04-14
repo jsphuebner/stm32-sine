@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.77.R
+#define VER 4.79.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -45,7 +45,7 @@
     PARAM_ENTRY(CAT_MOTOR,   numimp,      "ppr",     8,      8192,   60,     15  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirchrpm,    "rpm",     0,      2000,   100,    87  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirmode,     DIRMODES,  0,      3,      1,      95  ) \
-    PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     14,     12,     46  ) \
+    PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     15,     12,     46  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmfrq,      PWMFRQS,   0,      2,      1,      13  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmpol,      PWMPOLS,   0,      1,      0,      52  ) \
     PARAM_ENTRY(CAT_INVERTER,deadtime,    "dig",     0,      255,    63,     14  ) \
@@ -165,7 +165,7 @@
     PARAM_ENTRY(CAT_MOTOR,   dirmode,     DIRMODES,  0,      3,      1,      95  ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
     PARAM_ENTRY(CAT_MOTOR,   syncadv,     "dig/hz",-100,     100,    10,     101 ) \
-    PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     14,     12,     46  ) \
+    PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     15,     12,     46  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmfrq,      PWMFRQS,   0,      2,      1,      13  ) \
     PARAM_ENTRY(CAT_INVERTER,pwmpol,      PWMPOLS,   0,      1,      0,      52  ) \
     PARAM_ENTRY(CAT_INVERTER,deadtime,    "dig",     0,      255,    63,     14  ) \
@@ -274,7 +274,7 @@
 #define DIRS         "-1=Reverse, 0=Neutral, 1=Forward"
 #define TRIPMODES    "0=AllOff, 1=DcSwOn, 2=PrechargeOn"
 #define SNS_HS       "0=JCurve, 1=Semikron, 2=MBB600, 3=KTY81, 4=PT1000, 5=NTCK45_2k2, 6=Leaf"
-#define SNS_M        "12=KTY83-110, 13=KTY84-130, 14=Leaf"
+#define SNS_M        "12=KTY83-110, 13=KTY84-130, 14=Leaf, 15=KTY81-110"
 #define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=speedfrq"
 #define BTNSWITCH    "0=Button, 1=Switch, 2=CAN"
 #define DIRMODES     "0=Button, 1=Switch, 2=ButtonReversed, 3=SwitchReversed"

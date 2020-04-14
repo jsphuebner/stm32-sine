@@ -29,7 +29,7 @@ public:
       TEMP_JCURVE = 0,
       TEMP_SEMIKRON = 1,
       TEMP_MBB600 = 2,
-      TEMP_KTY81 = 3,
+      TEMP_KTY81HS = 3,
       TEMP_PT1000 = 4,
       TEMP_NTCK45 = 5, /*hier muss ein NTC K45 2k2 verwendet werden, der mit einem Parallelwiderstand mit 2k verschaltet wird. Achtung: Der Parallelwiderstand ist im Schaltplan und Layout nicht vorhanden! */
       TEMP_LEAFHS = 6,
@@ -37,8 +37,9 @@ public:
       TEMP_KTY83 = 12,
       TEMP_KTY84 = 13,
       TEMP_LEAF = 14,
-      TEMP_TESLA_100K = 15,
-      TEMP_TESLA_52K = 16,
+      TEMP_KTY81M = 15,
+      TEMP_TESLA_100K = 16,
+      TEMP_TESLA_52K = 17,
       TEMP_LAST
    };
 
@@ -121,22 +122,18 @@ public:
 1039
 
 #define LEAFHS \
-1929	, \
-2044	, \
-2256	, \
-2338	, \
-2387	, \
-2497	, \
-2576	, \
-2666	, \
-2744	, \
-2861	, \
-3025	, \
-3188	, \
-3352	, \
-3516	, \
-3679
-
+1061	, \
+1175	, \
+1388	, \
+1550	, \
+1707	, \
+1876	, \
+1993	, \
+2156	, \
+2320	, \
+2483	, \
+2647	, \
+2810
 
 #define SEMIKRON \
 3767	,\
@@ -284,28 +281,29 @@ public:
 358
 
 
-#define KTY81 \
-1851, \
-1979, \
-2107, \
-2238, \
-2367, \
-2495, \
-2620, \
-2744, \
-2865, \
-2984, \
-3098, \
-3210, \
-3317, \
-3422, \
-3522, \
-3619, \
-3712, \
-3801, \
-3881, \
-3951, \
-4009
+#define KTY81_HS \
+1863	,\
+1991	,\
+2123	,\
+2253	,\
+2381	,\
+2510	,\
+2635	,\
+2760	,\
+2881	,\
+2998	,\
+3114	,\
+3226	,\
+3332	,\
+3437	,\
+3537	,\
+3634	,\
+3727	,\
+3815	,\
+3895	,\
+3965	,\
+4022
+
 
 #define PT1000 \
 2488, \
@@ -372,6 +370,31 @@ public:
 270, \
 243, \
 219
+
+#define KTY81_M \
+2062	,\
+1994	,\
+1925	,\
+1857	,\
+1791	,\
+1725	,\
+1661	,\
+1598	,\
+1536	,\
+1478	,\
+1420	,\
+1365	,\
+1312	,\
+1261	,\
+1212	,\
+1165	,\
+1120	,\
+1078	,\
+1040	,\
+1007	,\
+980	,\
+
+
 
 #endif
 

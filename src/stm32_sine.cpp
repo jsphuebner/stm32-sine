@@ -796,17 +796,22 @@ static void ConfigureVariantIO()
    hwRev = detect_hw();
    Param::SetInt(Param::hwver, hwRev);
 
-
    switch (hwRev)
    {
       case HW_REV1:
          analogInputs[AnaIn::il2].port = GPIOA;
          analogInputs[AnaIn::il2].pin = 6;
+         AnaIn::Init(analogInputs);
+         DIG_IO_CONFIGURE(DIG_IO_LIST);
          break;
       case HW_REV2:
       case HW_REV3:
+         AnaIn::Init(analogInputs);
+         DIG_IO_CONFIGURE(DIG_IO_LIST);
          break;
       case HW_TESLA:
+         AnaIn::Init(analogInputs);
+         DIG_IO_CONFIGURE(DIG_IO_LIST);
          DigIo::temp1_out.Configure(GPIOC, GPIO8, PinMode::OUTPUT);
          //Essentially disable error output by mapping it to an unused pin
          DigIo::err_out.Configure(GPIOB, GPIO9, PinMode::INPUT_FLT);
@@ -815,12 +820,6 @@ static void ConfigureVariantIO()
          AnaIn::Init(analogInputsBluePill);
          DIG_IO_CONFIGURE(DIG_IO_BLUEPILL);
          break;
-   }
-
-   if (hwRev != HW_BLUEPILL)
-   {
-      AnaIn::Init(analogInputs);
-      DIG_IO_CONFIGURE(DIG_IO_LIST);
    }
 }
 
