@@ -27,6 +27,7 @@ int Throttle::potmax[2];
 s32fp Throttle::brknom;
 s32fp Throttle::brknompedal;
 s32fp Throttle::brkmax;
+s32fp Throttle::brkcruise;
 int Throttle::idleSpeed;
 int Throttle::cruiseSpeed;
 s32fp Throttle::speedkp;
@@ -98,7 +99,7 @@ s32fp Throttle::CalcThrottle(int potval, int pot2val, bool brkpedal)
    s32fp potnom;
    s32fp scaledBrkMax = brkpedal ? brknompedal : brkmax;
 
-   if (pot2val > potmin[1])
+   if (pot2val >= potmin[1])
    {
       potnom = (FP_FROMINT(100) * (pot2val - potmin[1])) / (potmax[1] - potmin[1]);
       //Never reach 0, because that can spin up the motor
@@ -161,7 +162,7 @@ s32fp Throttle::CalcCruiseSpeed(int speed)
 
    s32fp potnom = speedkp * speederr;
    potnom = MIN(FP_FROMINT(100), potnom);
-   potnom = MAX(brkmax, potnom);
+   potnom = MAX(brkcruise, potnom);
 
    return potnom;
 }

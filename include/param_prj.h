@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.79.R
+#define VER 4.80.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -27,7 +27,7 @@
 
 #if CONTROL == CTRL_SINE
 
-//Next param id (increase when adding new parameter!): 124
+//Next param id (increase when adding new parameter!): 125
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   boost,       "dig",     0,      37813,  1700,   1   ) \
@@ -40,7 +40,7 @@
     PARAM_ENTRY(CAT_MOTOR,   polepairs,   "",        1,      16,     2,      32  ) \
     PARAM_ENTRY(CAT_MOTOR,   respolepairs,"",        1,      16,     1,      93  ) \
     PARAM_ENTRY(CAT_MOTOR,   encmode,     ENCMODES,  0,      5,      0,      75  ) \
-    PARAM_ENTRY(CAT_MOTOR,   fmin,        "Hz",      0,      400,    1,      34  ) \
+    PARAM_ENTRY(CAT_MOTOR,   fmin,        "Hz",      0,      400,    0.5,    34  ) \
     PARAM_ENTRY(CAT_MOTOR,   fmax,        "Hz",      21,     1000,   200,    9   ) \
     PARAM_ENTRY(CAT_MOTOR,   numimp,      "ppr",     8,      8192,   60,     15  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirchrpm,    "rpm",     0,      2000,   100,    87  ) \
@@ -86,6 +86,7 @@
     PARAM_ENTRY(CAT_REGEN,   regenramp,   "%/10ms",  0.1,    100,    100,    68  ) \
     PARAM_ENTRY(CAT_REGEN,   brknom,      "%",       0,      100,    30,     19  ) \
     PARAM_ENTRY(CAT_REGEN,   brkmax,      "%",       -100,   0,      -30,    49  ) \
+    PARAM_ENTRY(CAT_REGEN,   brkcruise,   "%",       -100,   0,      -30,    124 ) \
     PARAM_ENTRY(CAT_REGEN,   brkrampstr,  "Hz",      0,      400,    10,     39  ) \
     PARAM_ENTRY(CAT_REGEN,   brkhistr,    "Hz",      20,     1000,   1000,   122 ) \
     PARAM_ENTRY(CAT_REGEN,   brkhistp,    "Hz",      30,     1000,   1000,   123 ) \
@@ -148,7 +149,7 @@
     VALUE_ENTRY(cpuload,     "%",     2035 )
 
 #elif CONTROL == CTRL_FOC
-//Next param id (increase when adding new parameter!): 124
+//Next param id (increase when adding new parameter!): 125
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      20000,  64,     107 ) \
@@ -202,6 +203,7 @@
     PARAM_ENTRY(CAT_REGEN,   regenramp,   "%/10ms",  0.1,    100,    100,    68  ) \
     PARAM_ENTRY(CAT_REGEN,   brknom,      "%",       0,      100,    30,     19  ) \
     PARAM_ENTRY(CAT_REGEN,   brkmax,      "%",       -100,   0,      -30,    49  ) \
+    PARAM_ENTRY(CAT_REGEN,   brkcruise,   "%",       -100,   0,      -30,    124 ) \
     PARAM_ENTRY(CAT_REGEN,   brkrampstr,  "Hz",      0,      400,    10,     39  ) \
     PARAM_ENTRY(CAT_REGEN,   brkhistr,    "Hz",      20,     1000,   1000,   122 ) \
     PARAM_ENTRY(CAT_REGEN,   brkhistp,    "Hz",      30,     1000,   1000,   123 ) \

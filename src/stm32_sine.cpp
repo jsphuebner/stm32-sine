@@ -151,7 +151,6 @@ static void SelectDirection()
 static void Ms100Task(void)
 {
    DigIo::led_out.Toggle();
-   //ErrorMessage::PrintNewErrors();
    iwdg_reset();
    s32fp cpuLoad = FP_FROMINT(PwmGeneration::GetCpuLoad() + scheduler->GetCpuLoad());
    Param::SetFlt(Param::cpuload, cpuLoad / 10);
@@ -745,6 +744,7 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
          Throttle::brknompedal = Param::Get(Param::brknompedal);
          Throttle::regenRamp = Param::Get(Param::regenramp);
          Throttle::brkmax = Param::Get(Param::brkmax);
+         Throttle::brkcruise = Param::Get(Param::brkcruise);
          Throttle::throtmax = Param::Get(Param::throtmax);
          Throttle::throtmin = Param::Get(Param::throtmin);
          Throttle::idleSpeed = Param::GetInt(Param::idlespeed);

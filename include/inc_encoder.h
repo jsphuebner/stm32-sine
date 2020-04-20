@@ -27,7 +27,7 @@ public:
    static void SwapSinCos(bool swap);
 
 private:
-   static u32fp CalcFrequencyFromAngleDifference(uint16_t angle);
+   static void UpdateTurns(uint16_t angle, uint16_t lastAngle);
    static void InitTimerSingleChannelMode();
    static void InitTimerABZMode();
    static void InitSPIMode();

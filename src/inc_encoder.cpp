@@ -33,7 +33,7 @@
 
 #define TWO_PI            65536
 //Angle difference at which we assume jitter to become irrelevant
-#define STABLE_ANGLE      ((30 * TWO_PI) / 360)
+#define STABLE_ANGLE      ((10 * TWO_PI) / 360)
 #define MAX_CNT           TWO_PI - 1
 #define MAX_REVCNT_VALUES 5
 #define MIN_RES_AMP       1000
@@ -73,10 +73,10 @@ static u32fp lastFrequency = 0;
 static bool ignore = true;
 static enum Encoder::mode encMode = Encoder::INVALID;
 static bool seenNorthSignal = false;
-static uint32_t turnsSinceLastSample = 0;
+static int32_t turnsSinceLastSample = 0;
 static int32_t resolverMin = 0, resolverMax = 0, startupDelay;
-static int sinChan = 3, cosChan = 2;
-static int detectedDirection = 0;
+static int32_t sinChan = 3, cosChan = 2;
+static int32_t detectedDirection = 0;
 
 void Encoder::Reset()
 {
@@ -85,6 +85,7 @@ void Encoder::Reset()
    resolverMin = 0;
    resolverMax = 0;
    lastFrequency = 0;
+   detectedDirection = 0;
    startupDelay = 4000;
    for (uint32_t i = 0; i < MAX_REVCNT_VALUES; i++)
       timdata[i] = MAX_CNT;
@@ -195,15 +196,15 @@ void Encoder::UpdateRotorAngle(int dir)
          break;
       case SPI:
          angle = GetAngleSPI();
-         lastFrequency = CalcFrequencyFromAngleDifference(angle);
+         UpdateTurns(angle, lastAngle);
          break;
       case RESOLVER:
          angle = GetAngleResolver();
-         lastFrequency = CalcFrequencyFromAngleDifference(angle);
+         UpdateTurns(angle, lastAngle);
          break;
       case SINCOS:
          angle = GetAngleSinCos();
-         lastFrequency = CalcFrequencyFromAngleDifference(angle);
+         UpdateTurns(angle, lastAngle);
          break;
       default:
          break;
@@ -235,6 +236,20 @@ void Encoder::UpdateRotorFrequency(int callingFrequency)
    {
       //65536 is one turn
       lastFrequency = (callingFrequency * turnsSinceLastSample) / FP_TOINT(TWO_PI);
+      turnsSinceLastSample = 0;
+   }
+   else if (encMode == RESOLVER || encMode == SPI || encMode == SINCOS)
+   {
+      int absTurns = ABS(turnsSinceLastSample);
+      if (startupDelay == 0 && absTurns > STABLE_ANGLE)
+      {
+         lastFrequency = (callingFrequency * absTurns) / FP_TOINT(TWO_PI);
+         detectedDirection = turnsSinceLastSample > 0 ? 1 : -1;
+      }
+      else
+      {
+         lastFrequency = 0;
+      }
       turnsSinceLastSample = 0;
    }
 }
@@ -278,23 +293,11 @@ uint32_t Encoder::GetFullTurns()
    return fullTurns;
 }
 
-u32fp Encoder::CalcFrequencyFromAngleDifference(uint16_t angle)
+void Encoder::UpdateTurns(uint16_t angle, uint16_t lastAngle)
 {
-   static uint32_t samples = 0;
-   static int lastAngle = 0;
-   u32fp frq = lastFrequency;
-   int signedDiff = ((int)angle) - lastAngle;
+   int signedDiff = (int)angle - (int)lastAngle;
    int absDiff = ABS(signedDiff);
    int sign = signedDiff < 0 ? -1 : 1;
-
-   if (startupDelay > 0)
-   {
-      samples = 0;
-      lastAngle = angle;
-      return lastFrequency;
-   }
-
-   samples++;
 
    if (absDiff > (TWO_PI / 2)) //wrap detection
    {
@@ -303,24 +306,7 @@ u32fp Encoder::CalcFrequencyFromAngleDifference(uint16_t angle)
       absDiff = ABS(signedDiff);
    }
 
-   if (absDiff > STABLE_ANGLE && samples > 0)
-   {
-      //We don't make assumptions about the rotation direction but we
-      //do assume less than 180° in one PWM cycle
-      frq = (pwmFrq * absDiff) / FP_TOINT(TWO_PI * samples);
-
-      detectedDirection = sign;
-
-      lastAngle = angle;
-      samples = 0;
-   }
-   else if (samples > (pwmFrq >> 5)) //Timeout
-   {
-      frq = 0;
-   }
-
-   frq = IIRFILTER(lastFrequency, frq, 1);
-   return frq;
+   turnsSinceLastSample += signedDiff;
 }
 
 void Encoder::InitTimerSingleChannelMode()

@@ -90,7 +90,7 @@ void PwmGeneration::Run()
       Param::SetInt(Param::ud, ud);
 
       /* Shut down PWM on stopped motor, neutral gear or init phase */
-      if ((0 == frq && 0 == idref) || 0 == dir || initwait > 0)
+      if ((0 == frq && 0 == idref && 0 == qController.GetRef()) || 0 == dir || initwait > 0)
       {
          timer_disable_break_main_output(PWM_TIMER);
          dController.ResetIntegrator();
