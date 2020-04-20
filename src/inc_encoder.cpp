@@ -192,7 +192,7 @@ void Encoder::UpdateRotorAngle(int dir)
          accumulatedAngle += (int16_t)(dir * numPulses * anglePerPulse);
          angle = accumulatedAngle + dir * interpolatedAngle;
          lastFrequency = ignore ? lastFrequency : FP_FROMINT(pulseMeasFrq) / (lastPulseTimespan * pulsesPerTurn);
-         detectedDirection = 1;
+         detectedDirection = dir;
          break;
       case SPI:
          angle = GetAngleSPI();
@@ -238,7 +238,7 @@ void Encoder::UpdateRotorFrequency(int callingFrequency)
       lastFrequency = (callingFrequency * turnsSinceLastSample) / FP_TOINT(TWO_PI);
       turnsSinceLastSample = 0;
    }
-   else if (encMode == RESOLVER || encMode == SPI || encMode == SINCOS)
+   else if ((encMode == RESOLVER) || (encMode == SPI) || (encMode == SINCOS))
    {
       int absTurns = ABS(turnsSinceLastSample);
       if (startupDelay == 0 && absTurns > STABLE_ANGLE)
@@ -350,11 +350,13 @@ void Encoder::InitTimerSingleChannelMode()
       //Since channel 3 is not connected to slave mmode controller, we have to use the ETR pin
       timer_slave_set_trigger(REV_CNT_TIMER, TIM_SMCR_TS_ETRF);
       timer_slave_set_filter(REV_CNT_TIMER, selectedConfig->resetFilter);
+      gpio_set_mode(GPIOB, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO0);
    }
    else
    {
       //ETR pin not needed, can use channel 1 (after filter)
       timer_slave_set_trigger(REV_CNT_TIMER, TIM_SMCR_TS_TI1FP1);
+      gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO6 | GPIO7);
    }
 
    /* Save timer value on input pulse with smaller filter constant */
@@ -369,7 +371,6 @@ void Encoder::InitTimerSingleChannelMode()
    timer_generate_event(REV_CNT_TIMER, TIM_EGR_UG);
    timer_enable_counter(REV_CNT_TIMER);
    gpio_set_mode(NORTH_EXC_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, NORTH_EXC_PIN);
-   gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO6 | GPIO7);
    exti_disable_request(NORTH_EXC_EXTI);
 
    dma_disable_channel(DMA1, REV_CNT_DMACHAN);

@@ -269,9 +269,9 @@ void PwmGeneration::AcHeat()
    }
 }
 
-s32fp PwmGeneration::GetCurrent(AnaIn::AnaIns input, s32fp offset, s32fp gain)
+s32fp PwmGeneration::GetCurrent(AnaIn& input, s32fp offset, s32fp gain)
 {
-   s32fp il = FP_FROMINT(AnaIn::Get(input));
+   s32fp il = FP_FROMINT(input.Get());
    il -= offset;
    return FP_DIV(il, gain);
 }

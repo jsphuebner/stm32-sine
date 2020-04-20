@@ -22,6 +22,7 @@
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/stm32/rtc.h>
+#include <libopencm3/stm32/can.h>
 #include <libopencm3/stm32/iwdg.h>
 #include "stm32_can.h"
 #include "terminal.h"
@@ -52,6 +53,7 @@ HWREV hwRev; //Hardware variant of board we are running on
 //Precise control of executing the boost controller
 static bool runChargeControl = false;
 static Stm32Scheduler* scheduler;
+static Can* can;
 
 static void PostErrorIfRunning(ERROR_MESSAGE_NUM err)
 {
@@ -182,7 +184,7 @@ static void Ms100Task(void)
    Param::SetFlt(Param::uac, uac);
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
-      Can::SendAll();
+      can->SendAll();
 }
 
 static void GetDigInputs()
@@ -192,7 +194,7 @@ static void GetDigInputs()
 
    canIoActive |= canio != 0;
 
-   if ((rtc_get_counter_val() - Can::GetLastRxTimestamp()) >= CAN_TIMEOUT && canIoActive)
+   if ((rtc_get_counter_val() - can->GetLastRxTimestamp()) >= CAN_TIMEOUT && canIoActive)
    {
       canio = 0;
       Param::SetInt(Param::canio, 0);
@@ -222,8 +224,8 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
       static int tmphsMax = 0, tmpmMax = 0;
       static int input = 0;
 
-      int tmphsi = AnaIn::Get(AnaIn::tmphs);
-      int tmpmi = AnaIn::Get(AnaIn::tmpm);
+      int tmphsi = AnaIn::tmphs.Get();
+      int tmpmi = AnaIn::tmpm.Get();;
 
       switch (input)
       {
@@ -271,8 +273,8 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
       TempMeas::Sensors snshs = (TempMeas::Sensors)Param::GetInt(Param::snshs);
       TempMeas::Sensors snsm = (TempMeas::Sensors)Param::GetInt(Param::snsm);
 
-      int tmphsi = AnaIn::Get(AnaIn::tmphs);
-      int tmpmi = AnaIn::Get(AnaIn::tmpm);
+      int tmphsi = AnaIn::tmphs.Get();
+      int tmpmi = AnaIn::tmpm.Get();
 
       tmpm = TempMeas::Lookup(tmpmi, snsm);
       tmphs = TempMeas::Lookup(tmphsi, snshs);
@@ -334,8 +336,8 @@ static s32fp ProcessUdc()
    //1.2/(4.7+1.2)/3.33*4095 = 250 -> make it a bit less for pin losses etc
    //HW_REV1 had 3.9k resistors
    int uauxGain = hwRev == HW_REV1 ? 289 : 249;
-   Param::SetFlt(Param::uaux, FP_DIV(AnaIn::Get(AnaIn::uaux), uauxGain));
-   udc = IIRFILTER(udc, AnaIn::Get(AnaIn::udc), 2);
+   Param::SetFlt(Param::uaux, FP_DIV(AnaIn::uaux.Get(), uauxGain));
+   udc = IIRFILTER(udc, AnaIn::udc.Get(), 2);
    udcfp = FP_DIV(FP_FROMINT(udc - udcofs), udcgain);
 
    if (udcfp < udcmin || udcfp > udcmax)
@@ -400,7 +402,7 @@ static int GetUserThrottleCommand()
    if (potmode == POTMODE_CAN)
    {
       //500ms timeout
-      if ((rtc_get_counter_val() - Can::GetLastRxTimestamp()) < CAN_TIMEOUT)
+      if ((rtc_get_counter_val() - can->GetLastRxTimestamp()) < CAN_TIMEOUT)
       {
          potval = Param::GetInt(Param::pot);
          pot2val = Param::GetInt(Param::pot2);
@@ -414,8 +416,8 @@ static int GetUserThrottleCommand()
    }
    else
    {
-      potval = AnaIn::Get(AnaIn::throttle1);
-      pot2val = AnaIn::Get(AnaIn::throttle2);
+      potval = AnaIn::throttle1.Get();
+      pot2val = AnaIn::throttle2.Get();
       Param::SetInt(Param::pot, potval);
       Param::SetInt(Param::pot2, pot2val);
    }
@@ -554,7 +556,7 @@ static void Ms10Task(void)
    }
    else if (MOD_OFF == opmode && Encoder::GetSpeed() == 0)
    {
-      PwmGeneration::SetCurrentOffset(AnaIn::Get(AnaIn::il1), AnaIn::Get(AnaIn::il2));
+      PwmGeneration::SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
    }
 
    /* switch on DC switch above threshold but only if
@@ -627,7 +629,7 @@ static void Ms10Task(void)
    }
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_10MS)
-      Can::SendAll();
+      can->SendAll();
 }
 
 static void GenerateSpeedFrequencyOutput()
@@ -710,7 +712,7 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
          break;
    #endif
       case Param::canspeed:
-         Can::SetBaudrate((enum Can::baudrates)Param::GetInt(Param::canspeed));
+         can->SetBaudrate((Can::baudrates)Param::GetInt(Param::canspeed));
          break;
       case Param::throtmax:
       case Param::throtmin:
@@ -790,37 +792,32 @@ static void InitPWMIO()
 
 static void ConfigureVariantIO()
 {
-   AnaIn::AnaInfo analogInputs[] = ANA_IN_ARRAY(ANA_IN_LIST);
-   AnaIn::AnaInfo analogInputsBluePill[] = ANA_IN_ARRAY(ANA_IN_LIST_BLUEPILL);
-
    hwRev = detect_hw();
    Param::SetInt(Param::hwver, hwRev);
+
+   ANA_IN_CONFIGURE(ANA_IN_LIST);
+   DIG_IO_CONFIGURE(DIG_IO_LIST);
 
    switch (hwRev)
    {
       case HW_REV1:
-         analogInputs[AnaIn::il2].port = GPIOA;
-         analogInputs[AnaIn::il2].pin = 6;
-         AnaIn::Init(analogInputs);
-         DIG_IO_CONFIGURE(DIG_IO_LIST);
+         AnaIn::il2.Configure(GPIOA, 6);
          break;
       case HW_REV2:
       case HW_REV3:
-         AnaIn::Init(analogInputs);
-         DIG_IO_CONFIGURE(DIG_IO_LIST);
          break;
       case HW_TESLA:
-         AnaIn::Init(analogInputs);
-         DIG_IO_CONFIGURE(DIG_IO_LIST);
          DigIo::temp1_out.Configure(GPIOC, GPIO8, PinMode::OUTPUT);
          //Essentially disable error output by mapping it to an unused pin
          DigIo::err_out.Configure(GPIOB, GPIO9, PinMode::INPUT_FLT);
          break;
       case HW_BLUEPILL:
-         AnaIn::Init(analogInputsBluePill);
+         ANA_IN_CONFIGURE(ANA_IN_LIST_BLUEPILL);
          DIG_IO_CONFIGURE(DIG_IO_BLUEPILL);
          break;
    }
+
+   AnaIn::Start();
 }
 
 extern "C" void tim2_isr(void)
@@ -848,7 +845,6 @@ extern "C" int main(void)
    term_Init();
    parm_load();
    parm_Change(Param::PARAM_LAST);
-   Can::Init((Can::baudrates)Param::GetInt(Param::canspeed));
    ErrorMessage::SetTime(1);
    InitPWMIO();
 
@@ -856,6 +852,8 @@ extern "C" int main(void)
 
    Stm32Scheduler s(hwRev == HW_BLUEPILL ? TIM4 : TIM2); //We never exit main so it's ok to put it on stack
    scheduler = &s;
+   Can c(CAN1, (Can::baudrates)Param::GetInt(Param::canspeed));
+   can = &c;
 
    s.AddTask(Ms1Task, 1);
    s.AddTask(Ms10Task, 10);

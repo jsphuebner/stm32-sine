@@ -63,7 +63,7 @@ void PwmGeneration::Run()
 
       ProcessCurrents(id, iq);
 
-      if (opmode == MOD_RUN)
+      if (opmode == MOD_RUN && initwait == 0)
       {
          s32fp fwIdRef = idref <= 0 ? fwController.Run(iq) : 0;
          dController.SetRef(idref + fwIdRef);
@@ -215,6 +215,7 @@ void PwmGeneration::PwmInit()
    slipIncr = FRQ_TO_ANGLE(fslip);
    Encoder::SetPwmFrequency(pwmfrq);
    initwait = pwmfrq / 2; //0.5s
+   idref = 0;
    qController.ResetIntegrator();
    qController.SetCallingFrequency(pwmfrq);
    qController.SetMinMaxY(-maxVd, maxVd);
@@ -234,7 +235,7 @@ s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
    if (initwait > 0)
    {
       initwait--;
-      SetCurrentOffset(AnaIn::Get(AnaIn::il1), AnaIn::Get(AnaIn::il2));
+      SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
    }
    else
    {

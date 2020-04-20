@@ -49,8 +49,6 @@ void PwmGeneration::Run()
       else
          CalcNextAngleAsync(dir);
 
-      ProcessCurrents();
-
       uint32_t amp = MotorVoltage::GetAmpPerc(frq, ampNomLimited);
 
       SineCore::SetAmp(amp);

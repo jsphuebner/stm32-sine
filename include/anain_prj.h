@@ -21,6 +21,9 @@
    ANA_IN_ENTRY(il1,       GPIOA, 5) \
    ANA_IN_ENTRY(il2,       GPIOB, 0)
 
+//Alternative list. Must contain exactly the same names and number of
+//entries as ANA_IN_LIST but may contain different IO pins
+
 #define ANA_IN_LIST_BLUEPILL \
    ANA_IN_ENTRY(throttle1, GPIOA, 0) \
    ANA_IN_ENTRY(throttle2, GPIOA, 1) \
