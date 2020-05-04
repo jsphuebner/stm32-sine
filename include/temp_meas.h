@@ -40,6 +40,7 @@ public:
       TEMP_KTY81M = 15,
       TEMP_TESLA_100K = 16,
       TEMP_TESLA_52K = 17,
+      TEMP_TESLA_LDU_FLUID = 18,
       TEMP_LAST
    };
 
@@ -280,6 +281,27 @@ public:
 395, \
 358
 
+#define TESLA_LDU_FLUID \
+3855	,\
+2951	,\
+3105	,\
+2723	,\
+2414	,\
+2178	,\
+1836	,\
+1609	,\
+1408	,\
+1180	,\
+994	,\
+868	,\
+749	,\
+638	,\
+574	,\
+498	,\
+431	,\
+373	,\
+314	,\
+277
 
 #define KTY81_HS \
 1863	,\

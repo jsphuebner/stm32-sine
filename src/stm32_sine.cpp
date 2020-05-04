@@ -223,6 +223,7 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
    {
       static int tmphsMax = 0, tmpmMax = 0;
       static int input = 0;
+      static bool isLdu;
 
       int tmphsi = AnaIn::tmphs.Get();
       int tmpmi = AnaIn::tmpm.Get();;
@@ -233,9 +234,10 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
             DigIo::temp0_out.Clear();
             DigIo::temp1_out.Clear();
             input = 1;
+            isLdu = tmpmi > 50;  //Tied to GND on SDU
             //Handle mux inputs 11
             tmphs = 0; //not connected
-            tmpm = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
+            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K) : 0;
             break;
          case 1:
             DigIo::temp0_out.Set();
@@ -245,7 +247,7 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
             input = 2;
             //Handle mux inputs 00
             tmphs = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
-            tmpm = 0; //don't know yet
+            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_LDU_FLUID) : 0;
             break;
          case 2:
             DigIo::temp0_out.Clear();
@@ -253,7 +255,7 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
             input = 3;
             //Handle mux inputs 01
             tmphs = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
-            tmpm = 0; //don't know yet
+            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_LDU_FLUID) : 0;
             break;
          case 3:
             DigIo::temp0_out.Set();
