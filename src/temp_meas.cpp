@@ -65,7 +65,11 @@ static const uint16_t Tesla100k[] = { TESLA_100K };
 /* Temp sensor embedded in Tesla rear heatsink */
 static const uint16_t Tesla52k[] = { TESLA_52K };
 
+/* Coolant fluid sensor in Tesla LDU */
 static const uint16_t TeslaFluid[] = { TESLA_LDU_FLUID };
+
+/* Temp sensor embedded in Tesla rear heatsink */
+static const uint16_t Tesla10k[] = { TESLA_10K };
 
 /* contributed by Fabian Brauss */
 /* Temp sensor KTY81-121 */
@@ -93,6 +97,7 @@ static const TEMP_SENSOR sensors[] =
    { -20, 190, 5,  TABLEN(Tesla100k), PTC, Tesla100k  },
    { 0,   100, 10, TABLEN(Tesla52k),  PTC, Tesla52k   },
    { 5,   100,  5, TABLEN(TeslaFluid),PTC, TeslaFluid },
+   { -20, 190, 5,  TABLEN(Tesla10k),  PTC, Tesla10k   },
 };
 
 s32fp TempMeas::Lookup(int digit, Sensors sensorId)

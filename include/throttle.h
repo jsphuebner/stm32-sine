@@ -22,8 +22,6 @@
 
 #include "my_fp.h"
 
-#define TMPHS_MAX FP_FROMINT(85)
-
 class Throttle
 {
    public:
@@ -32,7 +30,7 @@ class Throttle
       static s32fp CalcThrottle(int potval, int pot2val, bool brkpedal);
       static s32fp CalcIdleSpeed(int speed);
       static s32fp CalcCruiseSpeed(int speed);
-      static bool TemperatureDerate(s32fp tmphs, s32fp& finalSpnt);
+      static bool TemperatureDerate(s32fp tmp, s32fp tmpMax, s32fp& finalSpnt);
       static void BmsLimitCommand(s32fp& finalSpnt, bool dinbms);
       static void UdcLimitCommand(s32fp& finalSpnt, s32fp udc);
       static void IdcLimitCommand(s32fp& finalSpnt, s32fp idc);

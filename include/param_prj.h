@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.80.R
+#define VER 4.82.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -27,7 +27,7 @@
 
 #if CONTROL == CTRL_SINE
 
-//Next param id (increase when adding new parameter!): 125
+//Next param id (increase when adding new parameter!): 126
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   boost,       "dig",     0,      37813,  1700,   1   ) \
@@ -64,6 +64,8 @@
     PARAM_ENTRY(CAT_DERATE,  iacmax,      "A",       0,      5000,   5000,   89  ) \
     PARAM_ENTRY(CAT_DERATE,  idcmax,      "A",       0,      5000,   5000,   96  ) \
     PARAM_ENTRY(CAT_DERATE,  idcmin,      "A",       -5000,  0,     -5000,   98  ) \
+    PARAM_ENTRY(CAT_DERATE,  tmphsmax,    "°C",      50,     150,   85,      125 ) \
+    PARAM_ENTRY(CAT_DERATE,  tmpmmax,     "°C",      70,     300,   300,     126 ) \
     PARAM_ENTRY(CAT_DERATE,  throtmax,    "%",       0,      100,   100,     97  ) \
     PARAM_ENTRY(CAT_DERATE,  throtmin,    "%",       -100,   0,     -100,    119 ) \
     PARAM_ENTRY(CAT_DERATE,  ifltrise,    "dig",     0,      32,    10,      91  ) \
@@ -111,6 +113,7 @@
     VALUE_ENTRY(hwver,       HWREVS,  2036 ) \
     VALUE_ENTRY(opmode,      OPMODES, 2000 ) \
     VALUE_ENTRY(lasterr,     errorListString,  2038 ) \
+    VALUE_ENTRY(status,      STATUS,  2044 ) \
     VALUE_ENTRY(udc,         "V",     2001 ) \
     VALUE_ENTRY(idc,         "A",     2002 ) \
     VALUE_ENTRY(il1,         "A",     2003 ) \
@@ -184,6 +187,8 @@
     PARAM_ENTRY(CAT_DERATE,  udcmax,      "V",       0,      1000,   520,    43  ) \
     PARAM_ENTRY(CAT_DERATE,  idcmax,      "A",       0,      5000,   5000,   96  ) \
     PARAM_ENTRY(CAT_DERATE,  idcmin,      "A",       -5000,  0,     -5000,   98  ) \
+    PARAM_ENTRY(CAT_DERATE,  tmphsmax,    "°C",      50,     150,   85,      125 ) \
+    PARAM_ENTRY(CAT_DERATE,  tmpmmax,     "°C",      70,     300,   300,     126 ) \
     PARAM_ENTRY(CAT_DERATE,  throtmax,    "%",       0,      100,   100,     97  ) \
     PARAM_ENTRY(CAT_DERATE,  throtmin,    "%",       -100,   0,     -100,    119 ) \
     PARAM_ENTRY(CAT_CHARGER, chargemode,  CHARGEMODS,0,      4,      0,      74  ) \
@@ -228,6 +233,7 @@
     VALUE_ENTRY(hwver,       HWREVS,  2036 ) \
     VALUE_ENTRY(opmode,      OPMODES, 2000 ) \
     VALUE_ENTRY(lasterr,     errorListString,  2038 ) \
+    VALUE_ENTRY(status,      STATUS,  2044 ) \
     VALUE_ENTRY(udc,         "V",     2001 ) \
     VALUE_ENTRY(idc,         "A",     2002 ) \
     VALUE_ENTRY(il1,         "A",     2003 ) \
@@ -266,7 +272,7 @@
     VALUE_ENTRY(ud,     "dig",     0 ) \
     VALUE_ENTRY(uq,     "dig",     0 ) \
 
-//Next value Id: 2044
+//Next value Id: 2045
 #endif // CONTROL
 
 /***** Enum String definitions *****/
@@ -291,6 +297,7 @@
 #define CANPERIODS   "0=100ms, 1=10ms"
 #define HWREVS       "0=Rev1, 1=Rev2, 2=Rev3, 3=Tesla, 4=BluePill"
 #define SWAPS        "0=None, 1=Currents12, 2=SinCos, 4=PWMOutput13"
+#define STATUS       "0=None, 1=UdcLow, 2=UdcHigh, 4=UdcBelowUdcSw, 8=UdcLim, 16=EmcyStop, 32=MProt, 64=PotPressed, 128=TmpHs, 256=WaitStart"
 #define CAT_MOTOR    "Motor"
 #define CAT_INVERTER "Inverter"
 #define CAT_THROTTLE "Throttle"
@@ -386,6 +393,21 @@ enum _swap
    SWAP_RESOLVER = 2,
    SWAP_PWM = 4
 };
+
+enum status
+{
+   STAT_NONE = 0,
+   STAT_UDCLOW = 1,
+   STAT_UDCHIGH = 2,
+   STAT_UDCBELOWUDCSW = 4,
+   STAT_UDCLIM = 8,
+   STAT_EMCYSTOP = 16,
+   STAT_MPROT = 32,
+   STAT_POTPRESSED = 64,
+   STAT_TMPHS = 128,
+   STAT_WAITSTART = 256
+};
+
 //Generated enum-string for possible errors
 extern const char* errorListString;
 

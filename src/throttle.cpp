@@ -167,13 +167,13 @@ s32fp Throttle::CalcCruiseSpeed(int speed)
    return potnom;
 }
 
-bool Throttle::TemperatureDerate(s32fp tmphs, s32fp& finalSpnt)
+bool Throttle::TemperatureDerate(s32fp temp, s32fp tempMax, s32fp& finalSpnt)
 {
    s32fp limit = 0;
 
-   if (tmphs <= TMPHS_MAX)
+   if (temp <= tempMax)
       limit = FP_FROMINT(100);
-   else if (tmphs < (TMPHS_MAX + FP_FROMINT(2)))
+   else if (temp < (tempMax + FP_FROMINT(2)))
       limit = FP_FROMINT(50);
 
    if (finalSpnt >= 0)

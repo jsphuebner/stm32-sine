@@ -208,7 +208,7 @@ static void GetDigInputs()
    Param::SetInt(Param::din_forward, DigIo::fwd_in.Get() | ((canio & CAN_IO_FWD) != 0));
    Param::SetInt(Param::din_reverse, DigIo::rev_in.Get() | ((canio & CAN_IO_REV) != 0));
    Param::SetInt(Param::din_emcystop, DigIo::emcystop_in.Get());
-   Param::SetInt(Param::din_bms, DigIo::bms_in.Get() | ((canio & CAN_IO_BMS) != 0));
+   Param::SetInt(Param::din_bms, (canio & CAN_IO_BMS) != 0 || (hwRev == HW_TESLA ? false : DigIo::bms_in.Get()) );
 
    if (hwRev != HW_REV1 && hwRev != HW_BLUEPILL)
    {
@@ -223,7 +223,7 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
    {
       static int tmphsMax = 0, tmpmMax = 0;
       static int input = 0;
-      static bool isLdu;
+      static bool isLdu = false;
 
       int tmphsi = AnaIn::tmphs.Get();
       int tmpmi = AnaIn::tmpm.Get();;
@@ -236,8 +236,8 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
             input = 1;
             isLdu = tmpmi > 50;  //Tied to GND on SDU
             //Handle mux inputs 11
-            tmphs = 0; //not connected
-            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K) : 0;
+            tmphs = 0; //Not Connected on SDU/LDU
+            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K) : 0; //Not Connected on SDU - TEMP_MOT2  TESLA_100K on LDU
             break;
          case 1:
             DigIo::temp0_out.Set();
@@ -247,7 +247,8 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
             input = 2;
             //Handle mux inputs 00
             tmphs = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
-            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_LDU_FLUID) : 0;
+            //TEMP_CASE on SDU - TEMP_MOT1 on LDU  - DIFFERENT DIV RESISTOR
+            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_LDU_FLUID) : TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_10K);
             break;
          case 2:
             DigIo::temp0_out.Clear();
@@ -255,7 +256,8 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
             input = 3;
             //Handle mux inputs 01
             tmphs = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
-            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_LDU_FLUID) : 0;
+            //TEMP_STATOR on SDU  -   TEMP2_CASE on LDU
+            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_LDU_FLUID) : TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
             break;
          case 3:
             DigIo::temp0_out.Set();
@@ -263,7 +265,8 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
             input = 0;
             //Handle mux inputs 10
             tmphs = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
-            tmpm = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
+            //TEMP_FLUID on SDU -   TEMP1_CASE on LDU - DIFFERENT DIV RESISTOR
+            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K) : TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_10K);
             break;
       }
 
@@ -496,10 +499,16 @@ static s32fp ProcessThrottle()
    Throttle::IdcLimitCommand(finalSpnt, Param::Get(Param::idc));
    Throttle::FrequencyLimitCommand(finalSpnt, Param::Get(Param::fstat));
 
-   if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), finalSpnt))
+   if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), Param::Get(Param::tmphsmax), finalSpnt))
    {
       DigIo::err_out.Set();
       ErrorMessage::Post(ERR_TMPHSMAX);
+   }
+
+   if (Throttle::TemperatureDerate(Param::Get(Param::tmpm), Param::Get(Param::tmpmmax), finalSpnt))
+   {
+      DigIo::err_out.Set();
+      ErrorMessage::Post(ERR_TMPMMAX);
    }
 
    Param::SetFlt(Param::potnom, finalSpnt);
@@ -544,6 +553,7 @@ static void Ms10Task(void)
    int opmode = Param::GetInt(Param::opmode);
    int chargemode = Param::GetInt(Param::chargemode);
    int newMode = MOD_OFF;
+   int stt = STAT_NONE;
    s32fp udc = ProcessUdc();
 
    Encoder::UpdateRotorFrequency(100);
@@ -561,36 +571,42 @@ static void Ms10Task(void)
       PwmGeneration::SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
    }
 
-   /* switch on DC switch above threshold but only if
+   stt |= DigIo::emcystop_in.Get() ? STAT_NONE : STAT_EMCYSTOP;
+   stt |= DigIo::mprot_in.Get() ? STAT_NONE : STAT_MPROT;
+   stt |= Param::GetInt(Param::potnom) <= 0 ? STAT_NONE : STAT_POTPRESSED;
+   stt |= udc >= Param::Get(Param::udcsw) ? STAT_NONE : STAT_UDCBELOWUDCSW;
+   stt |= udc < Param::Get(Param::udclim) ? STAT_NONE : STAT_UDCLIM;
+
+   /* switch on DC switch if
     * - throttle is not pressed
     * - start pin is high
     * - motor protection switch and emcystop is high (=inactive)
+    * - udc >= udcsw
+    * - udc < udclim
     */
-   if (DigIo::emcystop_in.Get() &&
-       DigIo::mprot_in.Get() &&
-       Param::GetInt(Param::potnom) <= 0)
+   if ((stt & (STAT_EMCYSTOP | STAT_MPROT | STAT_POTPRESSED | STAT_UDCBELOWUDCSW | STAT_UDCLIM)) == STAT_NONE)
    {
-      if (udc >= Param::Get(Param::udcsw) && udc < Param::Get(Param::udclim))
+      /* Switch to charge mode if
+       * - Charge mode is enabled
+       * - Fwd AND Rev are high
+       */
+      if (Param::GetBool(Param::din_forward) &&
+          Param::GetBool(Param::din_reverse) &&
+         !Param::GetBool(Param::din_bms) &&
+          chargemode >= MOD_BOOST)
       {
-         /* Switch to charge mode if
-          * - Charge mode is enabled
-          * - Fwd AND Rev are high
-          */
-         if (Param::GetBool(Param::din_forward) &&
-             Param::GetBool(Param::din_reverse) &&
-            !Param::GetBool(Param::din_bms) &&
-             chargemode >= MOD_BOOST)
-         {
-            //In buck mode we precharge to a different voltage
-            if ((chargemode == MOD_BUCK && udc >= Param::Get(Param::udcswbuck)) || chargemode == MOD_BOOST)
-               newMode = chargemode;
-         }
-         else if (Param::GetBool(Param::din_start))
-         {
-            newMode = MOD_RUN;
-         }
+         //In buck mode we precharge to a different voltage
+         if ((chargemode == MOD_BUCK && udc >= Param::Get(Param::udcswbuck)) || chargemode == MOD_BOOST)
+            newMode = chargemode;
       }
+      else if (Param::GetBool(Param::din_start))
+      {
+         newMode = MOD_RUN;
+      }
+      stt |= opmode != MOD_OFF ? STAT_NONE : STAT_WAITSTART;
    }
+
+   Param::SetInt(Param::status, stt);
 
    if (newMode != MOD_OFF)
    {
@@ -676,7 +692,7 @@ static void Ms1Task(void)
       il2 = ABS(il2);
       ilMax = MAX(il1, il2);
 
-      if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), dummy))
+      if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), Param::Get(Param::tmphsmax), dummy))
          chargeCurSpnt = 0;
 
       ilFlt = IIRFILTER(ilFlt, ilMax << 8, Param::GetInt(Param::chargeflt));
