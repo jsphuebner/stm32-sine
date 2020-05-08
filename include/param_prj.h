@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.82.R
+#define VER 4.83.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)

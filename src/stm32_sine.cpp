@@ -221,57 +221,54 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
 {
    if (hwRev == HW_TESLA)
    {
-      static int tmphsMax = 0, tmpmMax = 0;
-      static int input = 0;
+      static int hsTemps[3];
+      static int mTemps[2];
       static bool isLdu = false;
 
+      int input = DigIo::temp0_out.Get() + 2 * DigIo::temp1_out.Get();
       int tmphsi = AnaIn::tmphs.Get();
-      int tmpmi = AnaIn::tmpm.Get();;
+      int tmpmi = AnaIn::tmpm.Get();
+
+      tmphs = Param::Get(Param::tmphs); //default to last value;
+      tmpm = Param::Get(Param::tmpm);
 
       switch (input)
       {
          case 0:
-            DigIo::temp0_out.Clear();
-            DigIo::temp1_out.Clear();
-            input = 1;
             isLdu = tmpmi > 50;  //Tied to GND on SDU
-            //Handle mux inputs 11
-            tmphs = 0; //Not Connected on SDU/LDU
-            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K) : 0; //Not Connected on SDU - TEMP_MOT2  TESLA_100K on LDU
+            if (isLdu) //Not Connected on SDU - TEMP_MOT2  TESLA_100K on LDU
+               mTemps[0] = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
+            DigIo::temp0_out.Set();
+            DigIo::temp1_out.Clear(); //Switch mux for next round
             break;
          case 1:
-            DigIo::temp0_out.Set();
-            DigIo::temp1_out.Clear();
-            tmphsMax = 0;
-            tmpmMax = 0;
-            input = 2;
-            //Handle mux inputs 00
-            tmphs = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
-            //TEMP_CASE on SDU - TEMP_MOT1 on LDU  - DIFFERENT DIV RESISTOR
-            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_LDU_FLUID) : TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_10K);
+            hsTemps[0] = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
+            //TEMP_CASE on SDU - TEMP_MOT1 on LDU  - DIFFERENT DIV RESISTOR - we ignore LDU fluid temps
+            if (!isLdu)
+               mTemps[0] = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_10K);
+            DigIo::temp0_out.Clear();
+            DigIo::temp1_out.Set(); //Switch mux for next round
             break;
          case 2:
-            DigIo::temp0_out.Clear();
-            DigIo::temp1_out.Set();
-            input = 3;
-            //Handle mux inputs 01
-            tmphs = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
-            //TEMP_STATOR on SDU  -   TEMP2_CASE on LDU
-            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_LDU_FLUID) : TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
+            hsTemps[1] = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
+            //TEMP_STATOR on SDU - TEMP2_CASE on LDU - we ignore LDU fluid temps
+            if (!isLdu)
+               mTemps[1] = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
+            DigIo::temp0_out.Set();
+            DigIo::temp1_out.Set(); //Switch mux for next round
             break;
          case 3:
-            DigIo::temp0_out.Set();
-            DigIo::temp1_out.Set();
-            input = 0;
-            //Handle mux inputs 10
-            tmphs = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
-            //TEMP_FLUID on SDU -   TEMP1_CASE on LDU - DIFFERENT DIV RESISTOR
-            tmpm = isLdu ? TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K) : TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_10K);
+            hsTemps[2] = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
+            //TEMP_FLUID on SDU - TEMP1_CASE on LDU - DIFFERENT DIV RESISTOR - ignore Fluid temps
+            if (isLdu)
+               mTemps[1] = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
+            //Now update to maximum temperaure
+            tmphs = MAX(hsTemps[0], MAX(hsTemps[1], hsTemps[2]));
+            tmpm = MAX(mTemps[0], mTemps[1]);
+            DigIo::temp0_out.Clear();
+            DigIo::temp1_out.Clear(); //Switch mux for next round
             break;
       }
-
-      tmphs = tmphsMax = MAX(tmphsMax, tmphs);
-      tmpm = tmpmMax = MAX(tmpmMax, tmpm);
    }
    else
    {
