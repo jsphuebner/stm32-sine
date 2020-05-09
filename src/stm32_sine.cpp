@@ -221,8 +221,8 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
 {
    if (hwRev == HW_TESLA)
    {
-      static int hsTemps[3];
-      static int mTemps[2];
+      static s32fp hsTemps[3];
+      static s32fp mTemps[2];
       static bool isLdu = false;
 
       int input = DigIo::temp0_out.Get() + 2 * DigIo::temp1_out.Get();
@@ -235,35 +235,41 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
       switch (input)
       {
          case 0:
-            isLdu = tmpmi > 50;  //Tied to GND on SDU
-            if (isLdu) //Not Connected on SDU - TEMP_MOT2  TESLA_100K on LDU
-               mTemps[0] = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
+            //Mux1.0 reads fluid temperature on both drive units which we ignore
+            //Mux2.0 reads inverter temperature A on both drive units
+            hsTemps[0] = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
             DigIo::temp0_out.Set();
             DigIo::temp1_out.Clear(); //Switch mux for next round
             break;
          case 1:
-            hsTemps[0] = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
-            //TEMP_CASE on SDU - TEMP_MOT1 on LDU  - DIFFERENT DIV RESISTOR - we ignore LDU fluid temps
+            //Mux1.1 reads stator temperature and SDU and fluid temperature on LDU which we ignore
+            //Mux2.1 reads inverter temperature B on both drive units
+            hsTemps[1] = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
             if (!isLdu)
-               mTemps[0] = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_10K);
+               mTemps[0] = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
             DigIo::temp0_out.Clear();
             DigIo::temp1_out.Set(); //Switch mux for next round
             break;
          case 2:
-            hsTemps[1] = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
-            //TEMP_STATOR on SDU - TEMP2_CASE on LDU - we ignore LDU fluid temps
-            if (!isLdu)
-               mTemps[1] = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
+            //Mux1.2 reads case temperature on SDU and stator temperature 1 on LDU
+            //Mux2.2 reads inverter temperature C on both drive units
+            hsTemps[2] = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
+            if (isLdu)
+               mTemps[0] = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
+            else
+               mTemps[1] = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_10K);
+            //Done reading inverter temps, update to maximum
+            tmphs = MAX(hsTemps[0], MAX(hsTemps[1], hsTemps[2]));
             DigIo::temp0_out.Set();
             DigIo::temp1_out.Set(); //Switch mux for next round
             break;
          case 3:
-            hsTemps[2] = TempMeas::Lookup(tmphsi, TempMeas::TEMP_TESLA_52K);
-            //TEMP_FLUID on SDU - TEMP1_CASE on LDU - DIFFERENT DIV RESISTOR - ignore Fluid temps
+            //Mux 1.3 is grounded on SDU and reads stator temperature 2 on LDU
+            //Mux 2.3 is grounded on both drive units
+            isLdu = tmpmi > 50;  //Tied to GND on SDU
             if (isLdu)
                mTemps[1] = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
             //Now update to maximum temperaure
-            tmphs = MAX(hsTemps[0], MAX(hsTemps[1], hsTemps[2]));
             tmpm = MAX(mTemps[0], mTemps[1]);
             DigIo::temp0_out.Clear();
             DigIo::temp1_out.Clear(); //Switch mux for next round
