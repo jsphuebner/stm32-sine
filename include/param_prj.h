@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.83.R
+#define VER 4.85.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -27,7 +27,7 @@
 
 #if CONTROL == CTRL_SINE
 
-//Next param id (increase when adding new parameter!): 126
+//Next param id (increase when adding new parameter!): 128
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   boost,       "dig",     0,      37813,  1700,   1   ) \
@@ -65,7 +65,7 @@
     PARAM_ENTRY(CAT_DERATE,  idcmax,      "A",       0,      5000,   5000,   96  ) \
     PARAM_ENTRY(CAT_DERATE,  idcmin,      "A",       -5000,  0,     -5000,   98  ) \
     PARAM_ENTRY(CAT_DERATE,  tmphsmax,    "°C",      50,     150,   85,      125 ) \
-    PARAM_ENTRY(CAT_DERATE,  tmpmmax,     "°C",      70,     300,   300,     126 ) \
+    PARAM_ENTRY(CAT_DERATE,  tmpmmax,     "°C",      70,     300,   300,     127 ) \
     PARAM_ENTRY(CAT_DERATE,  throtmax,    "%",       0,      100,   100,     97  ) \
     PARAM_ENTRY(CAT_DERATE,  throtmin,    "%",       -100,   0,     -100,    119 ) \
     PARAM_ENTRY(CAT_DERATE,  ifltrise,    "dig",     0,      32,    10,      91  ) \
@@ -73,6 +73,7 @@
     PARAM_ENTRY(CAT_CHARGER, chargemode,  CHARGEMODS,0,      4,      0,      74  ) \
     PARAM_ENTRY(CAT_CHARGER, chargecur,   "A",       0,      50,     0,      71  ) \
     PARAM_ENTRY(CAT_CHARGER, chargekp,    "dig",     0,      100,    80,     72  ) \
+    PARAM_ENTRY(CAT_CHARGER, chargeki,    "dig",     0,      100,    10,     126 ) \
     PARAM_ENTRY(CAT_CHARGER, chargeflt,   "dig",     0,      10,     8,      73  ) \
     PARAM_ENTRY(CAT_CHARGER, chargemax,   "%",       0,      99,     90,     79  ) \
     PARAM_ENTRY(CAT_THROTTLE,potmin,      "dig",     0,      4095,   0,      17  ) \
@@ -152,7 +153,6 @@
     VALUE_ENTRY(cpuload,     "%",     2035 )
 
 #elif CONTROL == CTRL_FOC
-//Next param id (increase when adding new parameter!): 125
 /*              category     name         unit       min     max     default id */
 #define PARAM_LIST \
     PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      20000,  64,     107 ) \
@@ -188,12 +188,13 @@
     PARAM_ENTRY(CAT_DERATE,  idcmax,      "A",       0,      5000,   5000,   96  ) \
     PARAM_ENTRY(CAT_DERATE,  idcmin,      "A",       -5000,  0,     -5000,   98  ) \
     PARAM_ENTRY(CAT_DERATE,  tmphsmax,    "°C",      50,     150,   85,      125 ) \
-    PARAM_ENTRY(CAT_DERATE,  tmpmmax,     "°C",      70,     300,   300,     126 ) \
+    PARAM_ENTRY(CAT_DERATE,  tmpmmax,     "°C",      70,     300,   300,     127 ) \
     PARAM_ENTRY(CAT_DERATE,  throtmax,    "%",       0,      100,   100,     97  ) \
     PARAM_ENTRY(CAT_DERATE,  throtmin,    "%",       -100,   0,     -100,    119 ) \
     PARAM_ENTRY(CAT_CHARGER, chargemode,  CHARGEMODS,0,      4,      0,      74  ) \
     PARAM_ENTRY(CAT_CHARGER, chargecur,   "A",       0,      50,     0,      71  ) \
     PARAM_ENTRY(CAT_CHARGER, chargekp,    "dig",     0,      100,    80,     72  ) \
+    PARAM_ENTRY(CAT_CHARGER, chargeki,    "dig",     0,      100,    80,     126 ) \
     PARAM_ENTRY(CAT_CHARGER, chargeflt,   "dig",     0,      10,     8,      73  ) \
     PARAM_ENTRY(CAT_CHARGER, chargemax,   "%",       0,      99,     90,     79  ) \
     PARAM_ENTRY(CAT_THROTTLE,potmin,      "dig",     0,      4095,   0,      17  ) \

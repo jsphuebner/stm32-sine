@@ -122,9 +122,7 @@ void PwmGeneration::Run()
    }
    else if (opmode == MOD_BOOST || opmode == MOD_BUCK)
    {
-      s32fp id, iq;
       initwait = 0;
-      ProcessCurrents(id, iq);
       Charge();
    }
    else if (opmode == MOD_ACHEAT)
@@ -262,14 +260,13 @@ void PwmGeneration::CalcNextAngleSync(int dir)
 {
    if (Encoder::SeenNorthSignal())
    {
-      uint32_t polePairs = Param::GetInt(Param::polepairs) / Param::GetInt(Param::respolepairs);
       uint16_t syncOfs = Param::GetInt(Param::syncofs);
       uint16_t rotorAngle = Encoder::GetRotorAngle();
 
       syncOfs += FP_TOINT(dir * frq * Param::GetInt(Param::syncadv));
 
-      angle = polePairs * rotorAngle + syncOfs;
-      frq = polePairs * Encoder::GetRotorFrequency();
+      angle = polePairRatio * rotorAngle + syncOfs;
+      frq = polePairRatio * Encoder::GetRotorFrequency();
    }
    else
    {

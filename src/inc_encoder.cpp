@@ -593,6 +593,8 @@ int Encoder::GetPulseTimeFiltered()
    {
       ignore = true;
       lastFrequency = 0;
+      for (uint32_t i = 0; i < MAX_REVCNT_VALUES; i++)
+         timdata[i] = MAX_CNT;
    }
 
    //spike detection, a factor of 8 between adjacent pulses is most likely caused by interference

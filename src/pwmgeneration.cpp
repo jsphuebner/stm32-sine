@@ -28,6 +28,7 @@
 #include "digio.h"
 #include "anain.h"
 #include "my_math.h"
+#include "picontroller.h"
 
 #define SHIFT_180DEG (uint16_t)32768
 #define SHIFT_90DEG  (uint16_t)16384
@@ -44,10 +45,12 @@ s32fp    PwmGeneration::frq;
 uint8_t  PwmGeneration::shiftForTimer;
 int      PwmGeneration::opmode;
 s32fp    PwmGeneration::ilofs[2];
+int      PwmGeneration::polePairRatio;
 
 static int      execTicks;
 static bool     tripped;
 static uint8_t  pwmdigits;
+static PiController chargeController;
 
 uint16_t PwmGeneration::GetAngle()
 {
@@ -93,6 +96,15 @@ int PwmGeneration::GetCpuLoad()
    return (1000 * execTicks) / FRQ_DIVIDER;
 }
 
+static void ConfigureChargeController()
+{
+   chargeController.SetCallingFrequency(rcc_apb2_frequency / FRQ_DIVIDER);
+   chargeController.SetMinMaxY(0, (1 << pwmdigits) - 100);
+   chargeController.SetGains(Param::GetInt(Param::chargekp), Param::GetInt(Param::chargeki));
+   chargeController.SetRef(0);
+   chargeController.ResetIntegrator();
+}
+
 void PwmGeneration::SetOpmode(int _opmode)
 {
    opmode = _opmode;
@@ -122,11 +134,13 @@ void PwmGeneration::SetOpmode(int _opmode)
          DisableOutput();
          timer_enable_oc_output(PWM_TIMER, TIM_OC2N);
          timer_enable_break_main_output(PWM_TIMER);
+         ConfigureChargeController();
          break;
       case MOD_BUCK:
          DisableOutput();
          timer_enable_oc_output(PWM_TIMER, TIM_OC2);
          timer_enable_break_main_output(PWM_TIMER);
+         ConfigureChargeController();
          break;
       case MOD_MANUAL:
       case MOD_RUN:
@@ -212,21 +226,25 @@ void PwmGeneration::SetCurrentLimitThreshold(s32fp ocurlim)
    timer_set_oc_value(OVER_CUR_TIMER, OVER_CUR_POS, limPos);
 }
 
+void PwmGeneration::SetChargeCurrent(s32fp cur)
+{
+   chargeController.SetRef(cur);
+}
+
 
 /*----- Private methods ----------------------------------------- */
 
 void PwmGeneration::CalcNextAngleAsync(int dir)
 {
    static uint16_t slipAngle = 0;
-   uint32_t polePairs = Param::GetInt(Param::polepairs);
    uint16_t rotorAngle = Encoder::GetRotorAngle();
 
-   frq = polePairs * Encoder::GetRotorFrequency() + fslip;
+   frq = polePairRatio * Encoder::GetRotorFrequency() + fslip;
    slipAngle += dir * slipIncr;
 
    if (frq < 0) frq = 0;
 
-   angle = polePairs * rotorAngle + slipAngle;
+   angle = polePairRatio * rotorAngle + slipAngle;
 }
 
 void PwmGeneration::CalcNextAngleConstant(int dir)
@@ -239,13 +257,23 @@ void PwmGeneration::CalcNextAngleConstant(int dir)
 
 void PwmGeneration::Charge()
 {
-   int dc = ampnom * (1 << pwmdigits);
-   dc = FP_TOINT(dc) / 100;
+   static s32fp iFlt;
+   s32fp il1 = GetCurrent(AnaIn::il1, ilofs[0], Param::Get(Param::il1gain));
+   s32fp il2 = GetCurrent(AnaIn::il2, ilofs[1], Param::Get(Param::il2gain));
 
-   if (dc > ((1 << pwmdigits) - 100))
-      dc = (1 << pwmdigits) - 100;
-   if (dc < 0)
-      dc = 0;
+   il1 = ABS(il1);
+   il2 = ABS(il2);
+
+   s32fp ilMax = MAX(il1, il2);
+
+   iFlt = IIRFILTER(iFlt, ilMax, Param::GetInt(Param::chargeflt));
+
+   int dc = chargeController.Run(iFlt);
+
+   if (opmode == MOD_BOOST)
+      Param::SetFlt(Param::idc, FP_MUL((FP_FROMINT(100) - ampnom), iFlt) / 100);
+   else
+      Param::SetFlt(Param::idc, iFlt);
 
    Param::SetInt(Param::amp, dc);
 

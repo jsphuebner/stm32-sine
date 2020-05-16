@@ -51,7 +51,6 @@
 HWREV hwRev; //Hardware variant of board we are running on
 
 //Precise control of executing the boost controller
-static bool runChargeControl = false;
 static Stm32Scheduler* scheduler;
 static Can* can;
 
@@ -553,12 +552,14 @@ static void SetContactorsOffState()
 static void Ms10Task(void)
 {
    static int initWait = 0;
+   static s32fp chargeCurRamped = 0;
    int opmode = Param::GetInt(Param::opmode);
    int chargemode = Param::GetInt(Param::chargemode);
    int newMode = MOD_OFF;
    int stt = STAT_NONE;
    s32fp udc = ProcessUdc();
 
+   ErrorMessage::SetTime(rtc_get_counter_val());
    Encoder::UpdateRotorFrequency(100);
    GetDigInputs();
    s32fp torquePercent = ProcessThrottle();
@@ -572,6 +573,20 @@ static void Ms10Task(void)
    else if (MOD_OFF == opmode && Encoder::GetSpeed() == 0)
    {
       PwmGeneration::SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
+   }
+   else if (MOD_BOOST == opmode || MOD_BUCK == opmode)
+   {
+      s32fp chargeCur = Param::Get(Param::chargecur);
+      s32fp tempDerate = FP_FROMINT(100);
+
+      Throttle::TemperatureDerate(Param::Get(Param::tmphs), Param::Get(Param::tmphsmax), tempDerate);
+      chargeCur = FP_MUL(tempDerate, chargeCur) / 100;
+
+      if (chargeCur < chargeCurRamped)
+         chargeCurRamped = chargeCur;
+      else
+         chargeCurRamped = RAMPUP(chargeCurRamped, chargeCur, 1);
+      PwmGeneration::SetChargeCurrent(chargeCurRamped);
    }
 
    stt |= DigIo::emcystop_in.Get() ? STAT_NONE : STAT_EMCYSTOP;
@@ -633,14 +648,12 @@ static void Ms10Task(void)
       SetContactorsOffState();
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
-      runChargeControl = false;
    }
    else if (0 == initWait)
    {
       Encoder::Reset();
       //this applies new deadtime and pwmfrq and enables the outputs for the given mode
       PwmGeneration::SetOpmode(opmode);
-      runChargeControl = (opmode == MOD_BOOST || opmode == MOD_BUCK);
       DigIo::err_out.Clear();
       initWait = -1;
    }
@@ -675,48 +688,7 @@ static void GenerateSpeedFrequencyOutput()
 //Normal run takes 16µs -> 1.6% CPU load (last measured version 3.5)
 static void Ms1Task(void)
 {
-   static s32fp ilFlt = 0;
-   static s32fp iSpntFlt = 0;
-
-   ErrorMessage::SetTime(rtc_get_counter_val());
-
    GenerateSpeedFrequencyOutput();
-
-   if (runChargeControl)
-   {
-      s32fp il1 = Param::Get(Param::il1);
-      s32fp il2 = Param::Get(Param::il2);
-      s32fp chargeCurSpnt = Param::Get(Param::chargecur) << 8;
-      s32fp dummy = 50;
-      s32fp ilMax;
-      int opmode = Param::GetInt(Param::opmode);
-
-      il1 = ABS(il1);
-      il2 = ABS(il2);
-      ilMax = MAX(il1, il2);
-
-      if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), Param::Get(Param::tmphsmax), dummy))
-         chargeCurSpnt = 0;
-
-      ilFlt = IIRFILTER(ilFlt, ilMax << 8, Param::GetInt(Param::chargeflt));
-      iSpntFlt = IIRFILTER(iSpntFlt, chargeCurSpnt, 11);
-
-      s32fp ampnom = FP_MUL(Param::GetInt(Param::chargekp), (iSpntFlt - ilFlt));
-
-      if (opmode == MOD_BOOST)
-         Param::SetFlt(Param::idc, (FP_MUL((FP_FROMINT(100) - ampnom), ilFlt) / 100) >> 8);
-      else
-         Param::SetFlt(Param::idc, ilFlt >> 8);
-
-      ampnom = MAX(0, ampnom);
-      ampnom = MIN(Param::Get(Param::chargemax), ampnom);
-      PwmGeneration::SetAmpnom(ampnom);
-      Param::SetFlt(Param::ampnom, ampnom);
-   }
-   else
-   {
-      iSpntFlt = 0;
-   }
 }
 
 /** This function is called when the user changes a parameter */
@@ -747,6 +719,7 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
          break;
       default:
          PwmGeneration::SetCurrentLimitThreshold(Param::Get(Param::ocurlim));
+         PwmGeneration::SetPolePairRatio(Param::GetInt(Param::polepairs) / Param::GetInt(Param::respolepairs));
 
          #if CONTROL == CTRL_FOC
          PwmGeneration::SetControllerGains(Param::GetInt(Param::curkp), Param::GetInt(Param::curki), Param::GetInt(Param::fwkp));

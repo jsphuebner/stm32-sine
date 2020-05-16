@@ -78,7 +78,6 @@ void PwmGeneration::Run()
    }
    else if (opmode == MOD_BOOST || opmode == MOD_BUCK)
    {
-      ProcessCurrents();
       Charge();
    }
    else if (opmode == MOD_ACHEAT)

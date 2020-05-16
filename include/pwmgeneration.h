@@ -37,7 +37,9 @@ class PwmGeneration
       static void SetCurrentLimitThreshold(s32fp ocurlim);
       static void SetControllerGains(int kp, int ki, int fwkp);
       static int GetCpuLoad();
-      //static void SetCurrentLimit(s32fp limit);
+      static void SetChargeCurrent(s32fp cur);
+      static void SetPolePairRatio(int ratio) { polePairRatio = ratio; }
+
    private:
       enum EdgeType { NoEdge, PosEdge, NegEdge };
 
@@ -67,6 +69,7 @@ class PwmGeneration
       static uint8_t shiftForTimer;
       static int opmode;
       static s32fp ilofs[2];
+      static int polePairRatio;
 };
 
 #endif // PWMGENERATION_H
