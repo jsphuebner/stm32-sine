@@ -799,6 +799,7 @@ static void ConfigureVariantIO()
          break;
       case HW_REV2:
       case HW_REV3:
+      case HW_PRIUS:
          break;
       case HW_TESLA:
          DigIo::temp1_out.Configure(GPIOC, GPIO8, PinMode::OUTPUT);

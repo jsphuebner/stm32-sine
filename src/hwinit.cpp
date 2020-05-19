@@ -92,6 +92,8 @@ HWREV detect_hw()
       return HW_BLUEPILL;
    else if (is_floating(GPIOC, GPIO9)) //Desat pin is floating
       return HW_REV1;
+   else if (is_floating(GPIOB, GPIO5)) //Cruise pin is floating
+      return HW_PRIUS;
    else if (is_floating(GPIOA, GPIO0)) //uvlo/button pin is floating
       return HW_REV3;
    else if (is_floating(GPIOC, GPIO8)) //bms input is output for mux and floating

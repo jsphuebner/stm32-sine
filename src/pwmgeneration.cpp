@@ -191,9 +191,13 @@ void PwmGeneration::EnableOutput()
    timer_enable_oc_output(PWM_TIMER, TIM_OC1);
    timer_enable_oc_output(PWM_TIMER, TIM_OC2);
    timer_enable_oc_output(PWM_TIMER, TIM_OC3);
-   timer_enable_oc_output(PWM_TIMER, TIM_OC1N);
-   timer_enable_oc_output(PWM_TIMER, TIM_OC2N);
-   timer_enable_oc_output(PWM_TIMER, TIM_OC3N);
+
+   if (hwRev != HW_PRIUS)
+   {
+      timer_enable_oc_output(PWM_TIMER, TIM_OC1N);
+      timer_enable_oc_output(PWM_TIMER, TIM_OC2N);
+      timer_enable_oc_output(PWM_TIMER, TIM_OC3N);
+   }
 }
 
 /**
@@ -352,7 +356,7 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
 
    timer_disable_break_automatic_output(PWM_TIMER);
 
-   if (hwRev == HW_BLUEPILL)
+   if (hwRev == HW_BLUEPILL || hwRev == HW_PRIUS)
       timer_set_break_polarity_low(PWM_TIMER);
    else
       timer_set_break_polarity_high(PWM_TIMER);

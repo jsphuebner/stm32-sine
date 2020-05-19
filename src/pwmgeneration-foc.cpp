@@ -37,6 +37,7 @@
 static int initwait = 0;
 static s32fp idref = 0;
 static int curki = 0;
+static int idleCounter = 0;
 static PiController qController;
 static PiController dController;
 static PiController fwController;
@@ -81,6 +82,7 @@ void PwmGeneration::Run()
       int32_t uq = qController.Run(iq);
       FOC::InvParkClarke(ud, uq, angle);
 
+      //This is probably not correct for IPM motors
       s32fp idc = (iq * uq) / FOC::GetMaximumModulationIndex();
 
       Param::SetFlt(Param::fstat, frq);
@@ -96,10 +98,12 @@ void PwmGeneration::Run()
          dController.ResetIntegrator();
          qController.ResetIntegrator();
          fwController.ResetIntegrator();
+         idleCounter++;
       }
       else
       {
          timer_enable_break_main_output(PWM_TIMER);
+         idleCounter = 0;
       }
 
       for (int i = 0; i < 3; i++)
@@ -172,8 +176,6 @@ void PwmGeneration::SetTorquePercent(s32fp torquePercent)
    {
       int speed = Param::GetInt(Param::speed);
 
-      //iq = is;
-
       if (speed == 0 && torquePercent <= 0)
       {
          iq = 0;
@@ -195,7 +197,7 @@ void PwmGeneration::SetTorquePercent(s32fp torquePercent)
 
    qController.SetRef(FP_FROMINT(iq));
    fwController.SetRef(FP_FROMINT(iq));
-   idref = IIRFILTER(idref, FP_FROMINT(id), 4);
+   idref = FP_FROMINT(id);
 }
 
 void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp)
@@ -239,6 +241,12 @@ s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
    {
       s32fp il1 = GetCurrent(AnaIn::il1, ilofs[0], Param::Get(Param::il1gain));
       s32fp il2 = GetCurrent(AnaIn::il2, ilofs[1], Param::Get(Param::il2gain));
+
+      //1s after motor stand still and no current request, recalibrate current sensor offset
+      if (idleCounter == pwmfrq)
+      {
+         SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
+      }
 
       if ((Param::GetInt(Param::pinswap) & SWAP_CURRENTS) > 0)
          FOC::ParkClarke(il2, il1, angle);
