@@ -115,7 +115,16 @@ static void SelectDirection()
    int userDirSelection = 0;
    int dirSign = (Param::GetInt(Param::dirmode) & DIR_REVERSED) ? -1 : 1;
 
-   if ((Param::GetInt(Param::dirmode) & 1) == DIR_BUTTON)
+   if (Param::GetInt(Param::dirmode) == DIR_DEFAULTFORWARD)
+   {
+      if (Param::GetBool(Param::din_forward) && Param::GetBool(Param::din_reverse))
+         selectedDir = 0;
+      else if (Param::GetBool(Param::din_reverse))
+         userDirSelection = -1;
+      else
+         userDirSelection = 1;
+   }
+   else if ((Param::GetInt(Param::dirmode) & 1) == DIR_BUTTON)
    {
       /* if forward AND reverse selected, force neutral, because it's charge mode */
       if (Param::GetBool(Param::din_forward) && Param::GetBool(Param::din_reverse))
@@ -725,7 +734,7 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
          PwmGeneration::SetControllerGains(Param::GetInt(Param::curkp), Param::GetInt(Param::curki), Param::GetInt(Param::fwkp));
          Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
          #elif CONTROL == CTRL_SINE
-         MotorVoltage::SetMinFrq(Param::Get(Param::fmin));
+         MotorVoltage::SetMinFrq(FP_FROMFLT(0.2));
          SineCore::SetMinPulseWidth(Param::GetInt(Param::minpulse));
          #endif // CONTROL
 

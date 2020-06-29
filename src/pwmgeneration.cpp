@@ -280,6 +280,8 @@ void PwmGeneration::Charge()
       Param::SetFlt(Param::idc, iFlt);
 
    Param::SetInt(Param::amp, dc);
+   Param::SetFlt(Param::il1, il1);
+   Param::SetFlt(Param::il2, il2);
 
    timer_set_oc_value(PWM_TIMER, TIM_OC2, dc);
 }

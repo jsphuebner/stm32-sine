@@ -38,6 +38,7 @@ static int initwait = 0;
 static s32fp idref = 0;
 static int curki = 0;
 static int idleCounter = 0;
+static tim_oc_id ocChannels[3];
 static PiController qController;
 static PiController dController;
 static PiController fwController;
@@ -49,7 +50,6 @@ void PwmGeneration::Run()
       static s32fp frqFiltered;
       int dir = Param::GetInt(Param::dir);
       int kifrqgain = Param::GetInt(Param::curkifrqgain);
-      uint16_t dc[3];
       s32fp id, iq;
 
       Encoder::UpdateRotorAngle(dir);
@@ -108,20 +108,7 @@ void PwmGeneration::Run()
 
       for (int i = 0; i < 3; i++)
       {
-         dc[i] = FOC::DutyCycles[i] >> shiftForTimer;
-      }
-
-      if ((Param::GetInt(Param::pinswap) & SWAP_PWM) > 0)
-      {
-         timer_set_oc_value(PWM_TIMER, TIM_OC1, dc[2]);
-         timer_set_oc_value(PWM_TIMER, TIM_OC2, dc[1]);
-         timer_set_oc_value(PWM_TIMER, TIM_OC3, dc[0]);
-      }
-      else
-      {
-         timer_set_oc_value(PWM_TIMER, TIM_OC1, dc[0]);
-         timer_set_oc_value(PWM_TIMER, TIM_OC2, dc[1]);
-         timer_set_oc_value(PWM_TIMER, TIM_OC3, dc[2]);
+         timer_set_oc_value(PWM_TIMER, ocChannels[i], FOC::DutyCycles[i] >> shiftForTimer);
       }
    }
    else if (opmode == MOD_BOOST || opmode == MOD_BUCK)
@@ -226,6 +213,25 @@ void PwmGeneration::PwmInit()
    fwController.SetCallingFrequency(pwmfrq);
    fwController.SetMinMaxY(-50 * Param::Get(Param::throtcur), 0); //allow 50% of max current for extra field weakening
 
+   if ((Param::GetInt(Param::pinswap) & SWAP_PWM12) > 0)
+   {
+      ocChannels[0] = TIM_OC3;
+      ocChannels[1] = TIM_OC2;
+      ocChannels[2] = TIM_OC1;
+   }
+   else if ((Param::GetInt(Param::pinswap) & SWAP_PWM23) > 0)
+   {
+      ocChannels[0] = TIM_OC1;
+      ocChannels[1] = TIM_OC3;
+      ocChannels[2] = TIM_OC2;
+   }
+   else
+   {
+      ocChannels[0] = TIM_OC1;
+      ocChannels[1] = TIM_OC2;
+      ocChannels[2] = TIM_OC3;
+   }
+
    if (opmode == MOD_ACHEAT)
       AcHeatTimerSetup();
 }
@@ -271,7 +277,8 @@ void PwmGeneration::CalcNextAngleSync(int dir)
       uint16_t syncOfs = Param::GetInt(Param::syncofs);
       uint16_t rotorAngle = Encoder::GetRotorAngle();
 
-      syncOfs += FP_TOINT(dir * frq * Param::GetInt(Param::syncadv));
+      //Compensate rotor movement that happened between sampling and processing
+      syncOfs += FP_TOINT(dir * frq * 10);
 
       angle = polePairRatio * rotorAngle + syncOfs;
       frq = polePairRatio * Encoder::GetRotorFrequency();
