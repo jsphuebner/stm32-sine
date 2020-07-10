@@ -97,7 +97,7 @@ static void CruiseControl()
       }
       else if (Param::GetInt(Param::cruisemode) == CRUISE_CAN)
       {
-         Throttle::cruiseSpeed = Param::GetInt(Param::cruisespeed);
+         Throttle::cruiseSpeed = MAX(0, Param::GetInt(Param::cruisespeed));
       }
    }
 
