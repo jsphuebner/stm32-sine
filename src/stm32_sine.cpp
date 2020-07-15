@@ -97,7 +97,7 @@ static void CruiseControl()
       }
       else if (Param::GetInt(Param::cruisemode) == CRUISE_CAN)
       {
-         Throttle::cruiseSpeed = MAX(0, Param::GetInt(Param::cruisespeed));
+         Throttle::cruiseSpeed = Param::GetInt(Param::cruisespeed);
       }
    }
 
@@ -293,7 +293,27 @@ static void GetTemps(s32fp& tmphs, s32fp &tmpm)
       int tmpmi = AnaIn::tmpm.Get();
 
       tmpm = TempMeas::Lookup(tmpmi, snsm);
-      tmphs = TempMeas::Lookup(tmphsi, snshs);
+
+      if (hwRev == HW_PRIUS)
+      {
+         static s32fp priusTempCoeff = FP_FROMFLT(18.62);
+
+         //We need to install a 10k pull-down resistor to be able
+         //to measure temps lower than 56°C. If this resistor
+         //is not installed, we will see readings above 2.5V
+         //and we double the coefficient to at least get a valid
+         //reading.
+         if (priusTempCoeff < FP_FROMFLT(20) && tmphsi > 3200)
+         {
+            priusTempCoeff *= 2;
+         }
+
+         tmphs = FP_FROMFLT(166.66) - FP_DIV(FP_FROMINT(tmphsi), priusTempCoeff);
+      }
+      else
+      {
+         tmphs = TempMeas::Lookup(tmphsi, snshs);
+      }
    }
 }
 
