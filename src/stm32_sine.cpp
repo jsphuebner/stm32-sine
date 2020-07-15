@@ -184,12 +184,14 @@ static void Ms100Task(void)
    SelectDirection();
    CruiseControl();
 
+   #if CONTROL == CTRL_SINE
    //uac = udc * amp/maxamp / sqrt(2)
    s32fp uac = Param::Get(Param::udc) * SineCore::GetAmp();
    uac /= SineCore::MAXAMP;
    uac = FP_DIV(uac, FP_FROMFLT(1.4142));
 
    Param::SetFlt(Param::uac, uac);
+   #endif // CONTROL
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
       can->SendAll();
@@ -755,7 +757,7 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
          Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
          #elif CONTROL == CTRL_SINE
          MotorVoltage::SetMinFrq(FP_FROMFLT(0.2));
-         SineCore::SetMinPulseWidth(Param::GetInt(Param::minpulse));
+         SineCore::SetMinPulseWidth(1000);
          #endif // CONTROL
 
          Encoder::SetMode((enum Encoder::mode)Param::GetInt(Param::encmode));
@@ -799,15 +801,9 @@ static void InitPWMIO()
 {
    uint8_t outputMode = Param::GetInt(Param::pwmpol) == 0 ? GPIO_MODE_OUTPUT_50_MHZ : GPIO_MODE_INPUT;
    uint8_t outputConf = Param::GetInt(Param::pwmpol) == 0 ? GPIO_CNF_OUTPUT_ALTFN_PUSHPULL : GPIO_CNF_INPUT_FLOAT;
-   uint16_t expectedPattern = Param::GetInt(Param::pwmpol) == 0 ? 0 : GPIO8 | GPIO9 | GPIO10 | GPIO13 | GPIO14 | GPIO15;
    uint16_t actualPattern = gpio_get(GPIOA, GPIO8 | GPIO9 | GPIO10) | gpio_get(GPIOB, GPIO13 | GPIO14 | GPIO15);
 
    Param::SetInt(Param::pwmio, actualPattern);
-
-   if (actualPattern != expectedPattern)
-   {
-      ErrorMessage::Post(ERR_PWMSTUCK);
-   }
 
    gpio_set_mode(GPIOA, outputMode, outputConf, GPIO8 | GPIO9 | GPIO10);
    gpio_set_mode(GPIOB, outputMode, outputConf, GPIO13 | GPIO14 | GPIO15);
