@@ -55,7 +55,7 @@ bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
 
    if (((*potval + POT_SLACK) < potMin) || (*potval > (potMax + POT_SLACK)))
    {
-      *potval = potMin;
+      *potval = potMin - 1;
       return false;
    }
    else if (*potval < potMin)

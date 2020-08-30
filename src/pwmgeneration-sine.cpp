@@ -164,6 +164,9 @@ s32fp PwmGeneration::LimitCurrent()
    s32fp imax = Param::Get(Param::iacmax);
    s32fp ilMax = ProcessCurrents();
 
+   //setting of 0 disables current limiting
+   if (imax == 0) return ampnom;
+
    s32fp a = imax / 20; //Start acting at 80% of imax
    s32fp imargin = imax - ilMax;
    s32fp curLimSpnt = FP_DIV(100 * imargin, a);

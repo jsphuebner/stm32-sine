@@ -378,10 +378,13 @@ static s32fp ProcessUdc()
    udc = IIRFILTER(udc, AnaIn::udc.Get(), 2);
    udcfp = FP_DIV(FP_FROMINT(udc - udcofs), udcgain);
 
-   if (udcfp < udcmin || udcfp > udcmax)
-      DigIo::vtg_out.Set();
-   else
-      DigIo::vtg_out.Clear();
+   if (hwRev != HW_TESLAM3)
+   {
+      if (udcfp < udcmin || udcfp > udcmax)
+         DigIo::vtg_out.Set();
+      else
+         DigIo::vtg_out.Clear();
+   }
 
    if (udcfp > udclim)
    {
@@ -686,7 +689,14 @@ static void Ms10Task(void)
       //this applies new deadtime and pwmfrq and enables the outputs for the given mode
       PwmGeneration::SetOpmode(opmode);
       DigIo::err_out.Clear();
+      if (hwRev == HW_TESLAM3)
+         DigIo::vtg_out.Clear();
       initWait = -1;
+   }
+   else if (hwRev == HW_TESLAM3 && initWait == 10)
+   {
+      DigIo::vtg_out.Set();
+      initWait--;
    }
    else if (initWait > 0)
    {
@@ -824,7 +834,10 @@ static void ConfigureVariantIO()
          break;
       case HW_REV2:
       case HW_REV3:
+      case HW_TESLAM3:
+         break;
       case HW_PRIUS:
+         DigIo::emcystop_in.Configure(GPIOC, GPIO7, PinMode::INPUT_PU);
          break;
       case HW_TESLA:
          DigIo::temp1_out.Configure(GPIOC, GPIO8, PinMode::OUTPUT);

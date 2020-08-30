@@ -602,8 +602,8 @@ int Encoder::GetPulseTimeFiltered()
    {
       ErrorMessage::Post(ERR_ENCODER);
    }
-   //a factor of 3 is still not stable, use the maximum
-   else if (max > (3 * min))
+   //a factor of 2 is still not stable, use the maximum
+   else if (max > (2 * min))
    {
       lastPulseTimespan = max;
    }

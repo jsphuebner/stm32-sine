@@ -213,7 +213,7 @@ void PwmGeneration::PwmInit()
    fwController.SetCallingFrequency(pwmfrq);
    fwController.SetMinMaxY(-50 * Param::Get(Param::throtcur), 0); //allow 50% of max current for extra field weakening
 
-   if ((Param::GetInt(Param::pinswap) & SWAP_PWM12) > 0)
+   if ((Param::GetInt(Param::pinswap) & SWAP_PWM13) > 0)
    {
       ocChannels[0] = TIM_OC3;
       ocChannels[1] = TIM_OC2;

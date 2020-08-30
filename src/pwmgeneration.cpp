@@ -350,7 +350,7 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
       timer_set_oc_idle_state_unset(PWM_TIMER, (tim_oc_id)channel);
       timer_set_oc_value(PWM_TIMER, (tim_oc_id)channel, 0);
 
-      if (pwmpol) //Active low
+      if (pwmpol)
          timer_set_oc_polarity_low(PWM_TIMER, (tim_oc_id)channel);
       else
          timer_set_oc_polarity_high(PWM_TIMER, (tim_oc_id)channel);
@@ -358,7 +358,7 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
 
    timer_disable_break_automatic_output(PWM_TIMER);
 
-   if (hwRev == HW_BLUEPILL || hwRev == HW_PRIUS)
+   if (hwRev == HW_BLUEPILL || hwRev == HW_PRIUS || hwRev == HW_TESLAM3)
       timer_set_break_polarity_low(PWM_TIMER);
    else
       timer_set_break_polarity_high(PWM_TIMER);
