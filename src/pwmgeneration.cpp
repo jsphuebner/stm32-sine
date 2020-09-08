@@ -314,10 +314,10 @@ s32fp PwmGeneration::GetCurrent(AnaIn& input, s32fp offset, s32fp gain)
 * Setup main PWM timer
 *
 * @param[in] deadtime Deadtime between bottom and top (coded value, consult STM32 manual)
-* @param[in] pwmpol Output Polarity. 0=Active High, 1=Active Low
+* @param[in] activeLow Set Output Polarity true=Active Low
 * @return PWM ISR callback frequency
 */
-uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
+uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, bool activeLow)
 {
    ///There are two update events per PWM period
    ///One when counter reaches top, one when it reaches bottom
@@ -328,10 +328,10 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
    ///- for 4.4kHz: call ISR on every update event (that is twice per period)
    const uint8_t repCounters[] = { 3, 1, 0 };
    const uint16_t pwmmax = 1U << pwmdigits;
-   const uint8_t outputMode = pwmpol ? GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN : GPIO_CNF_OUTPUT_ALTFN_PUSHPULL;
+   const uint8_t outputMode = activeLow ? GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN : GPIO_CNF_OUTPUT_ALTFN_PUSHPULL;
 
    //Disable output in active low mode before resetting timer, otherwise shoot through will occur!
-   if (pwmpol)
+   if (activeLow)
    {
       gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO8 | GPIO9 | GPIO10);
       gpio_set_mode(GPIOB, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO13 | GPIO14 | GPIO15);
@@ -350,7 +350,7 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, int pwmpol)
       timer_set_oc_idle_state_unset(PWM_TIMER, (tim_oc_id)channel);
       timer_set_oc_value(PWM_TIMER, (tim_oc_id)channel, 0);
 
-      if (pwmpol)
+      if (activeLow)
          timer_set_oc_polarity_low(PWM_TIMER, (tim_oc_id)channel);
       else
          timer_set_oc_polarity_high(PWM_TIMER, (tim_oc_id)channel);

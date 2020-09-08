@@ -221,7 +221,8 @@ static void PrintParamsJson(char *arg)
 
          if (Param::IsParam((Param::PARAM_NUM)idx))
          {
-            printf("\"isparam\":true,\"minimum\":%f,\"maximum\":%f,\"default\":%f,\"category\":\"%s\"}", pAtr->min, pAtr->max, pAtr->def, pAtr->category);
+            printf("\"isparam\":true,\"minimum\":%f,\"maximum\":%f,\"default\":%f,\"category\":\"%s\",\"i\":%d}",
+                   pAtr->min, pAtr->max, pAtr->def, pAtr->category, idx);
          }
          else
          {

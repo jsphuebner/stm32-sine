@@ -181,7 +181,7 @@ s32fp PwmGeneration::LimitCurrent()
    slipSpnt = MIN(fslip, slipFiltered);
    slipIncr = FRQ_TO_ANGLE(slipSpnt);
 
-   if (ampNomLimited < ampnom)
+   if (curLimSpnt < ampnom)
       ErrorMessage::Post(ERR_CURRENTLIMIT);
 
    return ampNomLimited;

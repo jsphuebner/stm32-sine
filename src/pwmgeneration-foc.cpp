@@ -35,6 +35,7 @@
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
 
 static int initwait = 0;
+static int fwBaseGain = 0;
 static s32fp idref = 0;
 static int curki = 0;
 static int idleCounter = 0;
@@ -61,6 +62,7 @@ void PwmGeneration::Run()
 
       qController.SetIntegralGain(moddedKi);
       dController.SetIntegralGain(moddedKi);
+      fwController.SetProportionalGain(fwBaseGain * dir);
 
       ProcessCurrents(id, iq);
 
@@ -191,7 +193,7 @@ void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp)
 {
    qController.SetGains(kp, ki);
    dController.SetGains(kp, ki);
-   fwController.SetGains(fwkp, 0);
+   fwBaseGain = fwkp;
    curki = ki;
 }
 

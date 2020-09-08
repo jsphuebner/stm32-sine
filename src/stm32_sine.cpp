@@ -707,7 +707,7 @@ static void Ms10Task(void)
       can->SendAll();
 }
 
-static void GenerateSpeedFrequencyOutput()
+static void Ms1Task(void)
 {
    static int speedCnt = 0;
 
@@ -724,12 +724,6 @@ static void GenerateSpeedFrequencyOutput()
          speedCnt--;
       }
    }
-}
-
-//Normal run takes 16µs -> 1.6% CPU load (last measured version 3.5)
-static void Ms1Task(void)
-{
-   GenerateSpeedFrequencyOutput();
 }
 
 /** This function is called when the user changes a parameter */

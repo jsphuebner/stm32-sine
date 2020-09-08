@@ -46,7 +46,7 @@ class PwmGeneration
       static void PwmInit();
       static void EnableOutput();
       static void DisableOutput();
-      static uint16_t TimerSetup(uint16_t deadtime, int pwmpol);
+      static uint16_t TimerSetup(uint16_t deadtime, bool activeLow);
       static void AcHeatTimerSetup();
       static s32fp ProcessCurrents();
       static s32fp ProcessCurrents(s32fp& id, s32fp& iq);
