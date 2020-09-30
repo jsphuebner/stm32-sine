@@ -508,7 +508,7 @@ static void GetCruiseCreepCommand(s32fp& finalSpnt, s32fp throtSpnt)
 
    if (Throttle::cruiseSpeed > 0 && Throttle::cruiseSpeed > Throttle::idleSpeed)
    {
-      if (throtSpnt < 0)
+      if (throtSpnt <= 0)
          finalSpnt = cruiseSpnt;
       else if (throtSpnt > 0)
          finalSpnt = MAX(cruiseSpnt, throtSpnt);

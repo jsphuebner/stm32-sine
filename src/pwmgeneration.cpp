@@ -36,7 +36,7 @@
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
 #define FRQ_DIVIDER 8192 //PWM ISR callback frequency divider
 
-uint16_t PwmGeneration::pwmfrq;
+uint16_t PwmGeneration::pwmfrq = 1;
 uint16_t PwmGeneration::angle;
 s32fp    PwmGeneration::ampnom;
 uint16_t PwmGeneration::slipIncr;
