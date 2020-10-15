@@ -99,7 +99,7 @@ int PwmGeneration::GetCpuLoad()
 static void ConfigureChargeController()
 {
    chargeController.SetCallingFrequency(rcc_apb2_frequency / FRQ_DIVIDER);
-   chargeController.SetMinMaxY(0, (1 << pwmdigits) - 100);
+   chargeController.SetMinMaxY(0, FP_TOINT((Param::Get(Param::chargemax) * (1 << pwmdigits)) / 100));
    chargeController.SetGains(Param::GetInt(Param::chargekp), Param::GetInt(Param::chargeki));
    chargeController.SetRef(0);
    chargeController.ResetIntegrator();

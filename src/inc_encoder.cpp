@@ -428,7 +428,7 @@ void Encoder::InitTimerABZMode()
 void Encoder::InitResolverMode()
 {
    //The first injected channel is always noisy, so we insert one dummy channel
-   uint8_t channels[3] = { 0, 6, 7 };
+   uint8_t channels[3] = { 6, 6, 7 };
 
    adc_set_injected_sequence(ADC1, sizeof(channels), channels);
    adc_enable_external_trigger_injected(ADC1, ADC_CR2_JEXTSEL_JSWSTART);
@@ -499,7 +499,7 @@ uint16_t Encoder::GetAngleSPI()
    return d << 4; //we want 16-bit representation
 }
 
-/** Calculates current angle and velocity from resolver feedback
+/** Calculates current angle from resolver feedback
  *  and generates square wave that is filtered
  *  into a sine wave for resolver excitation
  */
@@ -536,6 +536,9 @@ uint16_t Encoder::GetAngleSinCos()
    return calcAngle;
 }
 
+/** Calculates angle from sin and cos value
+ * @param invert flip values to positive side in order to read a resolver modulated signal on negative edge
+*/
 uint16_t Encoder::DecodeAngle(bool invert)
 {
    int sin = adc_read_injected(ADC1, sinChan);
@@ -605,7 +608,7 @@ int Encoder::GetPulseTimeFiltered()
    //a factor of 2 is still not stable, use the maximum
    else if (max > (2 * min))
    {
-      lastPulseTimespan = max;
+      //lastPulseTimespan = max;
    }
    else
    {

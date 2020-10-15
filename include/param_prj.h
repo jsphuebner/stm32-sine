@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.91.R
+#define VER 4.93.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -96,10 +96,10 @@
     PARAM_ENTRY(CAT_CHARGER, chargemax,   "%",       0,      99,     90,     79  )
 
 #define THROTTLE_PARAMETERS_COMMON \
-    PARAM_ENTRY(CAT_THROTTLE,potmin,      "dig",     1,      4095,   1,      17  ) \
-    PARAM_ENTRY(CAT_THROTTLE,potmax,      "dig",     1,      4095,   4095,   18  ) \
-    PARAM_ENTRY(CAT_THROTTLE,pot2min,     "dig",     1,      4095,   4095,   63  ) \
-    PARAM_ENTRY(CAT_THROTTLE,pot2max,     "dig",     1,      4095,   4095,   64  ) \
+    PARAM_ENTRY(CAT_THROTTLE,potmin,      "dig",     0,      4095,   0,      17  ) \
+    PARAM_ENTRY(CAT_THROTTLE,potmax,      "dig",     0,      4095,   4095,   18  ) \
+    PARAM_ENTRY(CAT_THROTTLE,pot2min,     "dig",     0,      4095,   4095,   63  ) \
+    PARAM_ENTRY(CAT_THROTTLE,pot2max,     "dig",     0,      4095,   4095,   64  ) \
     PARAM_ENTRY(CAT_THROTTLE,potmode,     POTMODES,  0,      2,      0,      82  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtramp,   "%/10ms",  0.1,    100,    100,    81  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtramprpm,"rpm",     0,      20000,  20000,  85  )
@@ -118,8 +118,6 @@
     PARAM_ENTRY(CAT_REGEN,   brkmax,      "%",       -100,   0,      -30,    49  ) \
     PARAM_ENTRY(CAT_REGEN,   brkcruise,   "%",       -100,   0,      -30,    124 ) \
     PARAM_ENTRY(CAT_REGEN,   brkrampstr,  "Hz",      0,      400,    10,     39  ) \
-    PARAM_ENTRY(CAT_REGEN,   brkhistr,    "Hz",      20,     1000,   1000,   122 ) \
-    PARAM_ENTRY(CAT_REGEN,   brkhistp,    "Hz",      30,     1000,   1000,   123 ) \
     PARAM_ENTRY(CAT_REGEN,   brkout,      "%",       -100,   -1,     -50,    67  )
 
 #define AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \

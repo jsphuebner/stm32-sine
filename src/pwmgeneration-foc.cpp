@@ -128,8 +128,6 @@ void PwmGeneration::Run()
 void PwmGeneration::SetTorquePercent(s32fp torquePercent)
 {
    s32fp brkrampstr = Param::Get(Param::brkrampstr);
-   s32fp brkhistr = Param::Get(Param::brkhistr);
-   s32fp brkhistp = Param::Get(Param::brkhistp);
    int direction = Param::GetInt(Param::dir);
    int heatCur = Param::GetInt(Param::heatcur);
 
@@ -138,19 +136,6 @@ void PwmGeneration::SetTorquePercent(s32fp torquePercent)
    if (frq < brkrampstr && torquePercent < 0)
    {
       torquePercent = FP_MUL(FP_DIV(frq, brkrampstr), torquePercent);
-   }
-
-   if (frq > brkhistr && torquePercent < 0)
-   {
-      if (frq >= brkhistp)
-      {
-         torquePercent = -1;
-      }
-      else
-      {
-         s32fp factor = FP_DIV((100 * (frq - brkhistr)), (brkhistp - brkhistr));
-         torquePercent = FP_MUL(factor, torquePercent) / 100;
-      }
    }
 
    if (torquePercent < 0)
