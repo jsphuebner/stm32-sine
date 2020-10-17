@@ -28,8 +28,12 @@
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/stm32/dma.h>
 #include <libopencm3/stm32/rtc.h>
+#include <libopencm3/stm32/crc.h>
+#include <libopencm3/stm32/flash.h>
 #include "hwdefs.h"
 #include "hwinit.h"
+#include "stm32_loader.h"
+#include "my_string.h"
 
 /**
 * Start clocks of all needed peripherals
@@ -102,6 +106,45 @@ HWREV detect_hw()
       return HW_TESLA;
    else
       return HW_REV2;
+}
+
+void write_bootloader_pininit()
+{
+   struct pincommands *flashCommands = (struct pincommands *)PINDEF_ADDRESS;
+   struct pincommands commands;
+
+   memset32((int*)&commands, 0, PINDEF_NUMWORDS);
+
+   commands.pindef[0].port = GPIOC;
+   commands.pindef[0].inout = PIN_OUT;
+   commands.pindef[0].level = 0;
+
+   if (hwRev == HW_BLUEPILL)
+   {
+      commands.pindef[0].pin = GPIO15;
+   }
+   else
+   {
+      commands.pindef[0].pin = GPIO13;
+   }
+
+   crc_reset();
+   uint32_t crc = crc_calculate_block(((uint32_t*)&commands), PINDEF_NUMWORDS);
+   commands.crc = crc;
+
+   if (commands.crc != flashCommands->crc)
+   {
+      flash_unlock();
+      flash_erase_page(PINDEF_ADDRESS);
+
+      //Write flash including crc, therefor <=
+      for (uint32_t idx = 0; idx <= PINDEF_NUMWORDS; idx++)
+      {
+         uint32_t* pData = ((uint32_t*)&commands) + idx;
+         flash_program_word(PINDEF_ADDRESS + idx * sizeof(uint32_t), *pData);
+      }
+      flash_lock();
+   }
 }
 
 /**

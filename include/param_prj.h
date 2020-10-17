@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.93.R
+#define VER 4.94.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -36,7 +36,7 @@
     PARAM_ENTRY(CAT_MOTOR,   numimp,      "ppr",     8,      8192,   60,     15  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirchrpm,    "rpm",     0,      20000,  100,    87  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirmode,     DIRMODES,  0,      4,      1,      95  ) \
-    PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     15,     12,     46  )
+    PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     16,     12,     46  )
 
 #define MOTOR_PARAMETERS_SINE \
     PARAM_ENTRY(CAT_MOTOR,   boost,       "dig",     0,      37813,  1700,   1   ) \
@@ -129,7 +129,7 @@
     PARAM_ENTRY(CAT_AUTOM,   cruisemode,  BTNSWITCH, 0,      2,      0,      62  ) \
     PARAM_ENTRY(CAT_CONTACT, udcsw,       "V",       0,      1000,   330,    20  ) \
     PARAM_ENTRY(CAT_CONTACT, udcswbuck,   "V",       0,      1000,   540,    80  ) \
-    PARAM_ENTRY(CAT_CONTACT, tripmode,    TRIPMODES, 0,      2,      0,      86  ) \
+    PARAM_ENTRY(CAT_CONTACT, tripmode,    TRIPMODES, 0,      3,      0,      86  ) \
     PARAM_ENTRY(CAT_PWM,     pwmfunc,     PWMFUNCS,  0,      3,      0,      58  ) \
     PARAM_ENTRY(CAT_PWM,     pwmgain,     "",        -100000,100000, 100,    40  ) \
     PARAM_ENTRY(CAT_PWM,     pwmofs,      "dig",     -65535, 65535,  0,      41  ) \
@@ -234,9 +234,9 @@
 #define PWMFRQS      "0=17.6kHz, 1=8.8kHz, 2=4.4KHz"
 #define PWMPOLS      "0=ACTHIGH, 1=ACTLOW"
 #define DIRS         "-1=Reverse, 0=Neutral, 1=Forward"
-#define TRIPMODES    "0=AllOff, 1=DcSwOn, 2=PrechargeOn"
+#define TRIPMODES    "0=AllOff, 1=DcSwOn, 2=PrechargeOn, 3=AutoResume"
 #define SNS_HS       "0=JCurve, 1=Semikron, 2=MBB600, 3=KTY81, 4=PT1000, 5=NTCK45_2k2, 6=Leaf"
-#define SNS_M        "12=KTY83-110, 13=KTY84-130, 14=Leaf, 15=KTY81-110"
+#define SNS_M        "12=KTY83-110, 13=KTY84-130, 14=Leaf, 15=KTY81-110, 16=Toyota"
 #define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=speedfrq"
 #define BTNSWITCH    "0=Button, 1=Switch, 2=CAN"
 #define DIRMODES     "0=Button, 1=Switch, 2=ButtonReversed, 3=SwitchReversed, 4=DefaultForward"
@@ -321,7 +321,8 @@ enum _tripmodes
 {
    TRIP_ALLOFF = 0,
    TRIP_DCSWON,
-   TRIP_PRECHARGEON
+   TRIP_PRECHARGEON,
+   TRIP_AUTORESUME
 };
 
 enum _dirmodes

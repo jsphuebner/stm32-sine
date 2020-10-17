@@ -71,6 +71,9 @@ static const uint16_t TeslaFluid[] = { TESLA_LDU_FLUID };
 /* Temp sensor embedded in Tesla rear heatsink */
 static const uint16_t Tesla10k[] = { TESLA_10K };
 
+/* Temp sensor embedded in many Toyota motors */
+static const uint16_t Toyota[] = { TOYOTA_M };
+
 /* contributed by Fabian Brauss */
 /* Temp sensor KTY81-121 */
 static const uint16_t Kty81hs[] = { KTY81_HS };
@@ -94,6 +97,7 @@ static const TEMP_SENSOR sensors[] =
    { -40, 300, 10, TABLEN(Kty84),     PTC, Kty84      },
    { -20, 150, 10, TABLEN(leaf),      NTC, leaf       },
    { -50, 150, 10, TABLEN(kty81m),    PTC, kty81m     },
+   { -20, 200, 5,  TABLEN(Toyota),    PTC, Toyota     },
    { -20, 190, 5,  TABLEN(Tesla100k), PTC, Tesla100k  },
    { 0,   100, 10, TABLEN(Tesla52k),  PTC, Tesla52k   },
    { 5,   100,  5, TABLEN(TeslaFluid),PTC, TeslaFluid },

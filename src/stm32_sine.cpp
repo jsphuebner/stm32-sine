@@ -567,6 +567,7 @@ static void SetContactorsOffState()
          case TRIP_ALLOFF:
             DigIo::dcsw_out.Clear();
             break;
+         case TRIP_AUTORESUME:
          case TRIP_DCSWON:
             //do nothing
             break;
@@ -600,13 +601,9 @@ static void Ms10Task(void)
    CalcAndOutputTemp();
    Param::SetInt(Param::speed, Encoder::GetSpeed());
 
-   if (MOD_RUN == opmode)
+   if (MOD_RUN == opmode && initWait == -1)
    {
       PwmGeneration::SetTorquePercent(torquePercent);
-   }
-   else if (MOD_OFF == opmode && Encoder::GetSpeed() == 0)
-   {
-      PwmGeneration::SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
    }
    else if (MOD_BOOST == opmode || MOD_BUCK == opmode)
    {
@@ -651,7 +648,8 @@ static void Ms10Task(void)
          if ((chargemode == MOD_BUCK && udc >= Param::Get(Param::udcswbuck)) || chargemode == MOD_BOOST)
             newMode = chargemode;
       }
-      else if (Param::GetBool(Param::din_start))
+      else if (Param::GetBool(Param::din_start) ||
+              (Param::GetInt(Param::tripmode) == TRIP_AUTORESUME && PwmGeneration::Tripped()))
       {
          newMode = MOD_RUN;
       }
@@ -680,11 +678,13 @@ static void Ms10Task(void)
       initWait = 50;
 
       SetContactorsOffState();
+      PwmGeneration::SetTorquePercent(0);
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
    }
    else if (0 == initWait)
    {
+      Throttle::RampThrottle(0); //Restart ramp
       Encoder::Reset();
       //this applies new deadtime and pwmfrq and enables the outputs for the given mode
       PwmGeneration::SetOpmode(opmode);
@@ -693,9 +693,11 @@ static void Ms10Task(void)
          DigIo::vtg_out.Clear();
       initWait = -1;
    }
-   else if (hwRev == HW_TESLAM3 && initWait == 10)
+   else if (initWait == 10)
    {
-      DigIo::vtg_out.Set();
+      PwmGeneration::SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
+      if (hwRev == HW_TESLAM3)
+         DigIo::vtg_out.Set();
       initWait--;
    }
    else if (initWait > 0)
@@ -862,6 +864,7 @@ extern "C" int main(void)
    clock_setup();
    rtc_setup();
    ConfigureVariantIO();
+   write_bootloader_pininit();
 
    //Additional test pins on JTAG header
    //AFIO_MAPR |= AFIO_MAPR_SPI1_REMAP | AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF;

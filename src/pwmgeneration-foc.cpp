@@ -127,6 +127,7 @@ void PwmGeneration::Run()
 
 void PwmGeneration::SetTorquePercent(s32fp torquePercent)
 {
+   static int32_t heatCurRamped = 0;
    s32fp brkrampstr = Param::Get(Param::brkrampstr);
    int direction = Param::GetInt(Param::dir);
    int heatCur = Param::GetInt(Param::heatcur);
@@ -153,7 +154,8 @@ void PwmGeneration::SetTorquePercent(s32fp torquePercent)
       if (speed == 0 && torquePercent <= 0)
       {
          iq = 0;
-         id = (heatCur * 2) / 3;
+         heatCurRamped = RAMPUP(heatCurRamped, heatCur, 10);
+         id = heatCurRamped;
       }
       /*else if (torquePercent > 0)
       {
@@ -162,11 +164,13 @@ void PwmGeneration::SetTorquePercent(s32fp torquePercent)
       else
       {
          FOC::Mtpa(is, id, iq);
+         heatCurRamped = 0;
       }
    }
    else
    {
       FOC::Mtpa(is, id, iq);
+      heatCurRamped = 0;
    }
 
    qController.SetRef(FP_FROMINT(iq));
@@ -225,21 +229,32 @@ void PwmGeneration::PwmInit()
 
 s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
 {
+   static int il1Avg = 0, il2Avg = 0;
+   const int offsetSamples = 16;
+
    if (initwait > 0)
    {
       initwait--;
-      SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
+
+      if (initwait <= offsetSamples)
+      {
+         il1Avg += AnaIn::il1.Get();
+         il2Avg += AnaIn::il2.Get();
+      }
+      else
+      {
+         il1Avg = il2Avg = 0;
+      }
+
+      if (initwait == 1)
+      {
+         SetCurrentOffset(il1Avg / offsetSamples, il2Avg / offsetSamples);
+      }
    }
    else
    {
       s32fp il1 = GetCurrent(AnaIn::il1, ilofs[0], Param::Get(Param::il1gain));
       s32fp il2 = GetCurrent(AnaIn::il2, ilofs[1], Param::Get(Param::il2gain));
-
-      //1s after motor stand still and no current request, recalibrate current sensor offset
-      if (idleCounter == pwmfrq)
-      {
-         SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
-      }
 
       if ((Param::GetInt(Param::pinswap) & SWAP_CURRENTS) > 0)
          FOC::ParkClarke(il2, il1, angle);

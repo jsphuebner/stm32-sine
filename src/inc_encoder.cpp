@@ -544,11 +544,6 @@ uint16_t Encoder::DecodeAngle(bool invert)
    int sin = adc_read_injected(ADC1, sinChan);
    int cos = adc_read_injected(ADC1, cosChan);
 
-   int temp = MIN(sin, cos);
-   resolverMin = MIN(temp, resolverMin);
-   temp = MAX(sin, cos);
-   resolverMax = MAX(temp, resolverMax);
-
    //Wait for signal to reach usable amplitude
    if ((resolverMax - resolverMin) > MIN_RES_AMP)
    {
@@ -558,6 +553,11 @@ uint16_t Encoder::DecodeAngle(bool invert)
    }
    else
    {
+      int temp = MIN(sin, cos);
+      resolverMin = MIN(temp, resolverMin);
+      temp = MAX(sin, cos);
+      resolverMax = MAX(temp, resolverMax);
+
       if (0 == startupDelay)
       {
          ErrorMessage::Post(ERR_LORESAMP);
