@@ -78,6 +78,7 @@
 		<Unit filename="libopeninv/include/printf.h" />
 		<Unit filename="libopeninv/include/sine_core.h" />
 		<Unit filename="libopeninv/include/stm32_can.h" />
+		<Unit filename="libopeninv/include/stm32_loader.h" />
 		<Unit filename="libopeninv/include/stm32scheduler.h" />
 		<Unit filename="libopeninv/include/terminal.h" />
 		<Unit filename="libopeninv/src/anain.cpp" />
@@ -138,7 +139,15 @@
 			<Option target="Test" />
 		</Unit>
 		<Extensions>
-			<code_completion />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot class_diagrams="1" have_dot="1" />
+				<general />
+			</DoxyBlocks>
 			<debugger>
 				<remote_debugging target="SlipControl">
 					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" additional_cmds="load&#x0A;r" />
@@ -150,16 +159,6 @@
 					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" additional_cmds="load&#x0A;r" />
 				</remote_debugging>
 			</debugger>
-			<envvars />
-			<DoxyBlocks>
-				<comment_style block="0" line="0" />
-				<doxyfile_project />
-				<doxyfile_build />
-				<doxyfile_warnings />
-				<doxyfile_output />
-				<doxyfile_dot class_diagrams="1" have_dot="1" />
-				<general />
-			</DoxyBlocks>
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

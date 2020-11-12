@@ -94,6 +94,8 @@ HWREV detect_hw()
 {
    if (!is_existent(GPIOC, GPIO12)) //Olimex LED pin does not exist
       return HW_BLUEPILL;
+   else if (is_floating(GPIOC, GPIO1))
+      return HW_PRIUSMG1;
    else if (gpio_get(GPIOB, GPIO1)) //On Tesla M3 board precharge output is tied to Vcc
       return HW_TESLAM3;
    else if (is_floating(GPIOC, GPIO9)) //Desat pin is floating

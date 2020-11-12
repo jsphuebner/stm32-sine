@@ -39,7 +39,6 @@ void PwmGeneration::Run()
    if (opmode == MOD_MANUAL || opmode == MOD_RUN || opmode == MOD_SINE)
    {
       int dir = Param::GetInt(Param::dir);
-      uint16_t dc[3];
 
       Encoder::UpdateRotorAngle(dir);
       s32fp ampNomLimited = LimitCurrent();
@@ -57,11 +56,6 @@ void PwmGeneration::Run()
       Param::SetFlt(Param::angle, DIGIT_TO_DEGREE(angle));
       SineCore::Calc(angle);
 
-      /* Match to PWM resolution */
-      dc[0] = SineCore::DutyCycles[0] >> shiftForTimer;
-      dc[1] = SineCore::DutyCycles[1] >> shiftForTimer;
-      dc[2] = SineCore::DutyCycles[2] >> shiftForTimer;
-
       /* Shut down PWM on zero voltage request */
       if (0 == amp || 0 == dir)
       {
@@ -72,9 +66,10 @@ void PwmGeneration::Run()
          timer_enable_break_main_output(PWM_TIMER);
       }
 
-      timer_set_oc_value(PWM_TIMER, TIM_OC1, dc[0]);
-      timer_set_oc_value(PWM_TIMER, TIM_OC2, dc[1]);
-      timer_set_oc_value(PWM_TIMER, TIM_OC3, dc[2]);
+      /* Match to PWM resolution */
+      timer_set_oc_value(PWM_TIMER, TIM_OC1, SineCore::DutyCycles[0] >> shiftForTimer);
+      timer_set_oc_value(PWM_TIMER, TIM_OC2, SineCore::DutyCycles[1] >> shiftForTimer);
+      timer_set_oc_value(PWM_TIMER, TIM_OC3, SineCore::DutyCycles[2] >> shiftForTimer);
    }
    else if (opmode == MOD_BOOST || opmode == MOD_BUCK)
    {
@@ -149,6 +144,7 @@ void PwmGeneration::SetTorquePercent(s32fp torque)
 
 void PwmGeneration::PwmInit()
 {
+   PwmGeneration::SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
    pwmfrq = TimerSetup(Param::GetInt(Param::deadtime), Param::GetInt(Param::pwmpol));
    slipIncr = FRQ_TO_ANGLE(fslip);
    Encoder::SetPwmFrequency(pwmfrq);

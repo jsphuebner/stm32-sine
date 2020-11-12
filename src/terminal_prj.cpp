@@ -197,10 +197,12 @@ static void MapCan(char *arg)
 
 static void PrintParamsJson(char *arg)
 {
+   arg = my_trim(arg);
+
    const Param::Attributes *pAtr;
    char comma = ' ';
+   bool printHidden = arg[0] == 'h';
 
-   arg = arg;
    printf("{");
    for (uint32_t idx = 0; idx < Param::PARAM_LAST; idx++)
    {
@@ -209,7 +211,7 @@ static void PrintParamsJson(char *arg)
       s32fp canGain;
       pAtr = Param::GetAttrib((Param::PARAM_NUM)idx);
 
-      if ((Param::GetFlag((Param::PARAM_NUM)idx) & Param::FLAG_HIDDEN) == 0)
+      if ((Param::GetFlag((Param::PARAM_NUM)idx) & Param::FLAG_HIDDEN) == 0 || printHidden)
       {
          printf("%c\r\n   \"%s\": {\"unit\":\"%s\",\"value\":%f,",comma, pAtr->name, pAtr->unit, Param::Get((Param::PARAM_NUM)idx));
 

@@ -17,10 +17,14 @@ For 3-phase synchronous motors a similar control method did not prove practical.
 A unique feature of this software is to re-purpose the drivetrain hardware as a programmable battery charger. One of the motor phase windings is being used as a high current capable inductor and one of the phase switches as a buck or boost converter. This has practically proven to replace a separate charging unit and further reduce complexity of electric vehicles.
 
 # Further reading
-A comprehensive guide to the Huebner inverter system can be found here: http://johanneshuebner.com/quickcms/index.html%3Fde_antriebsumrichter,20.html
+A comprehensive guide to the Huebner inverter system can be found here: https://openinverter.org/docs
 
 # Compiling
 You will need the arm-none-eabi toolchain: https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
+On Ubuntu type
+
+`sudo apt-get install git gcc-arm-none-eabi`
+
 The only external depedency is libopencm3 which I forked. You can download and build this dependency by typing
 
 `make get-deps`
