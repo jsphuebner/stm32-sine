@@ -605,7 +605,7 @@ static void Ms10Task(void)
    {
       PwmGeneration::SetTorquePercent(torquePercent);
    }
-   else if (MOD_BOOST == opmode || MOD_BUCK == opmode)
+   else if ((MOD_BOOST == opmode || MOD_BUCK == opmode) && initWait == -1)
    {
       s32fp chargeCur = Param::Get(Param::chargecur);
       s32fp tempDerate = FP_FROMINT(100);
@@ -646,7 +646,16 @@ static void Ms10Task(void)
       {
          //In buck mode we precharge to a different voltage
          if ((chargemode == MOD_BUCK && udc >= Param::Get(Param::udcswbuck)) || chargemode == MOD_BOOST)
+         {
             newMode = chargemode;
+
+            //Prius needs to run PWM before closing the contactor
+            if (hwRev == HW_PRIUS)
+            {
+               PwmGeneration::SetChargeCurrent(0);
+               PwmGeneration::SetOpmode(newMode);
+            }
+         }
       }
       else if (Param::GetBool(Param::din_start) ||
               (Param::GetInt(Param::tripmode) == TRIP_AUTORESUME && PwmGeneration::Tripped()))

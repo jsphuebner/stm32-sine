@@ -98,11 +98,14 @@ int PwmGeneration::GetCpuLoad()
 
 static void ConfigureChargeController()
 {
+   int pwmin = FP_TOINT((Param::Get(Param::chargepwmin) * (1 << pwmdigits)) / 100);
+   int pwmax = FP_TOINT((Param::Get(Param::chargepwmax) * (1 << pwmdigits)) / 100);
+
    chargeController.SetCallingFrequency(rcc_apb2_frequency / FRQ_DIVIDER);
-   chargeController.SetMinMaxY(0, FP_TOINT((Param::Get(Param::chargemax) * (1 << pwmdigits)) / 100));
+   chargeController.SetMinMaxY(pwmin, pwmax);
    chargeController.SetGains(Param::GetInt(Param::chargekp), Param::GetInt(Param::chargeki));
    chargeController.SetRef(0);
-   chargeController.ResetIntegrator();
+   chargeController.PreloadIntegrator(pwmin);
 }
 
 void PwmGeneration::SetOpmode(int _opmode)

@@ -230,44 +230,42 @@ void PwmGeneration::PwmInit()
 s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
 {
    static int il1Avg = 0, il2Avg = 0;
-   const int offsetSamples = 16;
+   const int offsetSamples = 64;
 
    if (initwait > 0)
    {
       initwait--;
+   }
 
-      if (initwait <= offsetSamples)
-      {
-         il1Avg += AnaIn::il1.Get();
-         il2Avg += AnaIn::il2.Get();
-      }
-      else
-      {
-         il1Avg = il2Avg = 0;
-      }
+   s32fp il1 = GetCurrent(AnaIn::il1, ilofs[0], Param::Get(Param::il1gain));
+   s32fp il2 = GetCurrent(AnaIn::il2, ilofs[1], Param::Get(Param::il2gain));
 
-      if (initwait == 1)
-      {
-         SetCurrentOffset(il1Avg / offsetSamples, il2Avg / offsetSamples);
-      }
+   //250ms after motor standstill
+   if (idleCounter >= (pwmfrq / 4) && idleCounter < ((pwmfrq / 4) + offsetSamples))
+   {
+      il1Avg += AnaIn::il1.Get();
+      il2Avg += AnaIn::il2.Get();
+   }
+   else if (idleCounter == ((pwmfrq / 4) + offsetSamples))
+   {
+      SetCurrentOffset(il1Avg / offsetSamples, il2Avg / offsetSamples);
    }
    else
    {
-      s32fp il1 = GetCurrent(AnaIn::il1, ilofs[0], Param::Get(Param::il1gain));
-      s32fp il2 = GetCurrent(AnaIn::il2, ilofs[1], Param::Get(Param::il2gain));
-
-      if ((Param::GetInt(Param::pinswap) & SWAP_CURRENTS) > 0)
-         FOC::ParkClarke(il2, il1, angle);
-      else
-         FOC::ParkClarke(il1, il2, angle);
-      id = FOC::id;
-      iq = FOC::iq;
-
-      Param::SetFlt(Param::id, FOC::id);
-      Param::SetFlt(Param::iq, FOC::iq);
-      Param::SetFlt(Param::il1, il1);
-      Param::SetFlt(Param::il2, il2);
+      il1Avg = il2Avg = 0;
    }
+
+   if ((Param::GetInt(Param::pinswap) & SWAP_CURRENTS) > 0)
+      FOC::ParkClarke(il2, il1, angle);
+   else
+      FOC::ParkClarke(il1, il2, angle);
+   id = FOC::id;
+   iq = FOC::iq;
+
+   Param::SetFlt(Param::id, FOC::id);
+   Param::SetFlt(Param::iq, FOC::iq);
+   Param::SetFlt(Param::il1, il1);
+   Param::SetFlt(Param::il2, il2);
 
    return 0;
 }

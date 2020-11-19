@@ -29,7 +29,7 @@
 					<SilentBuild command="CONTROL=SINE make &gt; $(CMD_NULL)" />
 				</MakeCommands>
 			</Target>
-			<Target title="FieldOrientedControl">
+			<Target title="FOC">
 				<Option output="stm32_foc" prefix_auto="0" extension_auto="0" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
@@ -52,7 +52,7 @@
 		</Build>
 		<Unit filename="Makefile">
 			<Option target="SlipControl" />
-			<Option target="FieldOrientedControl" />
+			<Option target="FOC" />
 		</Unit>
 		<Unit filename="include/anain_prj.h" />
 		<Unit filename="include/digio_prj.h" />
@@ -115,7 +115,7 @@
 		<Unit filename="src/throttle.cpp" />
 		<Unit filename="stm32_sine.ld">
 			<Option target="SlipControl" />
-			<Option target="FieldOrientedControl" />
+			<Option target="FOC" />
 		</Unit>
 		<Unit filename="test/Makefile">
 			<Option target="Test" />

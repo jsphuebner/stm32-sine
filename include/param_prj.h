@@ -17,14 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.95.R
+#define VER 4.96.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 128
+//Next param id (increase when adding new parameter!): 129
 //Next value Id: 2048
 /*              category     name         unit       min     max     default id */
 
@@ -93,7 +93,8 @@
     PARAM_ENTRY(CAT_CHARGER, chargekp,    "dig",     0,      100,    80,     72  ) \
     PARAM_ENTRY(CAT_CHARGER, chargeki,    "dig",     0,      100,    10,     126 ) \
     PARAM_ENTRY(CAT_CHARGER, chargeflt,   "dig",     0,      10,     8,      73  ) \
-    PARAM_ENTRY(CAT_CHARGER, chargemax,   "%",       0,      99,     90,     79  )
+    PARAM_ENTRY(CAT_CHARGER, chargepwmin, "%",       0,      99,     0,      128 ) \
+    PARAM_ENTRY(CAT_CHARGER, chargepwmax, "%",       0,      99,     90,     79  )
 
 #define THROTTLE_PARAMETERS_COMMON \
     PARAM_ENTRY(CAT_THROTTLE,potmin,      "dig",     0,      4095,   0,      17  ) \
