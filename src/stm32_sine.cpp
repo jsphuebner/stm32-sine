@@ -50,7 +50,6 @@
 
 HWREV hwRev; //Hardware variant of board we are running on
 
-//Precise control of executing the boost controller
 static Stm32Scheduler* scheduler;
 static Can* can;
 

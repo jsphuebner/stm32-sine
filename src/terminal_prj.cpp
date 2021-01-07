@@ -159,8 +159,22 @@ static void MapCan(char *arg)
       }
 
       *ending = 0;
+      int iVal = my_atoi(arg);
 
-      values[i] = my_atoi(arg);
+      //allow gain values < 1 and re-interpret them
+      if (i == (numArgs - 1) && iVal == 0)
+      {
+         values[i] = fp_atoi(arg, 16);
+         //The can values interprets abs(values) < 32 as gain and > 32 as divider
+         //e.g. 0.25 means integer division by 4 so we need to calculate div = 1/value
+         //0.25 with 16 decimals is 16384, 65536/16384 = 4
+         values[i] = (32 << 16) / values[i];
+      }
+      else
+      {
+         values[i] = iVal;
+      }
+
       arg = my_trim(ending + 1);
    }
 
@@ -403,7 +417,7 @@ static void ParamSet(char *arg)
    *pParamVal = 0;
    pParamVal++;
 
-   val = fp_atoi(pParamVal);
+   val = fp_atoi(pParamVal, FRAC_DIGITS);
    idx = Param::NumFromString(arg);
 
    if (Param::PARAM_INVALID != idx)
@@ -491,10 +505,10 @@ static void StopInverter(char *arg)
 static void StartInverter(char *arg)
 {
    arg = my_trim(arg);
-   s32fp val = fp_atoi(arg);
-   if (val < FP_FROMINT(MOD_LAST))
+   int val = my_atoi(arg);
+   if (val < MOD_LAST)
    {
-      Param::SetFlt(Param::opmode, val);
+      Param::SetInt(Param::opmode, val);
       PwmGeneration::SetOpmode(FP_TOINT(val));
       printf("Inverter started\r\n");
    }

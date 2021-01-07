@@ -94,8 +94,8 @@ HWREV detect_hw()
 {
    if (!is_existent(GPIOC, GPIO12)) //Olimex LED pin does not exist
       return HW_BLUEPILL;
-   else if (is_floating(GPIOC, GPIO1))
-      return HW_PRIUSMG1;
+   /*else if (is_floating(GPIOC, GPIO1))
+      return HW_PRIUSMG1;*/
    else if (gpio_get(GPIOB, GPIO1)) //On Tesla M3 board precharge output is tied to Vcc
       return HW_TESLAM3;
    else if (is_floating(GPIOC, GPIO9)) //Desat pin is floating
@@ -120,14 +120,19 @@ void write_bootloader_pininit()
    commands.pindef[0].port = GPIOC;
    commands.pindef[0].inout = PIN_OUT;
    commands.pindef[0].level = 0;
+   commands.pindef[1].port = GPIOB;
+   commands.pindef[1].inout = PIN_OUT;
+   commands.pindef[1].level = 0;
 
    if (hwRev == HW_BLUEPILL)
    {
       commands.pindef[0].pin = GPIO15;
+      commands.pindef[1].pin = GPIO4;
    }
    else
    {
       commands.pindef[0].pin = GPIO13;
+      commands.pindef[1].pin = GPIO1;
    }
 
    crc_reset();

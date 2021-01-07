@@ -110,13 +110,15 @@ s32fp TempMeas::Lookup(int digit, Sensors sensorId)
    int index = sensorId >= TEMP_KTY83 ? sensorId - TEMP_KTY83 + NUM_HS_SENSORS : sensorId;
 
    const TEMP_SENSOR * sensor = &sensors[index];
-   uint16_t last = sensor->lookup[0] + (sensor->coeff == NTC?-1:+1);
+   uint16_t last;
 
    for (uint32_t i = 0; i < sensor->tabSize; i++)
    {
       uint16_t cur = sensor->lookup[i];
       if ((sensor->coeff == NTC && cur >= digit) || (sensor->coeff == PTC && cur <= digit))
       {
+         //we are outside the lookup table range, return minimum
+         if (0 == i) return FP_FROMINT(sensor->tempMin);
          s32fp a = FP_FROMINT(sensor->coeff == NTC?cur - digit:digit - cur);
          s32fp b = FP_FROMINT(sensor->coeff == NTC?cur - last:last - cur);
          return FP_FROMINT(sensor->step * i + sensor->tempMin) - sensor->step * FP_DIV(a, b);

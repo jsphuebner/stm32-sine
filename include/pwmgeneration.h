@@ -29,7 +29,7 @@ class PwmGeneration
       static void Run();
       static uint16_t GetAngle();
       static bool Tripped();
-      static void SetOpmode(int);
+      static void SetOpmode(int opmode);
       static void SetAmpnom(s32fp amp);
       static void SetFslip(s32fp fslip);
       static void SetTorquePercent(s32fp torque);
@@ -46,6 +46,7 @@ class PwmGeneration
       static void PwmInit();
       static void EnableOutput();
       static void DisableOutput();
+      static void EnableChargeOutput();
       static uint16_t TimerSetup(uint16_t deadtime, bool activeLow);
       static void AcHeatTimerSetup();
       static s32fp ProcessCurrents();
@@ -59,6 +60,7 @@ class PwmGeneration
       static s32fp GetCurrent(AnaIn& input, s32fp offset, s32fp gain);
       static s32fp LimitCurrent();
       static EdgeType CalcRms(s32fp il, EdgeType& lastEdge, s32fp& max, s32fp& rms, int& samples, s32fp prevRms);
+      static void RunOffsetCalibration();
 
       static uint16_t pwmfrq;
       static uint16_t angle;

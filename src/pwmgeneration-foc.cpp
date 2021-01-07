@@ -38,7 +38,6 @@ static int initwait = 0;
 static int fwBaseGain = 0;
 static s32fp idref = 0;
 static int curki = 0;
-static int idleCounter = 0;
 static tim_oc_id ocChannels[3];
 static PiController qController;
 static PiController dController;
@@ -100,12 +99,11 @@ void PwmGeneration::Run()
          dController.ResetIntegrator();
          qController.ResetIntegrator();
          fwController.ResetIntegrator();
-         idleCounter++;
+         RunOffsetCalibration();
       }
       else
       {
          timer_enable_break_main_output(PWM_TIMER);
-         idleCounter = 0;
       }
 
       for (int i = 0; i < 3; i++)
@@ -229,8 +227,6 @@ void PwmGeneration::PwmInit()
 
 s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
 {
-   static int il1Avg = 0, il2Avg = 0;
-   const int offsetSamples = 64;
 
    if (initwait > 0)
    {
@@ -239,21 +235,6 @@ s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
 
    s32fp il1 = GetCurrent(AnaIn::il1, ilofs[0], Param::Get(Param::il1gain));
    s32fp il2 = GetCurrent(AnaIn::il2, ilofs[1], Param::Get(Param::il2gain));
-
-   //250ms after motor standstill
-   if (idleCounter >= (pwmfrq / 4) && idleCounter < ((pwmfrq / 4) + offsetSamples))
-   {
-      il1Avg += AnaIn::il1.Get();
-      il2Avg += AnaIn::il2.Get();
-   }
-   else if (idleCounter == ((pwmfrq / 4) + offsetSamples))
-   {
-      SetCurrentOffset(il1Avg / offsetSamples, il2Avg / offsetSamples);
-   }
-   else
-   {
-      il1Avg = il2Avg = 0;
-   }
 
    if ((Param::GetInt(Param::pinswap) & SWAP_CURRENTS) > 0)
       FOC::ParkClarke(il2, il1, angle);
@@ -288,4 +269,24 @@ void PwmGeneration::CalcNextAngleSync(int dir)
       frq = fslip;
       angle += dir * FRQ_TO_ANGLE(fslip);
    }
+}
+
+void PwmGeneration::RunOffsetCalibration()
+{
+   static int il1Avg = 0, il2Avg = 0, samples = 0;
+   const int offsetSamples = 512;
+
+   if (samples < offsetSamples)
+   {
+      il1Avg += AnaIn::il1.Get();
+      il2Avg += AnaIn::il2.Get();
+   }
+   else
+   {
+      SetCurrentOffset(il1Avg / offsetSamples, il2Avg / offsetSamples);
+      il1Avg = il2Avg = 0;
+      samples = 0;
+   }
+
+   samples++;
 }

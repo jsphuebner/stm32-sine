@@ -135,13 +135,13 @@ void PwmGeneration::SetOpmode(int _opmode)
          break;
       case MOD_BOOST:
          DisableOutput();
-         timer_enable_oc_output(PWM_TIMER, TIM_OC2N);
+         EnableChargeOutput();
          timer_enable_break_main_output(PWM_TIMER);
          ConfigureChargeController();
          break;
       case MOD_BUCK:
          DisableOutput();
-         timer_enable_oc_output(PWM_TIMER, TIM_OC2);
+         EnableChargeOutput();
          timer_enable_break_main_output(PWM_TIMER);
          ConfigureChargeController();
          break;
@@ -214,6 +214,32 @@ void PwmGeneration::DisableOutput()
    timer_disable_oc_output(PWM_TIMER, TIM_OC1N);
    timer_disable_oc_output(PWM_TIMER, TIM_OC2N);
    timer_disable_oc_output(PWM_TIMER, TIM_OC3N);
+}
+
+void PwmGeneration::EnableChargeOutput()
+{
+   /* Prius GEN2 inverter only has one control signal for the buck/boost converter
+    * When we output a "high" the upper IGBT is switched on. So for bucking
+    * output current and duty cycle are proportional
+    * For boosting we need to output a "low" to enable the low side IGBT and
+    * thus the output current and duty cycle are inverse proportional.
+    */
+   if (hwRev == HW_PRIUS)
+   {
+      timer_enable_oc_output(PWM_TIMER, TIM_OC2N);
+
+      if (opmode == MOD_BOOST)
+         timer_set_oc_polarity_low(PWM_TIMER, TIM_OC2N);
+      else if (opmode == MOD_BUCK)
+         timer_set_oc_polarity_high(PWM_TIMER, TIM_OC2N);
+   }
+   else
+   {
+      if (opmode == MOD_BOOST)
+         timer_enable_oc_output(PWM_TIMER, TIM_OC2N);
+      else if (opmode == MOD_BUCK)
+         timer_enable_oc_output(PWM_TIMER, TIM_OC2);
+   }
 }
 
 void PwmGeneration::SetCurrentLimitThreshold(s32fp ocurlim)
