@@ -322,7 +322,7 @@ static void CalcAndOutputTemp()
 {
    static int temphsFlt = 0;
    static int tempmFlt = 0;
-   int pwmgain = Param::GetInt(Param::pwmgain);
+   s32fp pwmgain = Param::Get(Param::pwmgain);
    int pwmofs = Param::GetInt(Param::pwmofs);
    int pwmfunc = Param::GetInt(Param::pwmfunc);
    int tmpout = 0;
@@ -337,13 +337,13 @@ static void CalcAndOutputTemp()
    {
       default:
       case PWM_FUNC_TMPM:
-         tmpout = FP_TOINT(tmpm) * pwmgain + pwmofs;
+         tmpout = FP_TOINT(FP_MUL(tmpm, pwmgain)) + pwmofs;
          break;
       case PWM_FUNC_TMPHS:
-         tmpout = FP_TOINT(tmphs) * pwmgain + pwmofs;
+         tmpout = FP_TOINT(FP_MUL(tmphs, pwmgain)) + pwmofs;
          break;
       case PWM_FUNC_SPEED:
-         tmpout = Param::Get(Param::speed) * pwmgain + pwmofs;
+         tmpout = FP_TOINT(FP_MUL(Param::Get(Param::speed), pwmgain)) + pwmofs;
          break;
       case PWM_FUNC_SPEEDFRQ:
          //Handled in 1ms task

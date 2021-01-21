@@ -256,8 +256,18 @@ void tim_setup()
    timer_enable_oc_output(OVER_CUR_TIMER, TIM_OC4);
    timer_generate_event(OVER_CUR_TIMER, TIM_EGR_UG);
    timer_set_prescaler(OVER_CUR_TIMER, 0);
+
    /* PWM frequency */
-   timer_set_period(OVER_CUR_TIMER, OCURMAX);
+   if (hwRev == HW_PRIUS)
+   {
+      //It is used for driving the booster converter at 8.8 kHz.
+      timer_set_period(OVER_CUR_TIMER, OCURMAX * 2);
+   }
+   else
+   {
+      timer_set_period(OVER_CUR_TIMER, OCURMAX);
+   }
+
    timer_enable_counter(OVER_CUR_TIMER);
 
    /** setup gpio */

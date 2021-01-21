@@ -110,6 +110,7 @@ static void ConfigureChargeController()
 
 void PwmGeneration::SetOpmode(int _opmode)
 {
+   if (opmode == _opmode) return;
    opmode = _opmode;
 
    if (opmode != MOD_OFF)
@@ -226,12 +227,15 @@ void PwmGeneration::EnableChargeOutput()
     */
    if (hwRev == HW_PRIUS)
    {
-      timer_enable_oc_output(PWM_TIMER, TIM_OC2N);
+      //Disable other PWM source.
+      timer_disable_oc_output(OVER_CUR_TIMER, TIM_OC4);
 
       if (opmode == MOD_BOOST)
          timer_set_oc_polarity_low(PWM_TIMER, TIM_OC2N);
       else if (opmode == MOD_BUCK)
          timer_set_oc_polarity_high(PWM_TIMER, TIM_OC2N);
+
+      timer_enable_oc_output(PWM_TIMER, TIM_OC2N);
    }
    else
    {
