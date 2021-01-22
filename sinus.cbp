@@ -20,6 +20,9 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="armelfgcc" />
+				<Compiler>
+					<Add directory="include" />
+				</Compiler>
 				<MakeCommands>
 					<Build command="CONTROL=SINE make" />
 					<CompileFile command="$make -f  $file " />
@@ -34,6 +37,9 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="armelfgcc" />
+				<Compiler>
+					<Add directory="include" />
+				</Compiler>
 				<MakeCommands>
 					<Build command="CONTROL=FOC make" />
 					<CompileFile command="$make -f  $file " />
@@ -48,6 +54,9 @@
 				<Option working_dir="test" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Compiler>
+					<Add directory="include" />
+				</Compiler>
 			</Target>
 		</Build>
 		<Unit filename="Makefile">
@@ -81,6 +90,7 @@
 		<Unit filename="libopeninv/include/stm32_loader.h" />
 		<Unit filename="libopeninv/include/stm32scheduler.h" />
 		<Unit filename="libopeninv/include/terminal.h" />
+		<Unit filename="libopeninv/include/terminalcommands.h" />
 		<Unit filename="libopeninv/src/anain.cpp" />
 		<Unit filename="libopeninv/src/digio.cpp" />
 		<Unit filename="libopeninv/src/errormessage.cpp" />
@@ -101,9 +111,8 @@
 		<Unit filename="libopeninv/src/sine_core.cpp" />
 		<Unit filename="libopeninv/src/stm32_can.cpp" />
 		<Unit filename="libopeninv/src/stm32scheduler.cpp" />
-		<Unit filename="libopeninv/src/terminal.c">
-			<Option compilerVar="CC" />
-		</Unit>
+		<Unit filename="libopeninv/src/terminal.cpp" />
+		<Unit filename="libopeninv/src/terminalcommands.cpp" />
 		<Unit filename="src/hwinit.cpp" />
 		<Unit filename="src/inc_encoder.cpp" />
 		<Unit filename="src/pwmgeneration-foc.cpp" />
