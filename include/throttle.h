@@ -1,5 +1,5 @@
 /*
- * This file is part of the tumanako_vc project.
+ * This file is part of the stm32-sine project.
  *
  * Copyright (C) 2012 Johannes Huebner <contact@johanneshuebner.com>
  *
@@ -26,8 +26,8 @@ class Throttle
 {
    public:
       static bool CheckAndLimitRange(int* potval, int potIdx);
-      static bool CheckDualThrottle(int* potval, int pot2val);
-      static s32fp CalcThrottle(int potval, int pot2val, bool brkpedal);
+      static s32fp DigitsToPercent(int potval, int potidx);
+      static s32fp CalcThrottle(s32fp potval, s32fp pot2val, bool brkpedal);
       static s32fp CalcIdleSpeed(int speed);
       static s32fp CalcCruiseSpeed(int speed);
       static bool TemperatureDerate(s32fp tmp, s32fp tmpMax, s32fp& finalSpnt);

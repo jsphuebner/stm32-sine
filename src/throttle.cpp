@@ -1,5 +1,5 @@
 /*
- * This file is part of the tumanako_vc project.
+ * This file is part of the stm32-sine project.
  *
  * Copyright (C) 2012 Johannes Huebner <contact@johanneshuebner.com>
  *
@@ -55,12 +55,12 @@ bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
 
    if (((*potval + POT_SLACK) < potMin) || (*potval > (potMax + POT_SLACK)))
    {
-      *potval = potMin - 1;
+      *potval = potMin;
       return false;
    }
    else if (*potval < potMin)
    {
-      *potval = potMin - 1;
+      *potval = potMin;
    }
    else if (*potval > potMax)
    {
@@ -70,56 +70,33 @@ bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
    return true;
 }
 
-bool Throttle::CheckDualThrottle(int* potval, int pot2val)
+s32fp Throttle::DigitsToPercent(int potval, int potidx)
 {
-   int potnom1, potnom2;
-   //2nd input running inverse
-   if (potmin[1] > potmax[1])
-   {
-      potnom2 = 100 - (100 * (pot2val - potmax[1])) / (potmin[1] - potmax[1]);
-   }
-   else
-   {
-      potnom2 = (100 * (pot2val - potmin[1])) / (potmax[1] - potmin[1]);
-   }
-   potnom1 = (100 * (*potval - potmin[0])) / (potmax[0] - potmin[0]);
-   int diff = potnom2 - potnom1;
-   diff = ABS(diff);
+   if (potidx > 1) return 0;
 
-   if (diff > 10)
-   {
-      *potval = potmin[0];
-      return false;
-   }
-   return true;
+   return (100 * FP_FROMINT(potval - potmin[potidx])) / (potmax[potidx] - potmin[potidx]);
 }
 
-s32fp Throttle::CalcThrottle(int potval, int pot2val, bool brkpedal)
+s32fp Throttle::CalcThrottle(s32fp potnom, s32fp pot2nom, bool brkpedal)
 {
-   s32fp potnom;
    s32fp scaledBrkMax = brkpedal ? brknompedal : brkmax;
 
-   if (pot2val >= potmin[1])
-   {
-      potnom = (FP_FROMINT(100) * (pot2val - potmin[1])) / (potmax[1] - potmin[1]);
-      //Never reach 0, because that can spin up the motor
-      scaledBrkMax = -1 + FP_MUL(scaledBrkMax, potnom) / 100;
-   }
+   //Never reach 0, because that can spin up the motor
+   scaledBrkMax = -1 + FP_MUL(scaledBrkMax, pot2nom) / 100;
 
    if (brkpedal)
    {
       potnom = scaledBrkMax;
    }
+   else if (potnom < brknom)
+   {
+      potnom -= brknom;
+      potnom = -FP_DIV(FP_MUL(potnom, scaledBrkMax), brknom);
+   }
    else
    {
-      potnom = FP_FROMINT(potval - potmin[0]);
-      potnom = FP_MUL((FP_FROMINT(100) + brknom), potnom) / (potmax[0] - potmin[0]);
       potnom -= brknom;
-
-      if (potnom < 0)
-      {
-         potnom = -FP_DIV(FP_MUL(potnom, scaledBrkMax), brknom);
-      }
+      potnom = FP_DIV(100 * potnom, FP_FROMINT(100) - brknom);
    }
 
    return potnom;

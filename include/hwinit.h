@@ -1,5 +1,5 @@
 /*
- * This file is part of the tumanako_vc project.
+ * This file is part of the stm32-sine project.
  *
  * Copyright (C) 2010 Johannes Huebner <contact@johanneshuebner.com>
  * Copyright (C) 2010 Edward Cheeseman <cheesemanedward@gmail.com>
@@ -35,6 +35,8 @@ void rtc_setup(void);
 void tim_setup(void);
 HWREV detect_hw(void);
 void write_bootloader_pininit();
+HWREV io_setup();
+uint16_t pwmio_setup(bool activeLow);
 
 #ifdef __cplusplus
 }

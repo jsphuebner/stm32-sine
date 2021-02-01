@@ -1,5 +1,5 @@
 /*
- * This file is part of the tumanako_vc project.
+ * This file is part of the stm32-sine project.
  *
  * Copyright (C) 2011 Johannes Huebner <dev@johanneshuebner.com>
  *
@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 4.98.R
+#define VER 4.99.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -101,7 +101,7 @@
     PARAM_ENTRY(CAT_THROTTLE,potmax,      "dig",     0,      4095,   4095,   18  ) \
     PARAM_ENTRY(CAT_THROTTLE,pot2min,     "dig",     0,      4095,   4095,   63  ) \
     PARAM_ENTRY(CAT_THROTTLE,pot2max,     "dig",     0,      4095,   4095,   64  ) \
-    PARAM_ENTRY(CAT_THROTTLE,potmode,     POTMODES,  0,      2,      0,      82  ) \
+    PARAM_ENTRY(CAT_THROTTLE,potmode,     POTMODES,  0,      3,      0,      82  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtramp,   "%/10ms",  0.1,    100,    100,    81  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtramprpm,"rpm",     0,      20000,  20000,  85  )
 
@@ -233,7 +233,7 @@
 /***** Enum String definitions *****/
 #define OPMODES      "0=Off, 1=Run, 2=ManualRun, 3=Boost, 4=Buck, 5=Sine, 6=AcHeat"
 #define PWMFRQS      "0=17.6kHz, 1=8.8kHz, 2=4.4KHz"
-#define PWMPOLS      "0=ACTHIGH, 1=ACTLOW"
+#define PWMPOLS      "0=ActHigh, 1=ActLow"
 #define DIRS         "-1=Reverse, 0=Neutral, 1=Forward"
 #define TRIPMODES    "0=AllOff, 1=DcSwOn, 2=PrechargeOn, 3=AutoResume"
 #define SNS_HS       "0=JCurve, 1=Semikron, 2=MBB600, 3=KTY81, 4=PT1000, 5=NTCK45_2k2, 6=Leaf"
@@ -246,7 +246,7 @@
 #define OKERR        "0=Error, 1=Ok, 2=na"
 #define CHARGEMODS   "0=Off, 3=Boost, 4=Buck"
 #define ENCMODES     "0=Single, 1=AB, 2=ABZ, 3=SPI, 4=Resolver, 5=SinCos"
-#define POTMODES     "0=SingleRegen, 1=DualChannel, 2=CAN"
+#define POTMODES     "0=SingleRegen, 1=DualChannel, 2=CAN, 3=CANDual"
 #define CANSPEEDS    "0=250k, 1=500k, 2=800k, 3=1M"
 #define CANIOS       "1=Cruise, 2=Start, 4=Brake, 8=Fwd, 16=Rev, 32=Bms"
 #define CANPERIODS   "0=100ms, 1=10ms"
@@ -286,8 +286,8 @@ enum cruisemodes
 enum _potmodes
 {
    POTMODE_REGENADJ = 0,
-   POTMODE_DUALCHANNEL,
-   POTMODE_CAN
+   POTMODE_DUALCHANNEL = 1,
+   POTMODE_CAN = 2
 };
 
 enum _pwmfuncs

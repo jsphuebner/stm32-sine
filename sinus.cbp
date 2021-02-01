@@ -73,6 +73,7 @@
 		<Unit filename="include/pwmgeneration.h" />
 		<Unit filename="include/temp_meas.h" />
 		<Unit filename="include/throttle.h" />
+		<Unit filename="include/vehiclecontrol.h" />
 		<Unit filename="libopeninv/include/anain.h" />
 		<Unit filename="libopeninv/include/digio.h" />
 		<Unit filename="libopeninv/include/errormessage.h" />
@@ -122,6 +123,7 @@
 		<Unit filename="src/temp_meas.cpp" />
 		<Unit filename="src/terminal_prj.cpp" />
 		<Unit filename="src/throttle.cpp" />
+		<Unit filename="src/vehiclecontrol.cpp" />
 		<Unit filename="stm32_sine.ld">
 			<Option target="SlipControl" />
 			<Option target="FOC" />

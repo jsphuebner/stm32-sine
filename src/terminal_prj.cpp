@@ -1,5 +1,5 @@
 /*
- * This file is part of the tumanako_vc project.
+ * This file is part of the stm32-sine project.
  *
  * Copyright (C) 2011 Johannes Huebner <dev@johanneshuebner.com>
  *

@@ -1,5 +1,5 @@
 /*
- * This file is part of the tumanako_vc project.
+ * This file is part of the stm32-sine project.
  *
  * Copyright (C) 2010 Johannes Huebner <contact@johanneshuebner.com>
  * Copyright (C) 2010 Edward Cheeseman <cheesemanedward@gmail.com>
@@ -34,6 +34,8 @@
 #include "hwinit.h"
 #include "stm32_loader.h"
 #include "my_string.h"
+#include "digio.h"
+#include "anain.h"
 
 /**
 * Start clocks of all needed peripherals
@@ -108,6 +110,54 @@ HWREV detect_hw()
       return HW_TESLA;
    else
       return HW_REV2;
+}
+
+HWREV io_setup()
+{
+   hwRev = detect_hw();
+
+   ANA_IN_CONFIGURE(ANA_IN_LIST);
+   DIG_IO_CONFIGURE(DIG_IO_LIST);
+
+   switch (hwRev)
+   {
+      case HW_REV1:
+         AnaIn::il2.Configure(GPIOA, 6);
+         break;
+      case HW_REV2:
+      case HW_REV3:
+      case HW_PRIUSMG1:
+      case HW_TESLAM3:
+         break;
+      case HW_PRIUS:
+         DigIo::emcystop_in.Configure(GPIOC, GPIO7, PinMode::INPUT_PU);
+         break;
+      case HW_TESLA:
+         DigIo::temp1_out.Configure(GPIOC, GPIO8, PinMode::OUTPUT);
+         //Essentially disable error output by mapping it to an unused pin
+         DigIo::err_out.Configure(GPIOB, GPIO9, PinMode::INPUT_FLT);
+         break;
+      case HW_BLUEPILL:
+         ANA_IN_CONFIGURE(ANA_IN_LIST_BLUEPILL);
+         DIG_IO_CONFIGURE(DIG_IO_BLUEPILL);
+         break;
+   }
+
+   AnaIn::Start();
+
+   return hwRev;
+}
+
+uint16_t pwmio_setup(bool activeLow)
+{
+   uint8_t outputMode = activeLow ? GPIO_MODE_INPUT : GPIO_MODE_OUTPUT_50_MHZ;
+   uint8_t outputConf = activeLow ? GPIO_CNF_INPUT_FLOAT : GPIO_CNF_OUTPUT_ALTFN_PUSHPULL;
+   uint16_t actualPattern = gpio_get(GPIOA, GPIO8 | GPIO9 | GPIO10) | gpio_get(GPIOB, GPIO13 | GPIO14 | GPIO15);
+
+   gpio_set_mode(GPIOA, outputMode, outputConf, GPIO8 | GPIO9 | GPIO10);
+   gpio_set_mode(GPIOB, outputMode, outputConf, GPIO13 | GPIO14 | GPIO15);
+
+   return actualPattern;
 }
 
 void write_bootloader_pininit()
