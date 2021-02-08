@@ -24,14 +24,6 @@
 #define OVER_CUR_NEG       hwRev == HW_BLUEPILL ? TIM_OC1 : TIM_OC2
 #define OVER_CUR_POS       hwRev == HW_BLUEPILL ? TIM_OC2 : TIM_OC3
 
-#define TERM_USART         USART3
-#define TERM_USART_TXPIN   GPIO_USART3_TX
-#define TERM_USART_TXPORT  GPIOB
-#define TERM_USART_DMARX   DMA_CHANNEL3
-#define TERM_USART_DMATX   DMA_CHANNEL2 //this means we can not use it on rev1 hardware (TIM3_CH3)
-#define TERM_USART_DR      USART3_DR
-#define TERM_BUFSIZE       128
-#define UARTDMABLOCKED //enables special code for Rev1 boards
 //Address of parameter block in flash
 #define FLASH_PAGE_SIZE 1024
 #define PARAM_ADDRESS 0x0801FC00

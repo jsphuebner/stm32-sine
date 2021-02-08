@@ -24,7 +24,7 @@
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 129
+//Next param id (increase when adding new parameter!): 130
 //Next value Id: 2048
 /*              category     name         unit       min     max     default id */
 
@@ -52,7 +52,6 @@
     PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      100000, 20000,  108 ) \
     PARAM_ENTRY(CAT_MOTOR,   curkifrqgain,"dig/Hz",  0,      1000,   50,     120 ) \
     PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        -10000, 0,      -100,   118 ) \
-    PARAM_ENTRY(CAT_MOTOR,   dmargin,     "Hz",      -10000, 0,      -2000,  113 ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  )
 
 #define INVERTER_PARAMETERS_COMMON \
@@ -136,6 +135,7 @@
     PARAM_ENTRY(CAT_PWM,     pwmofs,      "dig",     -65535, 65535,  0,      41  ) \
     PARAM_ENTRY(CAT_COMM,    canspeed,    CANSPEEDS, 0,      3,      1,      83  ) \
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      88  ) \
+    PARAM_ENTRY(CAT_COMM,    nodeid,      "",        1,      63,     1,      129 ) \
 
 #define VALUE_BLOCK1 \
     VALUE_ENTRY(version,     VERSTR,  2039 ) \

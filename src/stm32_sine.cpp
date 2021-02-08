@@ -40,13 +40,11 @@
 #include "pwmgeneration.h"
 #include "vehiclecontrol.h"
 
-#define SQRT2OV1 0.707106781187
-
 HWREV hwRev; //Hardware variant of board we are running on
 
 static Stm32Scheduler* scheduler;
 static Can* can;
-
+static Terminal* terminal;
 
 static void Ms100Task(void)
 {
@@ -191,12 +189,12 @@ static void Ms10Task(void)
       initWait = 50;
 
       VehicleControl::SetContactorsOffState();
-      PwmGeneration::SetTorquePercent(0);
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
    }
    else if (0 == initWait)
    {
+      PwmGeneration::SetTorquePercent(0);
       Throttle::RampThrottle(0); //Restart ramp
       Encoder::Reset();
       //this applies new deadtime and pwmfrq and enables the outputs for the given mode
@@ -268,15 +266,14 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
          Throttle::idcmax = Param::Get(Param::idcmax);
          break;
       default:
+         can->SetNodeId(Param::GetInt(Param::nodeid));
+         terminal->SetNodeId(Param::GetInt(Param::nodeid));
          PwmGeneration::SetCurrentLimitThreshold(Param::Get(Param::ocurlim));
          PwmGeneration::SetPolePairRatio(Param::GetInt(Param::polepairs) / Param::GetInt(Param::respolepairs));
 
          #if CONTROL == CTRL_FOC
          PwmGeneration::SetControllerGains(Param::GetInt(Param::curkp), Param::GetInt(Param::curki), Param::GetInt(Param::fwkp));
          Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
-         #elif CONTROL == CTRL_SINE
-         MotorVoltage::SetMinFrq(FP_FROMFLT(0.2));
-         SineCore::SetMinPulseWidth(1000);
          #endif // CONTROL
 
          Encoder::SetMode((enum Encoder::mode)Param::GetInt(Param::encmode));
@@ -337,19 +334,21 @@ extern "C" void tim4_isr(void)
    scheduler->Run();
 }
 
+//C++ run time requires that when using interfaces
+extern "C" void __cxa_pure_virtual() { while (1); }
+
 extern "C" int main(void)
 {
+   extern const TERM_CMD TermCmds[];
+
    clock_setup();
    rtc_setup();
    hwRev = io_setup();
    write_bootloader_pininit();
-   usart_setup();
    tim_setup();
    nvic_setup();
    //Encoder::Reset();
-   term_Init();
    parm_load();
-   parm_Change(Param::PARAM_LAST);
    ErrorMessage::SetTime(1);
    Param::SetInt(Param::pwmio, pwmio_setup(Param::GetBool(Param::pwmpol)));
 
@@ -369,7 +368,17 @@ extern "C" int main(void)
    DigIo::prec_out.Set();
    UpgradeParameters();
 
-   term_Run();
+   Terminal t(USART3, TermCmds);
+   terminal = &t;
+
+   if (hwRev == HW_REV1)
+      t.DisableTxDMA();
+
+   parm_Change(Param::PARAM_LAST);
+
+   while(1)
+      t.Run();
+   //term_Run();
 
    return 0;
 }

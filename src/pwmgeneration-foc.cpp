@@ -186,7 +186,7 @@ void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp)
 
 void PwmGeneration::PwmInit()
 {
-   int32_t maxVd = FOC::GetMaximumModulationIndex() + Param::GetInt(Param::dmargin);
+   int32_t maxVd = FOC::GetMaximumModulationIndex() - 2000;
    pwmfrq = TimerSetup(Param::GetInt(Param::deadtime), Param::GetInt(Param::pwmpol));
    slipIncr = FRQ_TO_ANGLE(fslip);
    Encoder::SetPwmFrequency(pwmfrq);

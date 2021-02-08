@@ -94,6 +94,9 @@ static bool is_existent(uint32_t port, uint16_t pin)
 
 HWREV detect_hw()
 {
+   //Pull low via 30k the precharge output to test whether it is tied to Vcc
+   gpio_set_mode(GPIOB, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, GPIO1);
+
    if (!is_existent(GPIOC, GPIO12)) //Olimex LED pin does not exist
       return HW_BLUEPILL;
    /*else if (is_floating(GPIOC, GPIO1))
@@ -202,43 +205,6 @@ void write_bootloader_pininit()
       }
       flash_lock();
    }
-}
-
-/**
-* Setup UART3 115200 8N1
-*/
-void usart_setup(void)
-{
-   gpio_set_mode(TERM_USART_TXPORT, GPIO_MODE_OUTPUT_50_MHZ,
-               GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, TERM_USART_TXPIN);
-
-   usart_set_baudrate(TERM_USART, USART_BAUDRATE);
-   usart_set_databits(TERM_USART, 8);
-   usart_set_stopbits(TERM_USART, USART_STOPBITS_2);
-   usart_set_mode(TERM_USART, USART_MODE_TX_RX);
-   usart_set_parity(TERM_USART, USART_PARITY_NONE);
-   usart_set_flow_control(TERM_USART, USART_FLOWCONTROL_NONE);
-   usart_enable_rx_dma(TERM_USART);
-
-   if (hwRev != HW_REV1)
-   {
-      usart_enable_tx_dma(TERM_USART);
-      dma_channel_reset(DMA1, TERM_USART_DMATX);
-      dma_set_read_from_memory(DMA1, TERM_USART_DMATX);
-      dma_set_peripheral_address(DMA1, TERM_USART_DMATX, (uint32_t)&TERM_USART_DR);
-      dma_set_peripheral_size(DMA1, TERM_USART_DMATX, DMA_CCR_PSIZE_8BIT);
-      dma_set_memory_size(DMA1, TERM_USART_DMATX, DMA_CCR_MSIZE_8BIT);
-      dma_enable_memory_increment_mode(DMA1, TERM_USART_DMATX);
-   }
-
-   dma_channel_reset(DMA1, TERM_USART_DMARX);
-   dma_set_peripheral_address(DMA1, TERM_USART_DMARX, (uint32_t)&TERM_USART_DR);
-   dma_set_peripheral_size(DMA1, TERM_USART_DMARX, DMA_CCR_PSIZE_8BIT);
-   dma_set_memory_size(DMA1, TERM_USART_DMARX, DMA_CCR_MSIZE_8BIT);
-   dma_enable_memory_increment_mode(DMA1, TERM_USART_DMARX);
-   dma_enable_channel(DMA1, TERM_USART_DMARX);
-
-   usart_enable(TERM_USART);
 }
 
 /**
