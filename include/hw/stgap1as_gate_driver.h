@@ -33,13 +33,13 @@
 @{*/
 
 /** Device configuration start */
-#define STGAP1AS_CMD_START_CONFIG               0b00101010
+#define STGAP1AS_CMD_START_CONFIG               (0b00101010)
 
 /** Device configuration/check completed */
-#define STGAP1AS_CMD_STOP_CONFIG                0b00111010
+#define STGAP1AS_CMD_STOP_CONFIG                (0b00111010)
 
 /** No operation */
-#define STGAP1AS_CMD_NOP                        0b00000000
+#define STGAP1AS_CMD_NOP                        (0b00000000)
 
 #define STGAP1AS_CMD_WRITE_REG_MASK			    0x1F
 /** Write register */
@@ -50,13 +50,13 @@
 #define STGAP1AS_CMD_READ_REG(x)                (0b10100000 | (x & STGAP1AS_CMD_READ_REG_MASK))
 
 /** Reset all the status registers */
-#define STGAP1AS_CMD_RESET_STATUS               0b11010000
+#define STGAP1AS_CMD_RESET_STATUS               (0b11010000)
 
 /** Global reset */
-#define STGAP1AS_CMD_GLOBAL_RESET               0b11101010
+#define STGAP1AS_CMD_GLOBAL_RESET               (0b11101010)
 
 /** Device enters in standby mode */
-#define STGAP1AS_CMD_SLEEP                      0b11110101
+#define STGAP1AS_CMD_SLEEP                      (0b11110101)
 
 /**@}*/
 
@@ -388,4 +388,4 @@
 
 /**@}*/
 
-#endif // HW_STGAP1AS_GATE_DRIVER_H
+#endif /* HW_STGAP1AS_GATE_DRIVER_H */
