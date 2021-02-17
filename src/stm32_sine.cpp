@@ -259,11 +259,13 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
       case Param::throtmin:
       case Param::idcmin:
       case Param::idcmax:
+      case Param::brkmax:
          //These are candidates to be frequently set by CAN, so we handle them separately
          Throttle::throtmax = Param::Get(Param::throtmax);
          Throttle::throtmin = Param::Get(Param::throtmin);
          Throttle::idcmin = Param::Get(Param::idcmin);
          Throttle::idcmax = Param::Get(Param::idcmax);
+         Throttle::brkmax = Param::Get(Param::brkmax);
          break;
       default:
          can->SetNodeId(Param::GetInt(Param::nodeid));
@@ -366,7 +368,6 @@ extern "C" int main(void)
    s.AddTask(Ms100Task, 100);
 
    DigIo::prec_out.Set();
-   UpgradeParameters();
 
    Terminal t(USART3, TermCmds);
    terminal = &t;
@@ -374,11 +375,11 @@ extern "C" int main(void)
    if (hwRev == HW_REV1)
       t.DisableTxDMA();
 
+   UpgradeParameters();
    parm_Change(Param::PARAM_LAST);
 
    while(1)
       t.Run();
-   //term_Run();
 
    return 0;
 }

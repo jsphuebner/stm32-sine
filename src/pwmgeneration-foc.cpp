@@ -38,6 +38,7 @@ static int initwait = 0;
 static int fwBaseGain = 0;
 static s32fp idref = 0;
 static int curki = 0;
+static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(2/3)*1.05 (inverter losses)
 static tim_oc_id ocChannels[3];
 static PiController qController;
 static PiController dController;
@@ -83,8 +84,8 @@ void PwmGeneration::Run()
       int32_t uq = qController.Run(iq);
       FOC::InvParkClarke(ud, uq, angle);
 
-      //This is probably not correct for IPM motors
-      s32fp idc = (iq * uq) / FOC::GetMaximumModulationIndex();
+      s32fp idc = (iq * uq + id * ud) / FOC::GetMaximumModulationIndex();
+      idc = FP_MUL(idc, dcCurFac);
 
       Param::SetFlt(Param::fstat, frq);
       Param::SetFlt(Param::angle, DIGIT_TO_DEGREE(angle));
