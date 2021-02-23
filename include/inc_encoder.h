@@ -25,6 +25,7 @@ public:
    static int GetRotorDirection();
    static void SetImpulsesPerTurn(uint16_t imp);
    static void SwapSinCos(bool swap);
+   static void SetSinCosOffset(uint16_t offset);
 
 private:
    static void UpdateTurns(uint16_t angle, uint16_t lastAngle);

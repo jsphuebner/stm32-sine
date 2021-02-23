@@ -111,9 +111,12 @@ static void Ms10Task(void)
    {
       s32fp chargeCur = Param::Get(Param::chargecur);
       s32fp tempDerate = FP_FROMINT(100);
+      s32fp udcDerate = -FP_FROMINT(100); //we use the regen udc limiter, therefor negative starting value
 
       Throttle::TemperatureDerate(Param::Get(Param::tmphs), Param::Get(Param::tmphsmax), tempDerate);
-      chargeCur = FP_MUL(tempDerate, chargeCur) / 100;
+      Throttle::UdcLimitCommand(udcDerate, udc);
+      udcDerate = MIN(-udcDerate, tempDerate); //and back to positive
+      chargeCur = FP_MUL(udcDerate, chargeCur) / 100;
 
       if (chargeCur < chargeCurRamped)
          chargeCurRamped = chargeCur;
@@ -280,6 +283,7 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
 
          Encoder::SetMode((enum Encoder::mode)Param::GetInt(Param::encmode));
          Encoder::SetImpulsesPerTurn(Param::GetInt(Param::numimp));
+         Encoder::SetSinCosOffset(Param::GetInt(Param::sincosofs));
 
          Throttle::potmin[0] = Param::GetInt(Param::potmin);
          Throttle::potmax[0] = Param::GetInt(Param::potmax);

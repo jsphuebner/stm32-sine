@@ -77,6 +77,7 @@ static int32_t turnsSinceLastSample = 0;
 static int32_t resolverMin = 0, resolverMax = 0, startupDelay;
 static int32_t sinChan = 3, cosChan = 2;
 static int32_t detectedDirection = 0;
+static uint16_t sincosoffs = 2048;
 
 void Encoder::Reset()
 {
@@ -129,6 +130,11 @@ void Encoder::SetMode(Encoder::mode mode)
 void Encoder::SetPwmFrequency(uint32_t frq)
 {
    pwmFrq = frq;
+}
+
+void Encoder::SetSinCosOffset(uint16_t offset)
+{
+   sincosoffs = offset;
 }
 
 /** set number of impulses per shaft rotation
@@ -473,8 +479,8 @@ void Encoder::InitResolverMode()
       //Offset assumed 3.3V/2 - 2048
       //on my hardware, min is 0.465V, max is 2.510v, so offset is 1.4875v, or 1846
       //this should be a parameter?
-      adc_set_injected_offset(ADC1, 2, Param::GetInt(Param::encmid));
-      adc_set_injected_offset(ADC1, 3, Param::GetInt(Param::encmid));
+      adc_set_injected_offset(ADC1, 2, sincosoffs);
+      adc_set_injected_offset(ADC1, 3, sincosoffs);
    }
 
    seenNorthSignal = true;
