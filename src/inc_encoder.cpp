@@ -470,9 +470,11 @@ void Encoder::InitResolverMode()
    }
    else //SINCOS
    {
-      //Offset assumed 3.3V/2
-      adc_set_injected_offset(ADC1, 2, 2048);
-      adc_set_injected_offset(ADC1, 3, 2048);
+      //Offset assumed 3.3V/2 - 2048
+      //on my hardware, min is 0.465V, max is 2.510v, so offset is 1.4875v, or 1846
+      //this should be a parameter?
+      adc_set_injected_offset(ADC1, 2, Param::GetInt(Param::encmid));
+      adc_set_injected_offset(ADC1, 3, Param::GetInt(Param::encmid));
    }
 
    seenNorthSignal = true;
