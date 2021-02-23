@@ -46,6 +46,7 @@ s32fp Throttle::udcmin;
 s32fp Throttle::udcmax;
 s32fp Throttle::idcmin;
 s32fp Throttle::idcmax;
+s32fp Throttle::idckp;
 s32fp Throttle::fmax;
 
 bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
@@ -192,22 +193,18 @@ void Throttle::UdcLimitCommand(s32fp& finalSpnt, s32fp udc)
 
 void Throttle::IdcLimitCommand(s32fp& finalSpnt, s32fp idc)
 {
-   static s32fp idcFiltered = 0;
-
-   idcFiltered = IIRFILTER(idcFiltered, idc, 4);
-
    if (finalSpnt >= 0)
    {
-      s32fp idcerr = idcmax - idcFiltered;
-      s32fp res = idcerr * 5;
+      s32fp idcerr = idcmax - idc;
+      s32fp res = FP_MUL(idcerr, idckp);
 
       res = MAX(0, res);
       finalSpnt = MIN(res, finalSpnt);
    }
    else
    {
-      s32fp idcerr = idcmin - idcFiltered;
-      s32fp res = idcerr * 5;
+      s32fp idcerr = idcmin - idc;
+      s32fp res = FP_MUL(idcerr, idckp);
 
       res = MIN(0, res);
       finalSpnt = MAX(res, finalSpnt);

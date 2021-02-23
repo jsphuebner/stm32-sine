@@ -59,6 +59,7 @@ class Throttle
       static s32fp udcmax;
       static s32fp idcmin;
       static s32fp idcmax;
+      static s32fp idckp;
       static s32fp fmax;
 
    private:

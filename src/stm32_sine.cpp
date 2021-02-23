@@ -302,6 +302,7 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
          Throttle::udcmax = FP_MUL(Param::Get(Param::udcmax), FP_FROMFLT(1.05));
          Throttle::idcmin = Param::Get(Param::idcmin);
          Throttle::idcmax = Param::Get(Param::idcmax);
+         Throttle::idckp = Param::Get(Param::idckp);
          Throttle::fmax = Param::Get(Param::fmax);
 
          if (hwRev != HW_BLUEPILL)

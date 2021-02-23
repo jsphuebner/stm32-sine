@@ -48,7 +48,7 @@ void PwmGeneration::Run()
 {
    if (opmode == MOD_MANUAL || opmode == MOD_RUN)
    {
-      static s32fp frqFiltered;
+      static s32fp frqFiltered = 0, idcFiltered = 0;
       int dir = Param::GetInt(Param::dir);
       int kifrqgain = Param::GetInt(Param::curkifrqgain);
       s32fp id, iq;
@@ -86,10 +86,11 @@ void PwmGeneration::Run()
 
       s32fp idc = (iq * uq + id * ud) / FOC::GetMaximumModulationIndex();
       idc = FP_MUL(idc, dcCurFac);
+      idcFiltered = IIRFILTER(idcFiltered, idc, 10);
 
       Param::SetFlt(Param::fstat, frq);
       Param::SetFlt(Param::angle, DIGIT_TO_DEGREE(angle));
-      Param::SetFlt(Param::idc, idc);
+      Param::SetFlt(Param::idc, idcFiltered);
       Param::SetInt(Param::uq, uq);
       Param::SetInt(Param::ud, ud);
 
