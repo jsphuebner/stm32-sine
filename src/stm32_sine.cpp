@@ -85,11 +85,30 @@ static void Ms100Task(void)
       can->SendAll();
 }
 
+static void RunCharger(s32fp udc)
+{
+   static s32fp chargeCurRamped = 0;
+
+   s32fp chargeCur = Param::Get(Param::chargecur);
+   s32fp tempDerate = FP_FROMINT(100);
+   s32fp udcDerate = -FP_FROMINT(100); //we use the regen udc limiter, therefor negative starting value
+
+   Throttle::TemperatureDerate(Param::Get(Param::tmphs), Param::Get(Param::tmphsmax), tempDerate);
+   Throttle::UdcLimitCommand(udcDerate, udc);
+   udcDerate = MIN(-udcDerate, tempDerate); //and back to positive
+   chargeCur = FP_MUL(udcDerate, chargeCur) / 100;
+
+   if (chargeCur < chargeCurRamped)
+      chargeCurRamped = chargeCur;
+   else
+      chargeCurRamped = RAMPUP(chargeCurRamped, chargeCur, 1);
+   PwmGeneration::SetChargeCurrent(chargeCurRamped);
+}
+
 //Normal run takes 70µs -> 0.7% cpu load (last measured version 3.5)
 static void Ms10Task(void)
 {
    static int initWait = 0;
-   static s32fp chargeCurRamped = 0;
    int opmode = Param::GetInt(Param::opmode);
    int chargemode = Param::GetInt(Param::chargemode);
    int newMode = MOD_OFF;
@@ -109,20 +128,7 @@ static void Ms10Task(void)
    }
    else if ((MOD_BOOST == opmode || MOD_BUCK == opmode) && initWait == -1)
    {
-      s32fp chargeCur = Param::Get(Param::chargecur);
-      s32fp tempDerate = FP_FROMINT(100);
-      s32fp udcDerate = -FP_FROMINT(100); //we use the regen udc limiter, therefor negative starting value
-
-      Throttle::TemperatureDerate(Param::Get(Param::tmphs), Param::Get(Param::tmphsmax), tempDerate);
-      Throttle::UdcLimitCommand(udcDerate, udc);
-      udcDerate = MIN(-udcDerate, tempDerate); //and back to positive
-      chargeCur = FP_MUL(udcDerate, chargeCur) / 100;
-
-      if (chargeCur < chargeCurRamped)
-         chargeCurRamped = chargeCur;
-      else
-         chargeCurRamped = RAMPUP(chargeCurRamped, chargeCur, 1);
-      PwmGeneration::SetChargeCurrent(chargeCurRamped);
+      RunCharger(udc);
    }
 
    stt |= DigIo::emcystop_in.Get() ? STAT_NONE : STAT_EMCYSTOP;

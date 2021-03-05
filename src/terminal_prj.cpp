@@ -22,6 +22,7 @@
 #include "hwdefs.h"
 #include "terminal.h"
 #include "params.h"
+#include "param_save.h"
 #include "my_string.h"
 #include "my_fp.h"
 #include "printf.h"
@@ -39,6 +40,7 @@ static void StartInverter(Terminal* term, char *arg);
 static void Help(Terminal* term, char *arg);
 static void PrintSerial(Terminal* term, char *arg);
 static void PrintErrors(Terminal* term, char *arg);
+static void SaveParameters(Terminal* term, char *arg);
 
 extern "C" const TERM_CMD TermCmds[] =
 {
@@ -48,7 +50,7 @@ extern "C" const TERM_CMD TermCmds[] =
   { "stream", TerminalCommands::ParamStream },
   { "json", TerminalCommands::PrintParamsJson },
   { "can", TerminalCommands::MapCan },
-  { "save", TerminalCommands::SaveParameters },
+  { "save", SaveParameters },
   { "load", TerminalCommands::LoadParameters },
   { "reset", TerminalCommands::Reset },
   { "defaults", LoadDefaults },
@@ -62,6 +64,22 @@ extern "C" const TERM_CMD TermCmds[] =
   { "errors", PrintErrors },
   { NULL, NULL }
 };
+
+static void SaveParameters(Terminal* term, char *arg)
+{
+   arg = arg;
+   if (Param::GetInt(Param::opmode) == 0)
+   {
+      uint32_t crc = parm_save();
+      fprintf(term, "Parameters stored, CRC=%x\r\n", crc);
+      Can::GetInterface(0)->Save();
+      fprintf(term, "CANMAP stored\r\n");
+   }
+   else
+   {
+      fprintf(term, "Will not write to flash in run modes, please stop inverter before saving!\r\n");
+   }
+}
 
 static void PrintList(Terminal* term, char *arg)
 {
