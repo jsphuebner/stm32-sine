@@ -73,9 +73,12 @@
 		<Unit filename="include/param_prj.h" />
 		<Unit filename="include/pwmgeneration.h" />
 		<Unit filename="include/temp_meas.h" />
+		<Unit filename="include/teslam3gatedriver.h" />
 		<Unit filename="include/throttle.h" />
 		<Unit filename="include/vehiclecontrol.h" />
 		<Unit filename="libopeninv/include/anain.h" />
+		<Unit filename="libopeninv/include/crc8.h" />
+		<Unit filename="libopeninv/include/delay.h" />
 		<Unit filename="libopeninv/include/digio.h" />
 		<Unit filename="libopeninv/include/errormessage.h" />
 		<Unit filename="libopeninv/include/foc.h" />
@@ -94,6 +97,7 @@
 		<Unit filename="libopeninv/include/terminal.h" />
 		<Unit filename="libopeninv/include/terminalcommands.h" />
 		<Unit filename="libopeninv/src/anain.cpp" />
+		<Unit filename="libopeninv/src/crc8.cpp" />
 		<Unit filename="libopeninv/src/digio.cpp" />
 		<Unit filename="libopeninv/src/errormessage.cpp" />
 		<Unit filename="libopeninv/src/foc.cpp" />
@@ -123,6 +127,7 @@
 		<Unit filename="src/stm32_sine.cpp" />
 		<Unit filename="src/temp_meas.cpp" />
 		<Unit filename="src/terminal_prj.cpp" />
+		<Unit filename="src/teslam3gatedriver.cpp" />
 		<Unit filename="src/throttle.cpp" />
 		<Unit filename="src/vehiclecontrol.cpp" />
 		<Unit filename="stm32_sine.ld">
