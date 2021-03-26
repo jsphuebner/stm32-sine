@@ -39,6 +39,7 @@
 #include "stm32scheduler.h"
 #include "pwmgeneration.h"
 #include "vehiclecontrol.h"
+#include "teslam3gatedriver.h"
 
 HWREV hwRev; //Hardware variant of board we are running on
 
@@ -83,6 +84,16 @@ static void Ms100Task(void)
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
       can->SendAll();
+
+   if (hwRev == HW_TESLAM3)
+   {
+      if (TeslaM3GateDriver::IsFaulty())
+      {
+         TeslaM3GateDriver::Disable();
+         ErrorMessage::Post( ERR_GATEDRIVEFAULT);
+         DigIo::err_out.Set();
+      }
+   }
 }
 
 static void RunCharger(s32fp udc)
@@ -125,6 +136,10 @@ static void Ms10Task(void)
    if (MOD_RUN == opmode && initWait == -1)
    {
       PwmGeneration::SetTorquePercent(torquePercent);
+      if (hwRev == HW_TESLAM3)
+      {
+         TeslaM3GateDriver::Enable();
+      }
    }
    else if ((MOD_BOOST == opmode || MOD_BUCK == opmode) && initWait == -1)
    {
@@ -200,6 +215,10 @@ static void Ms10Task(void)
       VehicleControl::SetContactorsOffState();
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
+      if (hwRev == HW_TESLAM3)
+      {
+         TeslaM3GateDriver::Disable();
+      }
    }
    else if (0 == initWait)
    {
@@ -367,6 +386,13 @@ extern "C" int main(void)
 
    MotorVoltage::SetMaxAmp(SineCore::MAXAMP);
    PwmGeneration::SetCurrentOffset(2048, 2048);
+   if (hwRev == HW_TESLAM3)
+   {
+      if (!TeslaM3GateDriver::Init())
+      {
+         ErrorMessage::Post(ERR_GATEDRIVEINITFAIL);
+      }
+   }
 
    Stm32Scheduler s(hwRev == HW_BLUEPILL ? TIM4 : TIM2); //We never exit main so it's ok to put it on stack
    scheduler = &s;
