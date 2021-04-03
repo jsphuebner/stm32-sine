@@ -52,5 +52,6 @@
     DIG_IO_ENTRY(test4_out,   GPIOA, GPIO15, PinMode::OUTPUT)     \*/
 
 #define temp1_out bms_in  //is configured to output dynamically on Tesla hardware
+#define spi_cs_out vtg_out
 
 #endif // PinMode_PRJ_H_INCLUDED

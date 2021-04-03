@@ -23,6 +23,7 @@
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/stm32/rtc.h>
 #include <libopencm3/stm32/can.h>
+#include <libopencm3/stm32/spi.h>
 #include <libopencm3/stm32/iwdg.h>
 #include "terminal.h"
 #include "sine_core.h"
@@ -38,6 +39,7 @@
 #include "my_math.h"
 #include "stm32scheduler.h"
 #include "pwmgeneration.h"
+#include "temp_meas.h"
 #include "vehiclecontrol.h"
 
 HWREV hwRev; //Hardware variant of board we are running on
@@ -347,7 +349,7 @@ extern "C" void tim4_isr(void)
    scheduler->Run();
 }
 
-//C++ run time requires that when using interfaces
+//C++ run time requires that when using interfaces and not optimizing for size
 extern "C" void __cxa_pure_virtual() { while (1); }
 
 extern "C" int main(void)
@@ -364,6 +366,14 @@ extern "C" int main(void)
    parm_load();
    ErrorMessage::SetTime(1);
    Param::SetInt(Param::pwmio, pwmio_setup(Param::GetBool(Param::pwmpol)));
+
+   if (Param::GetInt(Param::snshs) == TempMeas::TEMP_BMWI3HS)
+   {
+      spi_setup();
+      //Brake pin is used as SPI_MISO
+      DigIo::brk_out.Configure(GPIOC, GPIO5, PinMode::INPUT_FLT);
+      DigIo::spi_cs_out.Set();
+   }
 
    MotorVoltage::SetMaxAmp(SineCore::MAXAMP);
    PwmGeneration::SetCurrentOffset(2048, 2048);

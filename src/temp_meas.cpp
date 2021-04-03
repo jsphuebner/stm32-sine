@@ -45,6 +45,9 @@ static const uint16_t Semikron[] = { SEMIKRON };
 /* Temp sensor in MBB600 IGBT module */
 static const uint16_t mbb600[] = { MBB600 };
 
+/* Temp sensor in FS800 IGBT module */
+static const uint16_t fs800[] = { FS800 };
+
 /* Temp sensor KTY83-110 */
 static const uint16_t Kty83[] = { KTY83 };
 
@@ -93,6 +96,7 @@ static const TEMP_SENSOR sensors[] =
    { -50, 150, 10, TABLEN(Pt1000),    PTC, Pt1000     },
    { -50, 150, 5,  TABLEN(NtcK45),    NTC, NtcK45     },
    { -10, 100, 10, TABLEN(leafhs),    NTC, leafhs     },
+   { -25, 105, 5,  TABLEN(fs800),     PTC, fs800      },
    { -50, 170, 10, TABLEN(Kty83),     PTC, Kty83      },
    { -40, 300, 10, TABLEN(Kty84),     PTC, Kty84      },
    { -20, 150, 10, TABLEN(leaf),      NTC, leaf       },

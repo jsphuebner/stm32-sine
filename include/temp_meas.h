@@ -33,7 +33,8 @@ public:
       TEMP_PT1000 = 4,
       TEMP_NTCK45 = 5, /*hier muss ein NTC K45 2k2 verwendet werden, der mit einem Parallelwiderstand mit 2k verschaltet wird. Achtung: Der Parallelwiderstand ist im Schaltplan und Layout nicht vorhanden! */
       TEMP_LEAFHS = 6,
-      NUM_HS_SENSORS = 7,
+      TEMP_BMWI3HS = 7,
+      NUM_HS_SENSORS = 8,
       TEMP_KTY83 = 12,
       TEMP_KTY84 = 13,
       TEMP_LEAF = 14,
@@ -79,6 +80,35 @@ public:
 3748	,\
 3964	,\
 4167
+
+#define FS800 \
+4017	,\
+3993	,\
+3963	,\
+3926	,\
+3882	,\
+3829	,\
+3767	,\
+3695	,\
+3612	,\
+3518	,\
+3413	,\
+3298	,\
+3173	,\
+3040	,\
+2899	,\
+2753	,\
+2603	,\
+2451	,\
+2299	,\
+2148	,\
+2001	,\
+1859	,\
+1722	,\
+1592	,\
+1468	,\
+1353	,\
+1245	,\
 
 #define MBB600 \
 3971	,\

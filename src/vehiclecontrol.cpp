@@ -18,6 +18,7 @@
  */
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/stm32/rtc.h>
+#include <libopencm3/stm32/spi.h>
 #include "vehiclecontrol.h"
 #include "temp_meas.h"
 #include "fu.h"
@@ -32,6 +33,8 @@
 
 #define PRECHARGE_TIMEOUT 500 //5s
 #define CAN_TIMEOUT       50  //500ms
+#define ADC_CHAN_UDC      3
+
 
 Can* VehicleControl::can;
 bool VehicleControl::lastCruiseSwitchState = false;
@@ -39,6 +42,8 @@ bool VehicleControl::canIoActive = false;
 int VehicleControl::temphsFiltered = 0;
 int VehicleControl::tempmFiltered = 0;
 int VehicleControl::udcFiltered = 0;
+uint16_t VehicleControl::bmwAdcNextChan = 0;
+uint16_t VehicleControl::bmwAdcValues[4];
 
 void VehicleControl::PostErrorIfRunning(ERROR_MESSAGE_NUM err)
 {
@@ -285,17 +290,33 @@ s32fp VehicleControl::ProcessUdc()
    s32fp udclim = Param::Get(Param::udclim);
    s32fp udcgain = Param::Get(Param::udcgain);
    s32fp udcsw = Param::Get(Param::udcsw);
+   int snshs = Param::GetInt(Param::snshs);
    int udcofs = Param::GetInt(Param::udcofs);
+   int udcRaw;
 
    //Calculate "12V" supply voltage from voltage divider on mprot pin
    //1.2/(4.7+1.2)/3.33*4095 = 250 -> make it a bit less for pin losses etc
    //HW_REV1 had 3.9k resistors
    int uauxGain = hwRev == HW_REV1 ? 289 : 249;
    Param::SetFlt(Param::uaux, FP_DIV(AnaIn::uaux.Get(), uauxGain));
-   udcFiltered = IIRFILTER(udcFiltered, AnaIn::udc.Get(), 2);
+
+   //Yes heatsink temperature also selects external ADC as udc source
+   if (snshs == TempMeas::TEMP_BMWI3HS)
+   {
+      BmwAdcAcquire();
+      udcRaw = bmwAdcValues[ADC_CHAN_UDC];
+   }
+   else
+   {
+      udcRaw = AnaIn::udc.Get();
+   }
+
+   udcFiltered = IIRFILTER(udcFiltered, udcRaw, 2);
    udcfp = FP_DIV(FP_FROMINT(udcFiltered - udcofs), udcgain);
 
-   if (hwRev != HW_TESLAM3)
+   //On M3 pin is used for gate drive enable
+   //On i3 pin is used as SPI_MOSI
+   if (hwRev != HW_TESLAM3 && snshs != TempMeas::TEMP_BMWI3HS)
    {
       if (udcfp < udcmin || udcfp > udcmax)
          DigIo::vtg_out.Set();
@@ -436,6 +457,13 @@ void VehicleControl::GetTemps(s32fp& tmphs, s32fp &tmpm)
 
          tmphs = FP_FROMFLT(166.66) - FP_DIV(FP_FROMINT(tmphsi), priusTempCoeff);
       }
+      else if (snshs == TempMeas::TEMP_BMWI3HS)
+      {
+         //For the next line to work, BmwAdcGet() must be called regularly
+         //Which currently happens in ProcessUdc()
+         tmphsi = MIN(bmwAdcValues[0], MIN(bmwAdcValues[1], bmwAdcValues[2]));
+         tmphs = TempMeas::Lookup(tmphsi, snshs);
+      }
       else
       {
          tmphs = TempMeas::Lookup(tmphsi, snshs);
@@ -546,4 +574,19 @@ void VehicleControl::GetCruiseCreepCommand(s32fp& finalSpnt, s32fp throtSpnt)
       else if (throtSpnt > 0)
          finalSpnt = MAX(cruiseSpnt, throtSpnt);
    }
+}
+
+void VehicleControl::BmwAdcAcquire()
+{
+   const uint16_t adcGetManual = 1 << 12, adcSetDio = 1 << 11, adcVrefDual = 1 << 6;
+   const uint32_t maxChan = sizeof(bmwAdcValues) / sizeof(bmwAdcValues[0]);
+
+   DigIo::spi_cs_out.Clear();
+   uint16_t data = spi_xfer(SPI1, adcGetManual | adcSetDio | adcVrefDual | (bmwAdcNextChan << 7));
+   DigIo::spi_cs_out.Set();
+   uint16_t readChan = data >> 12;
+   bmwAdcNextChan = (bmwAdcNextChan == maxChan) ? 0 : bmwAdcNextChan + 1;
+
+   if (readChan < maxChan)
+      bmwAdcValues[readChan] = data & 0xFFF;
 }
