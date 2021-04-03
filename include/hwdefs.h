@@ -50,6 +50,15 @@
 #define GPIO_GATE_ENABLE      GPIO3
 #define GATE_SPI              SPI1
 #define RCC_GATE_SPI          RCC_SPI1
+
+#define GPIO_PMIC_BANK        GPIOA
+#define GPIO_PMIC_SPI_CS      GPIO_SPI2_NSS
+#define GPIO_PMIC_SPI_SCK     GPIO_SPI2_SCK
+#define GPIO_PMIC_SPI_MOSI    GPIO_SPI2_MOSI
+#define GPIO_PMIC_SPI_MISO    GPIO_SPI2_MISO
+#define PMIC_SPI              SPI2
+#define RCC_PMIC_SPI          RCC_SPI2
+
 typedef enum
 {
    HW_REV1, HW_REV2, HW_REV3, HW_TESLA, HW_TESLAM3, HW_BLUEPILL, HW_PRIUS, HW_PRIUSMG1

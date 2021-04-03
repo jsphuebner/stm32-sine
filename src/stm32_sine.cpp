@@ -40,6 +40,7 @@
 #include "pwmgeneration.h"
 #include "vehiclecontrol.h"
 #include "teslam3gatedriver.h"
+#include "teslam3pmic.h"
 
 HWREV hwRev; //Hardware variant of board we are running on
 
@@ -90,8 +91,13 @@ static void Ms100Task(void)
       if (TeslaM3GateDriver::IsFaulty())
       {
          TeslaM3GateDriver::Disable();
-         ErrorMessage::Post( ERR_GATEDRIVEFAULT);
+         ErrorMessage::Post(ERR_GATEDRIVEFAULT);
          DigIo::err_out.Set();
+      }
+
+      if (TeslaM3PowerWatchdog::Strobe() != TeslaM3PowerWatchdog::Error::OK)
+      {
+         ErrorMessage::Post(ERR_PMICSTROBEFAULT);
       }
    }
 }
@@ -388,6 +394,21 @@ extern "C" int main(void)
    PwmGeneration::SetCurrentOffset(2048, 2048);
    if (hwRev == HW_TESLAM3)
    {
+      auto pmic_init = TeslaM3PowerWatchdog::Init();
+      switch (pmic_init)
+      {
+         case TeslaM3PowerWatchdog::Error::ReadParityFail:
+         case TeslaM3PowerWatchdog::Error::WriteFail:
+                  ErrorMessage::Post(ERR_PMICINITFAIL);
+         break;
+         case TeslaM3PowerWatchdog::Error::StateTransitionFail:
+                  ErrorMessage::Post(ERR_PMICRUNSTATEFAIL);
+         break;
+         case TeslaM3PowerWatchdog::Error::OK:
+            // Do nothing //
+         break;
+      }
+
       if (!TeslaM3GateDriver::Init())
       {
          ErrorMessage::Post(ERR_GATEDRIVEINITFAIL);
