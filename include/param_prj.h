@@ -207,7 +207,6 @@
     AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
     PARAM_ENTRY(CAT_TEST,    fslipspnt,   "Hz",      -100,   1000,   0,      0   ) \
     PARAM_ENTRY(CAT_TEST,    ampnom,      "%",       0,      100,    0,      0   ) \
-    PARAM_ENTRY(CAT_TEST,    adchan,      "%",       0,      7,    0,      0   ) \
     VALUE_BLOCK1 \
     VALUES_SINE \
     VALUE_BLOCK2
