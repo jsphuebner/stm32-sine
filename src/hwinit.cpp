@@ -42,8 +42,9 @@
 */
 void clock_setup(void)
 {
-   RCC_CLOCK_SETUP();
+   rcc_clock_setup_in_hse_8mhz_out_72mhz();
 
+   //Run ADC at 12 MHz
 	rcc_set_adcpre(RCC_CFGR_ADCPRE_PCLK2_DIV6);
 
    //The reset value for PRIGROUP (=0) is not actually a defined
@@ -59,7 +60,7 @@ void clock_setup(void)
    rcc_periph_clock_enable(RCC_TIM2); //Scheduler, over current on blue pill
    rcc_periph_clock_enable(RCC_TIM3); //Rotor Encoder
    rcc_periph_clock_enable(RCC_TIM4); //Overcurrent / AUX PWM, scheduler on blue pill
-   rcc_periph_clock_enable(RCC_DMA1);  //ADC, Encoder and UART receive
+   rcc_periph_clock_enable(RCC_DMA1);  //ADC, Encoder and UART3
    rcc_periph_clock_enable(RCC_ADC1);
    rcc_periph_clock_enable(RCC_CRC);
    rcc_periph_clock_enable(RCC_AFIO); //CAN

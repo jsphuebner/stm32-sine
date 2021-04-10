@@ -9,7 +9,6 @@
 #define USART_BAUDRATE 115200
 //Maximum PWM frequency is 36MHz/2^MIN_PWM_DIGITS
 #define MIN_PWM_DIGITS 11
-#define RCC_CLOCK_SETUP rcc_clock_setup_in_hse_8mhz_out_72mhz
 
 #define PWM_TIMER     TIM1
 #define PWM_TIMRST    RST_TIM1

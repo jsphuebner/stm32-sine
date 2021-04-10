@@ -56,6 +56,7 @@ void PwmGeneration::Run()
       Encoder::UpdateRotorAngle(dir);
 
       CalcNextAngleSync(dir);
+      FOC::SetAngle(angle);
 
       frqFiltered = IIRFILTER(frqFiltered, frq, 8);
       int moddedKi = curki + kifrqgain * FP_TOINT(frqFiltered);
@@ -68,7 +69,7 @@ void PwmGeneration::Run()
 
       if (opmode == MOD_RUN && initwait == 0)
       {
-         s32fp fwIdRef = idref <= 0 ? fwController.Run(iq) : 0;
+         s32fp fwIdRef = idref <= 0 ? fwController.RunProportionalOnly(iq) : 0;
          dController.SetRef(idref + fwIdRef);
       }
       else if (opmode == MOD_MANUAL)
@@ -82,7 +83,7 @@ void PwmGeneration::Run()
       int32_t qlimit = FOC::GetQLimit(ud);
       qController.SetMinMaxY(-qlimit, qlimit);
       int32_t uq = qController.Run(iq);
-      FOC::InvParkClarke(ud, uq, angle);
+      FOC::InvParkClarke(ud, uq);
 
       s32fp idc = (iq * uq + id * ud) / FOC::GetMaximumModulationIndex();
       idc = FP_MUL(idc, dcCurFac);
@@ -229,7 +230,6 @@ void PwmGeneration::PwmInit()
 
 s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
 {
-
    if (initwait > 0)
    {
       initwait--;
@@ -239,9 +239,9 @@ s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
    s32fp il2 = GetCurrent(AnaIn::il2, ilofs[1], Param::Get(Param::il2gain));
 
    if ((Param::GetInt(Param::pinswap) & SWAP_CURRENTS) > 0)
-      FOC::ParkClarke(il2, il1, angle);
+      FOC::ParkClarke(il2, il1);
    else
-      FOC::ParkClarke(il1, il2, angle);
+      FOC::ParkClarke(il1, il2);
    id = FOC::id;
    iq = FOC::iq;
 
@@ -259,9 +259,11 @@ void PwmGeneration::CalcNextAngleSync(int dir)
    {
       uint16_t syncOfs = Param::GetInt(Param::syncofs);
       uint16_t rotorAngle = Encoder::GetRotorAngle();
+      int syncadv = (frq - FP_FROMINT(10)) * 10;
+      syncadv = MAX(0, syncadv);
 
       //Compensate rotor movement that happened between sampling and processing
-      syncOfs += FP_TOINT(dir * frq * 10);
+      syncOfs += FP_TOINT(dir * syncadv);
 
       angle = polePairRatio * rotorAngle + syncOfs;
       frq = polePairRatio * Encoder::GetRotorFrequency();

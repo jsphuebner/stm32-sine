@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.02.R
+#define VER 5.03.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -198,12 +198,12 @@
     MOTOR_PARAMETERS_SINE \
     MOTOR_PARAMETERS_COMMON \
     INVERTER_PARAMETERS_COMMON \
-    DERATE_PARAMETERS_COMMON \
-    DERATE_PARAMETERS_SINE \
-    CHARGER_PARAMETERS \
     THROTTLE_PARAMETERS_COMMON \
     THROTTLE_PARAMETERS_SINE \
     REGEN_PARAMETERS \
+    DERATE_PARAMETERS_COMMON \
+    DERATE_PARAMETERS_SINE \
+    CHARGER_PARAMETERS \
     AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
     PARAM_ENTRY(CAT_TEST,    fslipspnt,   "Hz",      -100,   1000,   0,      0   ) \
     PARAM_ENTRY(CAT_TEST,    ampnom,      "%",       0,      100,    0,      0   ) \
@@ -218,11 +218,11 @@
     MOTOR_PARAMETERS_COMMON \
     INVERTER_PARAMETERS_COMMON \
     INVERTER_PARAMETERS_FOC \
-    DERATE_PARAMETERS_COMMON \
-    CHARGER_PARAMETERS \
     THROTTLE_PARAMETERS_COMMON \
     THROTTLE_PARAMETERS_FOC \
     REGEN_PARAMETERS \
+    DERATE_PARAMETERS_COMMON \
+    CHARGER_PARAMETERS \
     AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
     PARAM_ENTRY(CAT_TEST,    manualiq,    "A",       -400,   400,    0,      0  ) \
     PARAM_ENTRY(CAT_TEST,    manualid,    "A",       -400,   400,    0,      0  ) \
