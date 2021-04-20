@@ -253,7 +253,7 @@ void Encoder::UpdateRotorFrequency(int callingFrequency)
       int absTurns = ABS(turnsSinceLastSample);
       if (startupDelay == 0 && absTurns > STABLE_ANGLE)
       {
-         if (encmode == SPI)
+         if (encMode == SPI)
          {
             lastFrequency = (callingFrequency * absTurns) / FP_TOINT(TWO_PI);
          }
