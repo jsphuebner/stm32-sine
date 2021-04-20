@@ -584,7 +584,7 @@ uint16_t Encoder::DecodeAngle(bool invert)
       int32_t sample_delay_comp = integrator1/(2*frequency);
       uint16_t obs_angle = sample_delay_comp-integrator2+16384; //digits, 2pi rad = 360 deg = 65536 digits. Offset and -ve to match original atan2 code - prevents need to reset encoffset
       Param::SetFlt(Param::angleobs, FP_FROMINT(obs_angle) / (65536 / 360));
-      lastFrequency = 10*FP_FROMINT(integrator1)/65536;
+      lastFrequency = FP_FROMINT(integrator1)/TWO_PI;
       if (Param::GetInt(Param::anglemode) == 1) //TI observer mode
       {
          return obs_angle;
