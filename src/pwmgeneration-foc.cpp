@@ -87,7 +87,7 @@ void PwmGeneration::Run()
 
       s32fp idc = (iq * uq + id * ud) / FOC::GetMaximumModulationIndex();
       idc = FP_MUL(idc, dcCurFac);
-      idcFiltered = IIRFILTER(idcFiltered, idc, 10);
+      idcFiltered = IIRFILTER(idcFiltered, idc, Param::GetInt(Param::idcflt));
 
       Param::SetFlt(Param::fstat, frq);
       Param::SetFlt(Param::angle, DIGIT_TO_DEGREE(angle));
