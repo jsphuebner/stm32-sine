@@ -182,6 +182,7 @@ static void Ms10Task(void)
 
    if (newMode != MOD_OFF)
    {
+      opmode = newMode;
       DigIo::dcsw_out.Set();
       DigIo::err_out.Clear();
       DigIo::prec_out.Clear();
