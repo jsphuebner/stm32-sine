@@ -18,8 +18,6 @@
 ##
 
 OUT_DIR  = obj
-space :=
-space +=
 PREFIX		?= arm-none-eabi
 CONTROL     ?= SINE
 CONTROLLC   := $(shell echo $(CONTROL) | tr A-Z a-z)

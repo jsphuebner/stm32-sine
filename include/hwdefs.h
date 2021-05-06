@@ -25,6 +25,9 @@
 
 //Address of parameter block in flash
 #define PARAM_BLKSIZE 1024
+#define PARAM_BLKNUM  1   //last block of 1k
+#define CAN_BLKSIZE   1024
+#define CAN_BLKNUM    2   //second to last block of 1k
 
 #define REV_CNT_IC         hwRev == HW_REV1 ? TIM_IC3 : TIM_IC1
 #define REV_CNT_OC         hwRev == HW_REV1 ? TIM_OC3 : TIM_OC1
