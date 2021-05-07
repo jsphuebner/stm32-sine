@@ -118,12 +118,12 @@ struct SPITransaction
 {
     SPITransaction()
     {
-        gpio_clear(GPIO_PMIC_BANK, GPIO_PMIC_SPI_CS);
+        gpio_clear(GPIO_PMIC_CS_BANK, GPIO_PMIC_CS);
     }
 
     ~SPITransaction()
     {
-        gpio_set(GPIO_PMIC_BANK, GPIO_PMIC_SPI_CS);
+        gpio_set(GPIO_PMIC_CS_BANK, GPIO_PMIC_CS);
     }
 };
 
@@ -180,32 +180,32 @@ void TeslaM3PowerWatchdog::InitSPIPort()
 
     // Assert the SPI ~CS enable line before we turn off the
     // pull up to avoid glitches
-    gpio_set(GPIO_PMIC_BANK, GPIO_PMIC_SPI_CS);
+    gpio_set(GPIO_PMIC_CS_BANK, GPIO_PMIC_CS);
     gpio_set_mode(
-        GPIO_PMIC_BANK,
+        GPIO_PMIC_CS_BANK,
         GPIO_MODE_OUTPUT_50_MHZ,
         GPIO_CNF_OUTPUT_PUSHPULL,
-        GPIO_PMIC_SPI_CS);
+        GPIO_PMIC_CS);
 
     // Configure the SPI hardware ports
+    gpio_primary_remap(AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_ON, AFIO_MAPR_SPI1_REMAP);
     gpio_set_mode(
-        GPIO_PMIC_BANK,
+        GPIO_PMIC_SPI_BANK,
         GPIO_MODE_OUTPUT_50_MHZ,
         GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
         GPIO_PMIC_SPI_SCK | GPIO_PMIC_SPI_MOSI);
     gpio_set_mode(
-        GPIO_PMIC_BANK, GPIO_MODE_INPUT, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_PMIC_SPI_MISO);
+        GPIO_PMIC_SPI_BANK, GPIO_MODE_INPUT, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_PMIC_SPI_MISO);
 
     // SPI initialization;
-    // We get 2.25MHz clock with a 72MHz system frequency (on PMIC_SPI which has and
-    // additional /2 for APB1 peripherals). Tesla run the device at 2.4MHz so we
+    // We get 2.25MHz clock with a 72MHz system frequency. Tesla run the device at 2.4MHz so we
     // also run slower than rated 5MHz to be on the safe side. The TLF35584
     // requires CPOL = 0, CPHA = 0 and 16-bit MSB transfers with software
     // controlled chip-select control around each transfer.
     spi_reset(PMIC_SPI);
     spi_init_master(
         PMIC_SPI,
-        SPI_CR1_BAUDRATE_FPCLK_DIV_16,
+        SPI_CR1_BAUDRATE_FPCLK_DIV_32,
         SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE,
         SPI_CR1_CPHA_CLK_TRANSITION_1,
         SPI_CR1_DFF_16BIT,
