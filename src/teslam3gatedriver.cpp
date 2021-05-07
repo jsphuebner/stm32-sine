@@ -20,6 +20,7 @@
 #include "teslam3gatedriver.h"
 #include "crc8.h"
 #include "delay.h"
+#include "digio.h"
 #include "hwdefs.h"
 #include "hw/stgap1as_gate_driver.h"
 #include <libopencm3/stm32/gpio.h>
@@ -106,26 +107,11 @@ struct SPITransaction
  */
 bool TeslaM3GateDriver::Init()
 {
-    Disable();
+    // Disable the ~SD line before we configure anything
+    DigIo::vtg_out.Set();
     InitSPIPort();
     SetupGateDrivers();
     return VerifyGateDriverConfig();
-}
-
-/**
- * \brief Enable the gate driver outputs
- */
-void TeslaM3GateDriver::Enable()
-{
-    gpio_clear(GPIO_GATE_ENABLE_BANK, GPIO_GATE_ENABLE);
-}
-
-/**
- * \brief Disable the gate driver outputs
- */
-void TeslaM3GateDriver::Disable()
-{
-    gpio_set(GPIO_GATE_ENABLE_BANK, GPIO_GATE_ENABLE);
 }
 
 /**
@@ -163,20 +149,13 @@ void TeslaM3GateDriver::InitSPIPort()
 {
     rcc_periph_clock_enable(RCC_GATE_SPI);
 
-    // Assert the SPI ~CS and gate driver enable (~SD) lines before we turn 
-    // off the pull up to avoid glitches
+    // Assert the SPI ~CS line before we turn off the pull up to avoid glitches
     gpio_set(GPIO_GATE_CS_BANK, GPIO_GATE_CS);
     gpio_set_mode(
         GPIO_GATE_CS_BANK,
         GPIO_MODE_OUTPUT_50_MHZ,
         GPIO_CNF_OUTPUT_PUSHPULL,
         GPIO_GATE_CS);
-    gpio_set(GPIO_GATE_ENABLE_BANK, GPIO_GATE_ENABLE);
-    gpio_set_mode(
-        GPIO_GATE_ENABLE_BANK,
-        GPIO_MODE_OUTPUT_50_MHZ,
-        GPIO_CNF_OUTPUT_PUSHPULL,
-        GPIO_GATE_ENABLE);
 
     // Configure the SPI hardware ports
     gpio_set_mode(

@@ -25,9 +25,6 @@ class TeslaM3GateDriver
 {
 public:
     static bool Init();
-    static void Enable();
-    static void Disable();
-
     static bool IsFaulty();
 
 private:

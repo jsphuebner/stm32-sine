@@ -90,7 +90,7 @@ static void Ms100Task(void)
    {
       if (TeslaM3GateDriver::IsFaulty())
       {
-         TeslaM3GateDriver::Disable();
+         DigIo::vtg_out.Set();
          ErrorMessage::Post(ERR_GATEDRIVEFAULT);
          DigIo::err_out.Set();
       }
@@ -142,10 +142,6 @@ static void Ms10Task(void)
    if (MOD_RUN == opmode && initWait == -1)
    {
       PwmGeneration::SetTorquePercent(torquePercent);
-      if (hwRev == HW_TESLAM3)
-      {
-         TeslaM3GateDriver::Enable();
-      }
    }
    else if ((MOD_BOOST == opmode || MOD_BUCK == opmode) && initWait == -1)
    {
@@ -221,10 +217,6 @@ static void Ms10Task(void)
       VehicleControl::SetContactorsOffState();
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
-      if (hwRev == HW_TESLAM3)
-      {
-         TeslaM3GateDriver::Disable();
-      }
    }
    else if (0 == initWait)
    {
