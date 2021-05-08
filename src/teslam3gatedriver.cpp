@@ -20,6 +20,7 @@
 #include "teslam3gatedriver.h"
 #include "crc8.h"
 #include "delay.h"
+#include "digio.h"
 #include "hwdefs.h"
 #include "hw/stgap1as_gate_driver.h"
 #include <libopencm3/stm32/gpio.h>
@@ -90,12 +91,12 @@ struct SPITransaction
 {
     SPITransaction()
     {
-        gpio_clear(GPIO_GATE_BANK, GPIO_GATE_SPI_CS);
+        gpio_clear(GPIO_GATE_CS_BANK, GPIO_GATE_CS);
     }
 
     ~SPITransaction()
     {
-        gpio_set(GPIO_GATE_BANK, GPIO_GATE_SPI_CS);
+        gpio_set(GPIO_GATE_CS_BANK, GPIO_GATE_CS);
     }
 };
 
@@ -106,26 +107,11 @@ struct SPITransaction
  */
 bool TeslaM3GateDriver::Init()
 {
-    Disable();
+    // Disable the ~SD line before we configure anything
+    DigIo::vtg_out.Set();
     InitSPIPort();
     SetupGateDrivers();
     return VerifyGateDriverConfig();
-}
-
-/**
- * \brief Enable the gate driver outputs
- */
-void TeslaM3GateDriver::Enable()
-{
-    gpio_clear(GPIO_GATE_BANK, GPIO_GATE_ENABLE);
-}
-
-/**
- * \brief Disable the gate driver outputs
- */
-void TeslaM3GateDriver::Disable()
-{
-    gpio_set(GPIO_GATE_BANK, GPIO_GATE_ENABLE);
 }
 
 /**
@@ -163,35 +149,34 @@ void TeslaM3GateDriver::InitSPIPort()
 {
     rcc_periph_clock_enable(RCC_GATE_SPI);
 
-    // Assert the SPI ~CS and gate driver enable lines before we turn off the
-    // pull up to avoid glitches
-    gpio_set(GPIO_GATE_BANK, GPIO_GATE_SPI_CS);
-    gpio_set(GPIO_GATE_BANK, GPIO_GATE_ENABLE);
+    // Assert the SPI ~CS line before we turn off the pull up to avoid glitches
+    gpio_set(GPIO_GATE_CS_BANK, GPIO_GATE_CS);
     gpio_set_mode(
-        GPIO_GATE_BANK,
+        GPIO_GATE_CS_BANK,
         GPIO_MODE_OUTPUT_50_MHZ,
         GPIO_CNF_OUTPUT_PUSHPULL,
-        GPIO_GATE_SPI_CS | GPIO_GATE_ENABLE);
+        GPIO_GATE_CS);
 
     // Configure the SPI hardware ports
     gpio_set_mode(
-        GPIO_GATE_BANK,
+        GPIO_GATE_SPI_BANK,
         GPIO_MODE_OUTPUT_50_MHZ,
         GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
         GPIO_GATE_SPI_SCK | GPIO_GATE_SPI_MOSI);
     gpio_set_mode(
-        GPIO_GATE_BANK,
+        GPIO_GATE_SPI_BANK,
         GPIO_MODE_INPUT,
         GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
         GPIO_GATE_SPI_MISO);
 
     // SPI initialization;
-    // We get 4.5MHz clock with a 72MHz system frequency
+    // We get 4.5MHz clock with a 72MHz system frequency (on SPI2 which has an
+    // additional /2 for APB1 peripherals)
     // The STGAP1AS requires CPOL = 0, CPHA = 1 and 16-bit MSB transfers
     spi_reset(GATE_SPI);
     spi_init_master(
         GATE_SPI,
-        SPI_CR1_BAUDRATE_FPCLK_DIV_16,
+        SPI_CR1_BAUDRATE_FPCLK_DIV_8,
         SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE,
         SPI_CR1_CPHA_CLK_TRANSITION_2,
         SPI_CR1_DFF_16BIT,
