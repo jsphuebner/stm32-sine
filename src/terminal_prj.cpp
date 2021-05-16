@@ -70,10 +70,10 @@ static void SaveParameters(Terminal* term, char *arg)
    arg = arg;
    if (Param::GetInt(Param::opmode) == 0)
    {
-      uint32_t crc = parm_save();
-      fprintf(term, "Parameters stored, CRC=%x\r\n", crc);
       Can::GetInterface(0)->Save();
       fprintf(term, "CANMAP stored\r\n");
+      uint32_t crc = parm_save();
+      fprintf(term, "Parameters stored, CRC=%x\r\n", crc);
    }
    else
    {
