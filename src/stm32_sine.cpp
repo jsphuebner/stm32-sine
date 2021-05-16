@@ -279,9 +279,11 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
          Throttle::idcmax = Param::Get(Param::idcmax);
          Throttle::brkmax = Param::Get(Param::brkmax);
          break;
-      default:
+      case Param::nodeid:
          can->SetNodeId(Param::GetInt(Param::nodeid));
          terminal->SetNodeId(Param::GetInt(Param::nodeid));
+         break;
+      default:
          PwmGeneration::SetCurrentLimitThreshold(Param::Get(Param::ocurlim));
          PwmGeneration::SetPolePairRatio(Param::GetInt(Param::polepairs) / Param::GetInt(Param::respolepairs));
 
@@ -363,7 +365,6 @@ extern "C" int main(void)
    write_bootloader_pininit();
    tim_setup();
    nvic_setup();
-   //Encoder::Reset();
    parm_load();
    ErrorMessage::SetTime(1);
    Param::SetInt(Param::pwmio, pwmio_setup(Param::GetBool(Param::pwmpol)));
@@ -399,6 +400,7 @@ extern "C" int main(void)
 
    UpgradeParameters();
    parm_Change(Param::PARAM_LAST);
+   parm_Change(Param::nodeid);
 
    while(1)
       t.Run();
