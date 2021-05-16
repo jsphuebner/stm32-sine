@@ -71,6 +71,7 @@ void PwmGeneration::Run()
       {
          s32fp fwIdRef = idref <= 0 ? fwController.RunProportionalOnly(iq) : 0;
          dController.SetRef(idref + fwIdRef);
+         Param::SetFlt(Param::ifw, fwIdRef);
       }
       else if (opmode == MOD_MANUAL)
       {
@@ -81,7 +82,7 @@ void PwmGeneration::Run()
 
       int32_t ud = dController.Run(id);
       int32_t qlimit = FOC::GetQLimit(ud);
-      qController.SetMinMaxY(-qlimit, qlimit);
+      qController.SetMinMaxY(dir < 0 ? -qlimit : 0, dir > 0 ? qlimit : 0);
       int32_t uq = qController.Run(iq);
       FOC::InvParkClarke(ud, uq);
 
@@ -200,7 +201,7 @@ void PwmGeneration::PwmInit()
    qController.SetMinMaxY(-maxVd, maxVd);
    dController.ResetIntegrator();
    dController.SetCallingFrequency(pwmfrq);
-   dController.SetMinMaxY(-maxVd, maxVd);
+   dController.SetMinMaxY(-maxVd, maxVd / 2);
    fwController.ResetIntegrator();
    fwController.SetCallingFrequency(pwmfrq);
    fwController.SetMinMaxY(-50 * Param::Get(Param::throtcur), 0); //allow 50% of max current for extra field weakening
@@ -259,7 +260,7 @@ void PwmGeneration::CalcNextAngleSync(int dir)
    {
       uint16_t syncOfs = Param::GetInt(Param::syncofs);
       uint16_t rotorAngle = Encoder::GetRotorAngle();
-      int syncadv = (frq - FP_FROMINT(10)) * 10;
+      int syncadv = (frq - FP_FROMINT(20)) * 10;
       syncadv = MAX(0, syncadv);
 
       //Compensate rotor movement that happened between sampling and processing

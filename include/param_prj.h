@@ -17,15 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.05.R
+#define VER 5.06.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 132
-//Next value Id: 2048
+//Next param id (increase when adding new parameter!): 133
+//Next value Id: 2049
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -190,6 +190,7 @@
 #define VALUES_FOC \
     VALUE_ENTRY(id,      "A",     2003 ) \
     VALUE_ENTRY(iq,      "A",     2004 ) \
+    VALUE_ENTRY(ifw,     "A",     2048 ) \
     VALUE_ENTRY(ud,      "dig",   2046 ) \
     VALUE_ENTRY(uq,      "dig",   2047 ) \
     VALUE_ENTRY(heatcur, "A",     2043 ) \
