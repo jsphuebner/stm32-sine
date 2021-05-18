@@ -244,20 +244,6 @@ void Encoder::UpdateRotorFrequency(int callingFrequency)
       lastFrequency = (callingFrequency * turnsSinceLastSample) / FP_TOINT(TWO_PI);
       turnsSinceLastSample = 0;
    }
-   else if ((encMode == RESOLVER) || (encMode == SPI) || (encMode == SINCOS))
-   {
-      int absTurns = ABS(turnsSinceLastSample);
-      if (startupDelay == 0 && absTurns > STABLE_ANGLE)
-      {
-         lastFrequency = (callingFrequency * absTurns) / FP_TOINT(TWO_PI);
-         detectedDirection = turnsSinceLastSample > 0 ? 1 : -1;
-      }
-      else
-      {
-         lastFrequency = 0;
-      }
-      turnsSinceLastSample = 0;
-   }
 }
 
 /** Returns current angle of motor shaft to some arbitrary 0-axis
@@ -555,9 +541,29 @@ uint16_t Encoder::DecodeAngle(bool invert)
    //Wait for signal to reach usable amplitude
    if ((resolverMax - resolverMin) > MIN_RES_AMP)
    {
+      static int32_t integrator1 = 0;
+      static int32_t integrator2 = 0;
+
       if (invert)
-         return SineCore::Atan2(-sin, -cos);
-      return SineCore::Atan2(sin, cos);
+      {
+         sin = -sin;
+         cos = -cos;
+      }
+
+      //TI observer based implementation
+      int32_t cos_sin_anglast = cos*SineCore::Sine(integrator2)/32768; //angle_last = integrator2
+      int32_t sin_cos_anglast = sin*SineCore::Cosine(integrator2)/32768;
+      int32_t sum_one = sin_cos_anglast - cos_sin_anglast;
+      integrator1 += sum_one*1000; //K2/frequency
+      int32_t gain1 = sum_one*550; //K1
+      int32_t sum_two = integrator1 + gain1;
+      integrator2 += sum_two/8000; //frequency
+      int32_t sample_delay_comp = integrator1/16000; //2*frequency
+      uint16_t obs_angle = sample_delay_comp-integrator2+16384; //digits, 2pi rad = 360 deg = 65536 digits
+      lastFrequency = FP_FROMINT(ABS(integrator1) / TWO_PI);
+      detectedDirection = integrator1 < 0 ? 1 : -1;
+
+      return obs_angle;
    }
    else
    {

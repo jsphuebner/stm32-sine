@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.06.R
+#define VER 5.07.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -25,7 +25,7 @@
    3. Display values
  */
 //Next param id (increase when adding new parameter!): 133
-//Next value Id: 2049
+//Next value Id: 2048
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
