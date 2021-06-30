@@ -26,47 +26,47 @@ class Throttle
 {
    public:
       static bool CheckAndLimitRange(int* potval, int potIdx);
-      static s32fp DigitsToPercent(int potval, int potidx);
-      static s32fp CalcThrottle(s32fp potval, s32fp pot2val, bool brkpedal);
-      static s32fp CalcIdleSpeed(int speed);
-      static s32fp CalcCruiseSpeed(int speed);
-      static bool TemperatureDerate(s32fp tmp, s32fp tmpMax, s32fp& finalSpnt);
-      static void BmsLimitCommand(s32fp& finalSpnt, bool dinbms);
-      static void UdcLimitCommand(s32fp& finalSpnt, s32fp udc);
-      static void IdcLimitCommand(s32fp& finalSpnt, s32fp idc);
-      static void FrequencyLimitCommand(s32fp& finalSpnt, s32fp frequency);
-      static s32fp RampThrottle(s32fp finalSpnt);
+      static float DigitsToPercent(int potval, int potidx);
+      static float CalcThrottle(float potval, float pot2val, bool brkpedal);
+      static float CalcIdleSpeed(int speed);
+      static float CalcCruiseSpeed(int speed);
+      static bool TemperatureDerate(float tmp, float tmpMax, float& finalSpnt);
+      static void BmsLimitCommand(float& finalSpnt, bool dinbms);
+      static void UdcLimitCommand(float& finalSpnt, float udc);
+      static void IdcLimitCommand(float& finalSpnt, float idc);
+      static void FrequencyLimitCommand(float& finalSpnt, float frequency);
+      static float RampThrottle(float finalSpnt);
       static int potmin[2];
       static int potmax[2];
-      static s32fp brknom;
-      static s32fp brknompedal;
-      static s32fp brkmax;
-      static s32fp brkcruise;
-      static s32fp throtmax;
-      static s32fp throtmin;
+      static float brknom;
+      static float brknompedal;
+      static float brkmax;
+      static float brkcruise;
+      static float throtmax;
+      static float throtmin;
       static int idleSpeed;
       static int cruiseSpeed;
-      static s32fp speedkp;
+      static float speedkp;
       static int speedflt;
-      static s32fp idleThrotLim;
-      static s32fp regenRamp;
-      static s32fp throttleRamp;
+      static float idleThrotLim;
+      static float regenRamp;
+      static float throttleRamp;
       static int bmslimhigh;
       static int bmslimlow;
       static int accelmax;
       static int accelflt;
-      static s32fp udcmin;
-      static s32fp udcmax;
-      static s32fp idcmin;
-      static s32fp idcmax;
-      static s32fp idckp;
-      static s32fp fmax;
+      static float udcmin;
+      static float udcmax;
+      static float idcmin;
+      static float idcmax;
+      static float idckp;
+      static float fmax;
 
    private:
       static int speedFiltered;
-      static s32fp potnomFiltered;
-      static s32fp brkRamped;
-      static s32fp throttleRamped;
+      static float potnomFiltered;
+      static float brkRamped;
+      static float throttleRamped;
 };
 
 #endif // THROTTLE_H

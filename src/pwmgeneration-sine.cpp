@@ -52,8 +52,8 @@ void PwmGeneration::Run()
 
       SineCore::SetAmp(amp);
       Param::SetInt(Param::amp, amp);
-      Param::SetFlt(Param::fstat, frq);
-      Param::SetFlt(Param::angle, DIGIT_TO_DEGREE(angle));
+      Param::SetFixed(Param::fstat, frq);
+      Param::SetFixed(Param::angle, DIGIT_TO_DEGREE(angle));
       SineCore::Calc(angle);
 
       /* Shut down PWM on zero voltage request */
@@ -246,7 +246,7 @@ s32fp PwmGeneration::ProcessCurrents()
 
    if (edge != NoEdge)
    {
-      Param::SetFlt(Param::il1rms, rms);
+      Param::SetFixed(Param::il1rms, rms);
 
       if (opmode != MOD_BOOST || opmode != MOD_BUCK)
       {
@@ -254,19 +254,19 @@ s32fp PwmGeneration::ProcessCurrents()
          s32fp idc = (SineCore::GetAmp() * rms) / SineCore::MAXAMP;
          idc = FP_DIV(idc, FP_FROMFLT(1.2247)); //divide by sqrt(3)/sqrt(2)
          idc *= fslip < 0 ? -1 : 1;
-         Param::SetFlt(Param::idc, idc);
+         Param::SetFixed(Param::idc, idc);
       }
    }
    if (CalcRms(il2, lastEdge[1], currentMax[1], rms, samples[1], il2PrevRms))
    {
-      Param::SetFlt(Param::il2rms, rms);
+      Param::SetFixed(Param::il2rms, rms);
    }
 
    s32fp ilMax = sign * GetIlMax(il1, il2);
 
-   Param::SetFlt(Param::il1, il1);
-   Param::SetFlt(Param::il2, il2);
-   Param::SetFlt(Param::ilmax, ilMax);
+   Param::SetFixed(Param::il1, il1);
+   Param::SetFixed(Param::il2, il2);
+   Param::SetFixed(Param::ilmax, ilMax);
 
    return ilMax;
 }

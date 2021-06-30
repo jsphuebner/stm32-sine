@@ -308,13 +308,13 @@ void PwmGeneration::Charge()
    int dc = chargeController.Run(iFlt);
 
    if (opmode == MOD_BOOST)
-      Param::SetFlt(Param::idc, FP_MUL((FP_FROMINT(100) - ampnom), iFlt) / 100);
+      Param::SetFixed(Param::idc, FP_MUL((FP_FROMINT(100) - ampnom), iFlt) / 100);
    else
-      Param::SetFlt(Param::idc, iFlt);
+      Param::SetFixed(Param::idc, iFlt);
 
    Param::SetInt(Param::amp, dc);
-   Param::SetFlt(Param::il1, il1);
-   Param::SetFlt(Param::il2, il2);
+   Param::SetFixed(Param::il1, il1);
+   Param::SetFixed(Param::il2, il2);
 
    timer_set_oc_value(PWM_TIMER, TIM_OC2, dc);
 }
