@@ -169,13 +169,13 @@ float VehicleControl::ProcessThrottle()
    Throttle::IdcLimitCommand(finalSpnt, Param::GetFloat(Param::idc));
    Throttle::FrequencyLimitCommand(finalSpnt, Param::GetFloat(Param::fstat));
 
-   if (Throttle::TemperatureDerate(Param::Get(Param::tmphs), Param::GetFloat(Param::tmphsmax), finalSpnt))
+   if (Throttle::TemperatureDerate(Param::GetFloat(Param::tmphs), Param::GetFloat(Param::tmphsmax), finalSpnt))
    {
       DigIo::err_out.Set();
       ErrorMessage::Post(ERR_TMPHSMAX);
    }
 
-   if (Throttle::TemperatureDerate(Param::Get(Param::tmpm), Param::GetFloat(Param::tmpmmax), finalSpnt))
+   if (Throttle::TemperatureDerate(Param::GetFloat(Param::tmpm), Param::GetFloat(Param::tmpmmax), finalSpnt))
    {
       DigIo::err_out.Set();
       ErrorMessage::Post(ERR_TMPMMAX);
@@ -300,7 +300,7 @@ float VehicleControl::ProcessUdc()
    //1.2/(4.7+1.2)/3.33*4095 = 250 -> make it a bit less for pin losses etc
    //HW_REV1 had 3.9k resistors
    int uauxGain = hwRev == HW_REV1 ? 289 : 249;
-   Param::SetFloat(Param::uaux, AnaIn::uaux.Get() / uauxGain);
+   Param::SetFloat(Param::uaux, (float)AnaIn::uaux.Get() / uauxGain);
 
    //Yes heatsink temperature also selects external ADC as udc source
    if (snshs == TempMeas::TEMP_BMWI3HS)
