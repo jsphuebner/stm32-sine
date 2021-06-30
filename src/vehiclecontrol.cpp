@@ -30,6 +30,7 @@
 #include "throttle.h"
 #include "my_math.h"
 #include "pwmgeneration.h"
+#include "hwinit.h"
 
 #define PRECHARGE_TIMEOUT 500 //5s
 #define CAN_TIMEOUT       50  //500ms
@@ -39,6 +40,7 @@
 Can* VehicleControl::can;
 bool VehicleControl::lastCruiseSwitchState = false;
 bool VehicleControl::canIoActive = false;
+bool VehicleControl::spiEnabled = false;
 int VehicleControl::temphsFiltered = 0;
 int VehicleControl::tempmFiltered = 0;
 int VehicleControl::udcFiltered = 0;
@@ -580,6 +582,15 @@ void VehicleControl::BmwAdcAcquire()
 {
    const uint16_t adcGetManual = 1 << 12, adcSetDio = 1 << 11, adcVrefDual = 1 << 6;
    const uint32_t maxChan = sizeof(bmwAdcValues) / sizeof(bmwAdcValues[0]);
+
+   if (!spiEnabled)
+   {
+      spi_setup();
+      //Brake pin is used as SPI_MISO
+      DigIo::brk_out.Configure(GPIOC, GPIO5, PinMode::INPUT_FLT);
+      DigIo::spi_cs_out.Set();
+      spiEnabled = true;
+   }
 
    DigIo::spi_cs_out.Clear();
    uint16_t data = spi_xfer(SPI1, adcGetManual | adcSetDio | adcVrefDual | (bmwAdcNextChan << 7));

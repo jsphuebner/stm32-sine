@@ -369,14 +369,6 @@ extern "C" int main(void)
    ErrorMessage::SetTime(1);
    Param::SetInt(Param::pwmio, pwmio_setup(Param::GetBool(Param::pwmpol)));
 
-   if (Param::GetInt(Param::snshs) == TempMeas::TEMP_BMWI3HS)
-   {
-      spi_setup();
-      //Brake pin is used as SPI_MISO
-      DigIo::brk_out.Configure(GPIOC, GPIO5, PinMode::INPUT_FLT);
-      DigIo::spi_cs_out.Set();
-   }
-
    MotorVoltage::SetMaxAmp(SineCore::MAXAMP);
    PwmGeneration::SetCurrentOffset(2048, 2048);
 

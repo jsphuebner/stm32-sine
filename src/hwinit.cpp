@@ -31,6 +31,7 @@
 #include <libopencm3/stm32/crc.h>
 #include <libopencm3/stm32/flash.h>
 #include <libopencm3/stm32/spi.h>
+#include <libopencm3/stm32/desig.h>
 #include "hwdefs.h"
 #include "hwinit.h"
 #include "stm32_loader.h"
@@ -182,7 +183,10 @@ uint16_t pwmio_setup(bool activeLow)
 
 void write_bootloader_pininit()
 {
-   struct pincommands *flashCommands = (struct pincommands *)PINDEF_ADDRESS;
+   uint32_t flashSize = desig_get_flash_size();
+   uint32_t pindefAddr = FLASH_BASE + flashSize * 1024 - PINDEF_BLKNUM * PINDEF_BLKSIZE;
+   const struct pincommands* flashCommands = (struct pincommands*)pindefAddr;
+
    struct pincommands commands;
 
    memset32((int*)&commands, 0, PINDEF_NUMWORDS);
@@ -212,13 +216,13 @@ void write_bootloader_pininit()
    if (commands.crc != flashCommands->crc)
    {
       flash_unlock();
-      flash_erase_page(PINDEF_ADDRESS);
+      flash_erase_page(pindefAddr);
 
       //Write flash including crc, therefor <=
       for (uint32_t idx = 0; idx <= PINDEF_NUMWORDS; idx++)
       {
          uint32_t* pData = ((uint32_t*)&commands) + idx;
-         flash_program_word(PINDEF_ADDRESS + idx * sizeof(uint32_t), *pData);
+         flash_program_word(pindefAddr + idx * sizeof(uint32_t), *pData);
       }
       flash_lock();
    }
