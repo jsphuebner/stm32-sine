@@ -285,6 +285,7 @@ void PwmGeneration::RunOffsetCalibration()
    {
       il1Avg += AnaIn::il1.Get();
       il2Avg += AnaIn::il2.Get();
+      samples++;
    }
    else
    {
@@ -292,6 +293,4 @@ void PwmGeneration::RunOffsetCalibration()
       il1Avg = il2Avg = 0;
       samples = 0;
    }
-
-   samples++;
 }
