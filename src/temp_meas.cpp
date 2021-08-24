@@ -87,6 +87,9 @@ static const uint16_t Pt1000[] = { PT1000 };
 /* Temp sensor NTC K45 2k2 (with parallel 2k!) */
 static const uint16_t NtcK45[] = { NTCK45 };
 
+/* Temp sensor for outlander front motor (47k) in series with 1.2k with a 2.2k for R2 */
+static const uint16_t OutlanderFront[] = { OUTLANDERFRONT };
+
 static const TEMP_SENSOR sensors[] =
 {
    { -25, 105, 5,  TABLEN(JCurve),    NTC, JCurve     },
@@ -106,6 +109,7 @@ static const TEMP_SENSOR sensors[] =
    { 0,   100, 10, TABLEN(Tesla52k),  PTC, Tesla52k   },
    { 5,   100,  5, TABLEN(TeslaFluid),PTC, TeslaFluid },
    { -20, 190, 5,  TABLEN(Tesla10k),  PTC, Tesla10k   },
+   { -40, 300, 10,  TABLEN(OutlanderFront),  NTC, OutlanderFront   },
 };
 
 s32fp TempMeas::Lookup(int digit, Sensors sensorId)
