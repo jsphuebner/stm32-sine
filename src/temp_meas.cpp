@@ -112,7 +112,7 @@ static const TEMP_SENSOR sensors[] =
    { -40, 300, 10,  TABLEN(OutlanderFront),  NTC, OutlanderFront   },
 };
 
-s32fp TempMeas::Lookup(int digit, Sensors sensorId)
+float TempMeas::Lookup(int digit, Sensors sensorId)
 {
    if (sensorId >= TEMP_LAST) return 0;
    int index = sensorId >= TEMP_KTY83 ? sensorId - TEMP_KTY83 + NUM_HS_SENSORS : sensorId;
@@ -126,12 +126,12 @@ s32fp TempMeas::Lookup(int digit, Sensors sensorId)
       if ((sensor->coeff == NTC && cur >= digit) || (sensor->coeff == PTC && cur <= digit))
       {
          //we are outside the lookup table range, return minimum
-         if (0 == i) return FP_FROMINT(sensor->tempMin);
-         s32fp a = FP_FROMINT(sensor->coeff == NTC?cur - digit:digit - cur);
-         s32fp b = FP_FROMINT(sensor->coeff == NTC?cur - last:last - cur);
-         return FP_FROMINT(sensor->step * i + sensor->tempMin) - sensor->step * FP_DIV(a, b);
+         if (0 == i) return sensor->tempMin;
+         float a = sensor->coeff == NTC?cur - digit:digit - cur;
+         float b = sensor->coeff == NTC?cur - last:last - cur;
+         return sensor->step * i + sensor->tempMin - sensor->step * a / b;
       }
       last = cur;
    }
-   return FP_FROMINT(sensor->tempMax);
+   return sensor->tempMax;
 }

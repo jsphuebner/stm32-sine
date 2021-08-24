@@ -71,7 +71,7 @@ void PwmGeneration::Run()
       {
          s32fp fwIdRef = idref <= 0 ? fwController.RunProportionalOnly(iq) : 0;
          dController.SetRef(idref + fwIdRef);
-         Param::SetFlt(Param::ifw, fwIdRef);
+         Param::SetFixed(Param::ifw, fwIdRef);
       }
       else if (opmode == MOD_MANUAL)
       {
@@ -90,9 +90,9 @@ void PwmGeneration::Run()
       idc = FP_MUL(idc, dcCurFac);
       idcFiltered = IIRFILTER(idcFiltered, idc, Param::GetInt(Param::idcflt));
 
-      Param::SetFlt(Param::fstat, frq);
-      Param::SetFlt(Param::angle, DIGIT_TO_DEGREE(angle));
-      Param::SetFlt(Param::idc, idcFiltered);
+      Param::SetFixed(Param::fstat, frq);
+      Param::SetFixed(Param::angle, DIGIT_TO_DEGREE(angle));
+      Param::SetFixed(Param::idc, idcFiltered);
       Param::SetInt(Param::uq, uq);
       Param::SetInt(Param::ud, ud);
 
@@ -246,10 +246,10 @@ s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
    id = FOC::id;
    iq = FOC::iq;
 
-   Param::SetFlt(Param::id, FOC::id);
-   Param::SetFlt(Param::iq, FOC::iq);
-   Param::SetFlt(Param::il1, il1);
-   Param::SetFlt(Param::il2, il2);
+   Param::SetFixed(Param::id, FOC::id);
+   Param::SetFixed(Param::iq, FOC::iq);
+   Param::SetFixed(Param::il1, il1);
+   Param::SetFixed(Param::il2, il2);
 
    return 0;
 }
@@ -260,7 +260,7 @@ void PwmGeneration::CalcNextAngleSync(int dir)
    {
       uint16_t syncOfs = Param::GetInt(Param::syncofs);
       uint16_t rotorAngle = Encoder::GetRotorAngle();
-      int syncadv = (frq - FP_FROMINT(20)) * 10;
+      int syncadv = (frq - FP_FROMINT(20)) * Param::GetInt(Param::syncadv);
       syncadv = MAX(0, syncadv);
 
       //Compensate rotor movement that happened between sampling and processing

@@ -52,8 +52,8 @@ static void Ms100Task(void)
 {
    DigIo::led_out.Toggle();
    iwdg_reset();
-   s32fp cpuLoad = FP_FROMINT(PwmGeneration::GetCpuLoad() + scheduler->GetCpuLoad());
-   Param::SetFlt(Param::cpuload, cpuLoad / 10);
+   float cpuLoad = PwmGeneration::GetCpuLoad() + scheduler->GetCpuLoad();
+   Param::SetFloat(Param::cpuload, cpuLoad / 10);
    Param::SetInt(Param::turns, Encoder::GetFullTurns());
    Param::SetInt(Param::lasterr, ErrorMessage::GetLastError());
 
@@ -76,29 +76,29 @@ static void Ms100Task(void)
 
    #if CONTROL == CTRL_SINE
    //uac = udc * amp/maxamp / sqrt(2)
-   s32fp uac = Param::Get(Param::udc) * SineCore::GetAmp();
+   float uac = Param::GetFloat(Param::udc) * SineCore::GetAmp();
    uac /= SineCore::MAXAMP;
-   uac = FP_DIV(uac, FP_FROMFLT(1.4142));
+   uac /= 1.4142;
 
-   Param::SetFlt(Param::uac, uac);
+   Param::SetFloat(Param::uac, uac);
    #endif // CONTROL
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
       can->SendAll();
 }
 
-static void RunCharger(s32fp udc)
+static void RunCharger(float udc)
 {
-   static s32fp chargeCurRamped = 0;
+   static float chargeCurRamped = 0;
 
-   s32fp chargeCur = Param::Get(Param::chargecur);
-   s32fp tempDerate = FP_FROMINT(100);
-   s32fp udcDerate = -FP_FROMINT(100); //we use the regen udc limiter, therefor negative starting value
+   float chargeCur = Param::GetFloat(Param::chargecur);
+   float tempDerate = 100;
+   float udcDerate = -100; //we use the regen udc limiter, therefor negative starting value
 
-   Throttle::TemperatureDerate(Param::Get(Param::tmphs), Param::Get(Param::tmphsmax), tempDerate);
+   Throttle::TemperatureDerate(Param::GetFloat(Param::tmphs), Param::GetFloat(Param::tmphsmax), tempDerate);
    Throttle::UdcLimitCommand(udcDerate, udc);
    udcDerate = MIN(-udcDerate, tempDerate); //and back to positive
-   chargeCur = FP_MUL(udcDerate, chargeCur) / 100;
+   chargeCur = udcDerate * chargeCur / 100;
 
    if (chargeCur < chargeCurRamped)
       chargeCurRamped = chargeCur;
@@ -115,18 +115,18 @@ static void Ms10Task(void)
    int chargemode = Param::GetInt(Param::chargemode);
    int newMode = MOD_OFF;
    int stt = STAT_NONE;
-   s32fp udc = VehicleControl::ProcessUdc();
+   float udc = VehicleControl::ProcessUdc();
 
    ErrorMessage::SetTime(rtc_get_counter_val());
    Encoder::UpdateRotorFrequency(100);
    VehicleControl::CalcAndOutputTemp();
    VehicleControl::GetDigInputs();
-   s32fp torquePercent = VehicleControl::ProcessThrottle();
+   float torquePercent = VehicleControl::ProcessThrottle();
    Param::SetInt(Param::speed, Encoder::GetSpeed());
 
    if (MOD_RUN == opmode && initWait == -1)
    {
-      PwmGeneration::SetTorquePercent(torquePercent);
+      PwmGeneration::SetTorquePercent(FP_FROMFLT(torquePercent));
    }
    else if ((MOD_BOOST == opmode || MOD_BUCK == opmode) && initWait == -1)
    {
@@ -136,8 +136,8 @@ static void Ms10Task(void)
    stt |= DigIo::emcystop_in.Get() ? STAT_NONE : STAT_EMCYSTOP;
    stt |= DigIo::mprot_in.Get() ? STAT_NONE : STAT_MPROT;
    stt |= Param::GetInt(Param::potnom) <= 0 ? STAT_NONE : STAT_POTPRESSED;
-   stt |= udc >= Param::Get(Param::udcsw) ? STAT_NONE : STAT_UDCBELOWUDCSW;
-   stt |= udc < Param::Get(Param::udclim) ? STAT_NONE : STAT_UDCLIM;
+   stt |= udc >= Param::GetFloat(Param::udcsw) ? STAT_NONE : STAT_UDCBELOWUDCSW;
+   stt |= udc < Param::GetFloat(Param::udclim) ? STAT_NONE : STAT_UDCLIM;
 
    /* switch on DC switch if
     * - throttle is not pressed
@@ -158,7 +158,7 @@ static void Ms10Task(void)
           chargemode >= MOD_BOOST)
       {
          //In buck mode we precharge to a different voltage
-         if ((chargemode == MOD_BUCK && udc >= Param::Get(Param::udcswbuck)) || chargemode == MOD_BOOST)
+         if ((chargemode == MOD_BUCK && udc >= Param::GetFloat(Param::udcswbuck)) || chargemode == MOD_BOOST)
          {
             newMode = chargemode;
 
@@ -185,7 +185,6 @@ static void Ms10Task(void)
       opmode = newMode;
       DigIo::dcsw_out.Set();
       DigIo::err_out.Clear();
-      DigIo::prec_out.Clear();
       Param::SetInt(Param::opmode, newMode);
       ErrorMessage::UnpostAll();
    }
@@ -212,6 +211,7 @@ static void Ms10Task(void)
       //this applies new deadtime and pwmfrq and enables the outputs for the given mode
       PwmGeneration::SetOpmode(opmode);
       DigIo::err_out.Clear();
+      DigIo::prec_out.Clear();
       if (hwRev == HW_TESLAM3)
          DigIo::vtg_out.Clear();
       initWait = -1;
@@ -273,11 +273,11 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
       case Param::idcmax:
       case Param::brkmax:
          //These are candidates to be frequently set by CAN, so we handle them separately
-         Throttle::throtmax = Param::Get(Param::throtmax);
-         Throttle::throtmin = Param::Get(Param::throtmin);
-         Throttle::idcmin = Param::Get(Param::idcmin);
-         Throttle::idcmax = Param::Get(Param::idcmax);
-         Throttle::brkmax = Param::Get(Param::brkmax);
+         Throttle::throtmax = Param::GetFloat(Param::throtmax);
+         Throttle::throtmin = Param::GetFloat(Param::throtmin);
+         Throttle::idcmin = Param::GetFloat(Param::idcmin);
+         Throttle::idcmax = Param::GetFloat(Param::idcmax);
+         Throttle::brkmax = Param::GetFloat(Param::brkmax);
          break;
       case Param::nodeid:
          can->SetNodeId(Param::GetInt(Param::nodeid));
@@ -300,25 +300,25 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
          Throttle::potmax[0] = Param::GetInt(Param::potmax);
          Throttle::potmin[1] = Param::GetInt(Param::pot2min);
          Throttle::potmax[1] = Param::GetInt(Param::pot2max);
-         Throttle::brknom = Param::Get(Param::brknom);
-         Throttle::brknompedal = Param::Get(Param::brknompedal);
-         Throttle::regenRamp = Param::Get(Param::regenramp);
-         Throttle::brkmax = Param::Get(Param::brkmax);
-         Throttle::brkcruise = Param::Get(Param::brkcruise);
-         Throttle::throtmax = Param::Get(Param::throtmax);
-         Throttle::throtmin = Param::Get(Param::throtmin);
+         Throttle::brknom = Param::GetFloat(Param::brknom);
+         Throttle::brknompedal = Param::GetFloat(Param::brknompedal);
+         Throttle::regenRamp = Param::GetFloat(Param::regenramp);
+         Throttle::brkmax = Param::GetFloat(Param::brkmax);
+         Throttle::brkcruise = Param::GetFloat(Param::brkcruise);
+         Throttle::throtmax = Param::GetFloat(Param::throtmax);
+         Throttle::throtmin = Param::GetFloat(Param::throtmin);
          Throttle::idleSpeed = Param::GetInt(Param::idlespeed);
-         Throttle::speedkp = Param::Get(Param::speedkp);
+         Throttle::speedkp = Param::GetFloat(Param::speedkp);
          Throttle::speedflt = Param::GetInt(Param::speedflt);
-         Throttle::idleThrotLim = Param::Get(Param::idlethrotlim);
+         Throttle::idleThrotLim = Param::GetFloat(Param::idlethrotlim);
          Throttle::bmslimlow = Param::GetInt(Param::bmslimlow);
          Throttle::bmslimhigh = Param::GetInt(Param::bmslimhigh);
-         Throttle::udcmin = FP_MUL(Param::Get(Param::udcmin), FP_FROMFLT(0.95)); //Leave some room for the notification light
-         Throttle::udcmax = FP_MUL(Param::Get(Param::udcmax), FP_FROMFLT(1.05));
-         Throttle::idcmin = Param::Get(Param::idcmin);
-         Throttle::idcmax = Param::Get(Param::idcmax);
-         Throttle::idckp = Param::Get(Param::idckp);
-         Throttle::fmax = Param::Get(Param::fmax);
+         Throttle::udcmin = Param::GetFloat(Param::udcmin) * 0.95; //Leave some room for the notification light
+         Throttle::udcmax = Param::GetFloat(Param::udcmax) * 1.05;
+         Throttle::idcmin = Param::GetFloat(Param::idcmin);
+         Throttle::idcmax = Param::GetFloat(Param::idcmax);
+         Throttle::idckp = Param::GetFloat(Param::idckp);
+         Throttle::fmax = Param::GetFloat(Param::fmax);
 
          if (hwRev != HW_BLUEPILL)
          {

@@ -48,7 +48,7 @@ public:
       TEMP_LAST
    };
 
-   static s32fp Lookup(int digit, Sensors sensorId);
+   static float Lookup(int digit, Sensors sensorId);
 };
 
 
