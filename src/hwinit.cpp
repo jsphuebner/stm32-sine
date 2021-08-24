@@ -119,8 +119,8 @@ HWREV detect_hw()
       return HW_BLUEPILL;
    /*else if (is_floating(GPIOC, GPIO1))
       return HW_PRIUSMG1;*/
-   else if (gpio_get(GPIOB, GPIO1)) //On Tesla M3 board precharge output is tied to Vcc
-      return HW_TESLAM3;
+   //else if (gpio_get(GPIOB, GPIO1)) //On Tesla M3 board precharge output is tied to Vcc
+     // return HW_TESLAM3;
    else if (is_floating(GPIOC, GPIO9)) //Desat pin is floating
       return HW_REV1;
    else if (is_floating(GPIOB, GPIO5)) //Cruise pin is floating

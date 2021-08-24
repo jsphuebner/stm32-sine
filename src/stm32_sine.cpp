@@ -185,7 +185,6 @@ static void Ms10Task(void)
       opmode = newMode;
       DigIo::dcsw_out.Set();
       DigIo::err_out.Clear();
-      DigIo::prec_out.Clear();
       Param::SetInt(Param::opmode, newMode);
       ErrorMessage::UnpostAll();
    }
@@ -212,6 +211,7 @@ static void Ms10Task(void)
       //this applies new deadtime and pwmfrq and enables the outputs for the given mode
       PwmGeneration::SetOpmode(opmode);
       DigIo::err_out.Clear();
+      DigIo::prec_out.Clear();
       if (hwRev == HW_TESLAM3)
          DigIo::vtg_out.Clear();
       initWait = -1;

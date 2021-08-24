@@ -35,6 +35,7 @@
 #define PRECHARGE_TIMEOUT 500 //5s
 #define CAN_TIMEOUT       50  //500ms
 #define ADC_CHAN_UDC      3
+#define MAP(x, in_min, in_max, out_min,out_max) ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
 
 
 Can* VehicleControl::can;
@@ -349,8 +350,17 @@ float VehicleControl::ProcessUdc()
    #if CONTROL == CTRL_SINE
    {
       float udcnom = Param::GetFloat(Param::udcnom);
-      float fweak = Param::GetFloat(Param::fweak);
       float boost = Param::GetFloat(Param::boost);
+      float fweak;
+
+      if (Param::GetInt(Param::potnom) > 35)
+      {
+         fweak = MAP(Param::GetFloat(Param::potnom), 36, 100, (Param::GetFloat(Param::fweakstrt)), (Param::GetFloat(Param::fweak)));
+      }
+      else
+      {
+         fweak = Param::GetFloat(Param::fweakstrt);
+      }
 
       if (udcnom > 0)
       {
