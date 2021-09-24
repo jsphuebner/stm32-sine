@@ -181,7 +181,7 @@ uint16_t pwmio_setup(bool activeLow)
    return actualPattern;
 }
 
-void write_bootloader_pininit()
+void write_bootloader_pininit(bool bootprec)
 {
    uint32_t flashSize = desig_get_flash_size();
    uint32_t pindefAddr = FLASH_BASE + flashSize * 1024 - PINDEF_BLKNUM * PINDEF_BLKSIZE;
@@ -196,7 +196,7 @@ void write_bootloader_pininit()
    commands.pindef[0].level = 0;
    commands.pindef[1].port = GPIOB;
    commands.pindef[1].inout = PIN_OUT;
-   commands.pindef[1].level = 0;
+   commands.pindef[1].level = bootprec;
 
    if (hwRev == HW_BLUEPILL)
    {

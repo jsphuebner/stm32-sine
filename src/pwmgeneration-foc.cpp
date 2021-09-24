@@ -96,8 +96,8 @@ void PwmGeneration::Run()
       Param::SetInt(Param::uq, uq);
       Param::SetInt(Param::ud, ud);
 
-      /* Shut down PWM on stopped motor, neutral gear or init phase */
-      if ((0 == frq && 0 == idref && 0 == qController.GetRef()) || 0 == dir || initwait > 0)
+      /* Shut down PWM on stopped motor or init phase */
+      if ((0 == frq && 0 == idref && 0 == qController.GetRef()) || initwait > 0)
       {
          timer_disable_break_main_output(PWM_TIMER);
          dController.ResetIntegrator();
@@ -129,12 +129,8 @@ void PwmGeneration::Run()
 
 void PwmGeneration::SetTorquePercent(s32fp torquePercent)
 {
-   static int32_t heatCurRamped = 0;
    s32fp brkrampstr = Param::Get(Param::brkrampstr);
    int direction = Param::GetInt(Param::dir);
-   int heatCur = Param::GetInt(Param::heatcur);
-
-   heatCur = MIN(400, heatCur);
 
    if (frq < brkrampstr && torquePercent < 0)
    {
@@ -149,31 +145,7 @@ void PwmGeneration::SetTorquePercent(s32fp torquePercent)
    int32_t is = FP_TOINT(FP_MUL(Param::Get(Param::throtcur), direction * torquePercent));
    int32_t id, iq;
 
-   if (heatCur > 0 && torquePercent < FP_FROMINT(30))
-   {
-      int speed = Param::GetInt(Param::speed);
-
-      if (speed == 0 && torquePercent <= 0)
-      {
-         iq = 0;
-         heatCurRamped = RAMPUP(heatCurRamped, heatCur, 10);
-         id = heatCurRamped;
-      }
-      /*else if (torquePercent > 0)
-      {
-         id = FP_TOINT((-heatCur * torquePercent) / 30);
-      }*/
-      else
-      {
-         FOC::Mtpa(is, id, iq);
-         heatCurRamped = 0;
-      }
-   }
-   else
-   {
-      FOC::Mtpa(is, id, iq);
-      heatCurRamped = 0;
-   }
+   FOC::Mtpa(is, id, iq);
 
    qController.SetRef(FP_FROMINT(iq));
    fwController.SetRef(FP_FROMINT(iq));
