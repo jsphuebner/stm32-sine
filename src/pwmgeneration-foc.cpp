@@ -50,6 +50,7 @@ void PwmGeneration::Run()
    {
       static s32fp frqFiltered = 0, idcFiltered = 0;
       int dir = Param::GetInt(Param::dir);
+      int moddedfwkp;
       int kifrqgain = Param::GetInt(Param::curkifrqgain);
       s32fp id, iq;
 
@@ -61,15 +62,29 @@ void PwmGeneration::Run()
       frqFiltered = IIRFILTER(frqFiltered, frq, 8);
       int moddedKi = curki + kifrqgain * FP_TOINT(frqFiltered);
 
+      if (frq < Param::Get(Param::ffwstart))
+      {
+         moddedfwkp = 0;
+      }
+      else if (frq > Param::Get(Param::fmax))
+      {
+         moddedfwkp = fwBaseGain;
+      }
+      else
+      {
+         moddedfwkp = fwBaseGain * (FP_TOINT(frq) - Param::GetInt(Param::ffwstart));
+         moddedfwkp/= Param::GetInt(Param::fmax) - Param::GetInt(Param::ffwstart);
+      }
+
       qController.SetIntegralGain(moddedKi);
       dController.SetIntegralGain(moddedKi);
-      fwController.SetProportionalGain(fwBaseGain * dir);
+      fwController.SetProportionalGain(moddedfwkp * dir);
 
       ProcessCurrents(id, iq);
 
       if (opmode == MOD_RUN && initwait == 0)
       {
-         s32fp fwIdRef = idref <= 0 ? fwController.RunProportionalOnly(iq) : 0;
+         s32fp fwIdRef = fwController.RunProportionalOnly(iq);
          dController.SetRef(idref + fwIdRef);
          Param::SetFixed(Param::ifw, fwIdRef);
       }

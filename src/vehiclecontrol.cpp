@@ -467,7 +467,7 @@ void VehicleControl::GetTemps(float& tmphs, float &tmpm)
             priusTempCoeff *= 2;
          }
 
-         tmphs = 166.66 - tmphsi / priusTempCoeff;
+         tmphs = 166.66f - tmphsi / priusTempCoeff;
       }
       else if (snshs == TempMeas::TEMP_BMWI3HS)
       {

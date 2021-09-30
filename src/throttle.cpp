@@ -97,7 +97,7 @@ float Throttle::CalcThrottle(float potnom, float pot2nom, bool brkpedal)
    else
    {
       potnom -= brknom;
-      potnom = 100.0 * potnom / (100.0 - brknom);
+      potnom = 100.0f * potnom / (100.0f - brknom);
    }
 
    return potnom;
@@ -139,7 +139,7 @@ float Throttle::CalcCruiseSpeed(int speed)
    int speederr = cruiseSpeed - speedFiltered;
 
    float potnom = speedkp * speederr;
-   potnom = MIN(100.0, potnom);
+   potnom = MIN(100.0f, potnom);
    potnom = MAX(brkcruise, potnom);
 
    return potnom;
@@ -150,16 +150,16 @@ bool Throttle::TemperatureDerate(float temp, float tempMax, float& finalSpnt)
    float limit = 0;
 
    if (temp <= tempMax)
-      limit = 100.0;
-   else if (temp < (tempMax + 2.0))
-      limit = 50.0;
+      limit = 100.0f;
+   else if (temp < (tempMax + 2.0f))
+      limit = 50.0f;
 
    if (finalSpnt >= 0)
       finalSpnt = MIN(finalSpnt, limit);
    else
       finalSpnt = MAX(finalSpnt, -limit);
 
-   return limit < 100.0;
+   return limit < 100.0f;
 }
 
 void Throttle::BmsLimitCommand(float& finalSpnt, bool dinbms)
@@ -195,16 +195,16 @@ void Throttle::IdcLimitCommand(float& finalSpnt, float idc)
 {
    if (finalSpnt >= 0)
    {
-      s32fp idcerr = idcmax - idc;
-      s32fp res = idcerr * idckp;
+      float idcerr = idcmax - idc;
+      float res = idcerr * idckp;
 
       res = MAX(0, res);
       finalSpnt = MIN(res, finalSpnt);
    }
    else
    {
-      s32fp idcerr = idcmin - idc;
-      s32fp res = idcerr * idckp;
+      float idcerr = idcmin - idc;
+      float res = idcerr * idckp;
 
       res = MIN(0, res);
       finalSpnt = MAX(res, finalSpnt);
@@ -222,7 +222,7 @@ void Throttle::FrequencyLimitCommand(float& finalSpnt, float frequency)
       float frqerr = fmax - frqFiltered;
       float res = frqerr * 4;
 
-      res = MAX(1, res);
+      res = MAX(0, res);
       finalSpnt = MIN(res, finalSpnt);
    }
 }
