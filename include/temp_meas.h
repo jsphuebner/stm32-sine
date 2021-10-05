@@ -19,8 +19,6 @@
 #ifndef TEMP_MEAS_H_INCLUDED
 #define TEMP_MEAS_H_INCLUDED
 
-#include "my_fp.h"
-
 class TempMeas
 {
 public:
@@ -45,6 +43,7 @@ public:
       TEMP_TESLA_LDU_FLUID = 19,
       TEMP_TESLA_10K = 20,
       TEMP_OUTLANDERFRONT = 21,
+      TEMP_EPCOSB56871 = 22,
       TEMP_LAST
    };
 
@@ -580,7 +579,31 @@ public:
 2987	,\
 3002	,\
 3016	,\
-3027	
+3027
+
+#define EPCOSB57861 \
+8	,\
+14	,\
+25	,\
+42	,\
+68	,\
+107	,\
+163	,\
+240	,\
+340	,\
+470	,\
+624	,\
+808	,\
+1009	,\
+1223	,\
+1437	,\
+1642	,\
+1839	,\
+2020	,\
+2183	,\
+2327	,\
+2454
+
 
 #endif
 

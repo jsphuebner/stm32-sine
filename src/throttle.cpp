@@ -74,6 +74,7 @@ bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
 float Throttle::DigitsToPercent(int potval, int potidx)
 {
    if (potidx > 1) return 0;
+   if (potmax[potidx] == potmin[potidx]) return 100.0f;
 
    return (100 * (potval - potmin[potidx])) / (potmax[potidx] - potmin[potidx]);
 }
@@ -83,7 +84,7 @@ float Throttle::CalcThrottle(float potnom, float pot2nom, bool brkpedal)
    float scaledBrkMax = brkpedal ? brknompedal : brkmax;
 
    //Never reach 0, because that can spin up the motor
-   scaledBrkMax = -1 + (scaledBrkMax * pot2nom) / 100;
+   scaledBrkMax = -0.1 + (scaledBrkMax * pot2nom) / 100.0f;
 
    if (brkpedal)
    {

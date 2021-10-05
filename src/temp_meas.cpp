@@ -23,13 +23,14 @@
 #include <stdint.h>
 
 #define TABLEN(a) sizeof(a) / sizeof(a[0])
+#define FIRST_MOTOR_SENSOR TEMP_KTY83
 
 enum coeff { PTC, NTC };
 
 typedef struct TempSensor
 {
-   int tempMin;
-   int tempMax;
+   int16_t tempMin;
+   int16_t tempMax;
    uint8_t step;
    uint8_t tabSize;
    enum coeff coeff;
@@ -90,32 +91,36 @@ static const uint16_t NtcK45[] = { NTCK45 };
 /* Temp sensor for outlander front motor (47k) in series with 1.2k with a 2.2k for R2 */
 static const uint16_t OutlanderFront[] = { OUTLANDERFRONT };
 
+/* EPCOS B57861-S 103-F40 temp sensor */
+static const uint16_t epcosb57861[] = { EPCOSB57861 };
+
 static const TEMP_SENSOR sensors[] =
 {
-   { -25, 105, 5,  TABLEN(JCurve),    NTC, JCurve     },
-   { 0,   100, 5,  TABLEN(Semikron),  PTC, Semikron   },
-   { -5,  100, 5,  TABLEN(mbb600),    PTC, mbb600     },
-   { -50, 150, 10, TABLEN(Kty81hs),   NTC, Kty81hs    },
-   { -50, 150, 10, TABLEN(Pt1000),    PTC, Pt1000     },
-   { -50, 150, 5,  TABLEN(NtcK45),    NTC, NtcK45     },
-   { -10, 100, 10, TABLEN(leafhs),    NTC, leafhs     },
-   { -25, 105, 5,  TABLEN(fs800),     PTC, fs800      },
-   { -50, 170, 10, TABLEN(Kty83),     PTC, Kty83      },
-   { -40, 300, 10, TABLEN(Kty84),     PTC, Kty84      },
-   { -20, 150, 10, TABLEN(leaf),      NTC, leaf       },
-   { -50, 150, 10, TABLEN(kty81m),    PTC, kty81m     },
-   { -20, 200, 5,  TABLEN(Toyota),    PTC, Toyota     },
-   { -20, 190, 5,  TABLEN(Tesla100k), PTC, Tesla100k  },
-   { 0,   100, 10, TABLEN(Tesla52k),  PTC, Tesla52k   },
-   { 5,   100,  5, TABLEN(TeslaFluid),PTC, TeslaFluid },
-   { -20, 190, 5,  TABLEN(Tesla10k),  PTC, Tesla10k   },
-   { -40, 300, 10,  TABLEN(OutlanderFront),  NTC, OutlanderFront   },
+   { -25, 105, 5,  TABLEN(JCurve),         NTC, JCurve     },
+   { 0,   100, 5,  TABLEN(Semikron),       PTC, Semikron   },
+   { -5,  100, 5,  TABLEN(mbb600),         PTC, mbb600     },
+   { -50, 150, 10, TABLEN(Kty81hs),        NTC, Kty81hs    },
+   { -50, 150, 10, TABLEN(Pt1000),         PTC, Pt1000     },
+   { -50, 150, 5,  TABLEN(NtcK45),         NTC, NtcK45     },
+   { -10, 100, 10, TABLEN(leafhs),         NTC, leafhs     },
+   { -25, 105, 5,  TABLEN(fs800),          PTC, fs800      },
+   { -50, 170, 10, TABLEN(Kty83),          PTC, Kty83      },
+   { -40, 300, 10, TABLEN(Kty84),          PTC, Kty84      },
+   { -20, 150, 10, TABLEN(leaf),           NTC, leaf       },
+   { -50, 150, 10, TABLEN(kty81m),         PTC, kty81m     },
+   { -20, 200, 5,  TABLEN(Toyota),         PTC, Toyota     },
+   { -20, 190, 5,  TABLEN(Tesla100k),      PTC, Tesla100k  },
+   { 0,   100, 10, TABLEN(Tesla52k),       PTC, Tesla52k   },
+   { 5,   100,  5, TABLEN(TeslaFluid),     PTC, TeslaFluid },
+   { -20, 190, 5,  TABLEN(Tesla10k),       PTC, Tesla10k   },
+   { -40, 300, 10, TABLEN(OutlanderFront), NTC, OutlanderFront },
+   { -50, 150, 10, TABLEN(epcosb57861),    NTC, epcosb57861},
 };
 
 float TempMeas::Lookup(int digit, Sensors sensorId)
 {
    if (sensorId >= TEMP_LAST) return 0;
-   int index = sensorId >= TEMP_KTY83 ? sensorId - TEMP_KTY83 + NUM_HS_SENSORS : sensorId;
+   int index = sensorId >= FIRST_MOTOR_SENSOR ? sensorId - FIRST_MOTOR_SENSOR + NUM_HS_SENSORS : sensorId;
 
    const TEMP_SENSOR * sensor = &sensors[index];
    uint16_t last;
@@ -129,7 +134,9 @@ float TempMeas::Lookup(int digit, Sensors sensorId)
          if (0 == i) return sensor->tempMin;
          float a = sensor->coeff == NTC?cur - digit:digit - cur;
          float b = sensor->coeff == NTC?cur - last:last - cur;
-         return sensor->step * i + sensor->tempMin - sensor->step * a / b;
+         float c = sensor->step * a / b;
+         float d = (int)(sensor->step * i) + sensor->tempMin;
+         return d - c;
       }
       last = cur;
    }

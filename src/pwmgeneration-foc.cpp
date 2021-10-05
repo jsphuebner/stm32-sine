@@ -142,14 +142,15 @@ void PwmGeneration::Run()
    }
 }
 
-void PwmGeneration::SetTorquePercent(s32fp torquePercent)
+void PwmGeneration::SetTorquePercent(float torquePercent)
 {
-   s32fp brkrampstr = Param::Get(Param::brkrampstr);
+   float brkrampstr = Param::GetFloat(Param::brkrampstr);
+   float rotorfreq = (float)frq / FRAC_FAC;
    int direction = Param::GetInt(Param::dir);
 
-   if (frq < brkrampstr && torquePercent < 0)
+   if (rotorfreq < brkrampstr && torquePercent < 0)
    {
-      torquePercent = FP_MUL(FP_DIV(frq, brkrampstr), torquePercent);
+      torquePercent = (rotorfreq / brkrampstr) * torquePercent;
    }
 
    if (torquePercent < 0)
@@ -157,7 +158,7 @@ void PwmGeneration::SetTorquePercent(s32fp torquePercent)
       direction = Encoder::GetRotorDirection();
    }
 
-   int32_t is = FP_TOINT(FP_MUL(Param::Get(Param::throtcur), direction * torquePercent));
+   int32_t is = Param::GetFloat(Param::throtcur) * direction * torquePercent;
    int32_t id, iq;
 
    FOC::Mtpa(is, id, iq);

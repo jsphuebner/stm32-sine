@@ -126,7 +126,7 @@ static void Ms10Task(void)
 
    if (MOD_RUN == opmode && initWait == -1)
    {
-      PwmGeneration::SetTorquePercent(FP_FROMFLT(torquePercent));
+      PwmGeneration::SetTorquePercent(torquePercent);
    }
    else if ((MOD_BOOST == opmode || MOD_BUCK == opmode) && initWait == -1)
    {
