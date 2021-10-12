@@ -112,20 +112,18 @@ float Throttle::RampThrottle(float potnom)
    if (potnom >= throttleRamped)
    {
       throttleRamped = RAMPUP(throttleRamped, potnom, throttleRamp);
-      potnom = throttleRamped;
    }
    else if (potnom < throttleRamped && potnom > 0)
    {
-      throttleRamped = potnom; //No ramping from high throttle to low throttle
+      throttleRamped = RAMPDOWN(throttleRamped, potnom, throttleRamp);
    }
    else //potnom < throttleRamped && potnom <= 0
    {
       throttleRamped = MIN(0, throttleRamped); //start ramping at 0
       throttleRamped = RAMPDOWN(throttleRamped, potnom, regenRamp);
-      potnom = throttleRamped;
    }
 
-   return potnom;
+   return throttleRamped;
 }
 
 float Throttle::CalcIdleSpeed(int speed)

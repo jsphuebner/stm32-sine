@@ -68,6 +68,7 @@ class PwmGeneration
       static uint16_t slipIncr;
       static s32fp fslip;
       static s32fp frq;
+      static s32fp frqFiltered;
       static uint8_t shiftForTimer;
       static int opmode;
       static s32fp ilofs[2];

@@ -48,7 +48,7 @@ void PwmGeneration::Run()
 {
    if (opmode == MOD_MANUAL || opmode == MOD_RUN)
    {
-      static s32fp frqFiltered = 0, idcFiltered = 0;
+      static s32fp idcFiltered = 0;
       int dir = Param::GetInt(Param::dir);
       int moddedfwkp;
       int kifrqgain = Param::GetInt(Param::curkifrqgain);
@@ -248,7 +248,7 @@ void PwmGeneration::CalcNextAngleSync(int dir)
    {
       uint16_t syncOfs = Param::GetInt(Param::syncofs);
       uint16_t rotorAngle = Encoder::GetRotorAngle();
-      int syncadv = (frq - FP_FROMINT(20)) * Param::GetInt(Param::syncadv);
+      int syncadv = frqFiltered * Param::GetInt(Param::syncadv);
       syncadv = MAX(0, syncadv);
 
       //Compensate rotor movement that happened between sampling and processing

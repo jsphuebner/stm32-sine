@@ -42,6 +42,7 @@ s32fp    PwmGeneration::ampnom;
 uint16_t PwmGeneration::slipIncr;
 s32fp    PwmGeneration::fslip;
 s32fp    PwmGeneration::frq;
+s32fp    PwmGeneration::frqFiltered;
 uint8_t  PwmGeneration::shiftForTimer;
 int      PwmGeneration::opmode;
 s32fp    PwmGeneration::ilofs[2];
