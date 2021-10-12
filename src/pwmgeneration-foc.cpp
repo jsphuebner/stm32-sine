@@ -145,7 +145,7 @@ void PwmGeneration::Run()
 void PwmGeneration::SetTorquePercent(float torquePercent)
 {
    float brkrampstr = Param::GetFloat(Param::brkrampstr);
-   float rotorfreq = (float)frq / FRAC_FAC;
+   float rotorfreq = FP_TOFLOAT(frq);
    int direction = Param::GetInt(Param::dir);
 
    if (rotorfreq < brkrampstr && torquePercent < 0)

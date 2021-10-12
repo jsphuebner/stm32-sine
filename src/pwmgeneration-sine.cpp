@@ -84,7 +84,7 @@ void PwmGeneration::Run()
 void PwmGeneration::SetTorquePercent(float torque)
 {
    const int filterConst = 4;
-   const float roundingError = ((float)((1 << filterConst) - 1)) / FRAC_FAC;
+   const float roundingError = FP_TOFLOAT((float)((1 << filterConst) - 1));
    float fslipmin = Param::GetFloat(Param::fslipmin);
    float ampmin = Param::GetFloat(Param::ampmin);
    float slipstart = Param::GetFloat(Param::slipstart);
@@ -124,7 +124,7 @@ void PwmGeneration::SetTorquePercent(float torque)
    else
    {
       float brkrampstr = Param::GetFloat(Param::brkrampstr);
-      float rotorFrq = ((float)Encoder::GetRotorFrequency()) / FRAC_FAC;
+      float rotorFrq = FP_TOFLOAT(Encoder::GetRotorFrequency());
 
       ampnomLocal = -torque;
 

@@ -157,7 +157,7 @@ float VehicleControl::ProcessThrottle()
    if ((int)Encoder::GetSpeed() < Param::GetInt(Param::throtramprpm))
       Throttle::throttleRamp = Param::GetFloat(Param::throtramp);
    else
-      Throttle::throttleRamp = Param::GetAttrib(Param::throtramp)->max / FRAC_FAC;
+      Throttle::throttleRamp = FP_TOFLOAT(Param::GetAttrib(Param::throtramp)->max);
 
    throtSpnt = GetUserThrottleCommand();
    GetCruiseCreepCommand(finalSpnt, throtSpnt);
