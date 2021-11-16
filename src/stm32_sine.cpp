@@ -133,7 +133,7 @@ static void Ms10Task(void)
       RunCharger(udc);
    }
 
-   stt |= DigIo::emcystop_in.Get() ? STAT_NONE : STAT_EMCYSTOP;
+   stt |= DigIo::emcystop_in.Get() || hwRev == HW_REV3 ? STAT_NONE : STAT_EMCYSTOP;
    stt |= DigIo::mprot_in.Get() ? STAT_NONE : STAT_MPROT;
    stt |= Param::GetInt(Param::potnom) <= 0 ? STAT_NONE : STAT_POTPRESSED;
    stt |= udc >= Param::GetFloat(Param::udcsw) ? STAT_NONE : STAT_UDCBELOWUDCSW;
@@ -203,6 +203,10 @@ static void Ms10Task(void)
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
    }
+   else if (MOD_MANUAL == opmode)
+   {
+      PwmGeneration::SetOpmode(opmode);
+   }
    else if (0 == initWait)
    {
       PwmGeneration::SetTorquePercent(0);
@@ -212,15 +216,11 @@ static void Ms10Task(void)
       PwmGeneration::SetOpmode(opmode);
       DigIo::err_out.Clear();
       DigIo::prec_out.Clear();
-      if (hwRev == HW_TESLAM3)
-         DigIo::vtg_out.Clear();
       initWait = -1;
    }
    else if (initWait == 10)
    {
       PwmGeneration::SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
-      if (hwRev == HW_TESLAM3)
-         DigIo::vtg_out.Set();
       initWait--;
    }
    else if (initWait > 0)

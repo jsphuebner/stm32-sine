@@ -40,6 +40,7 @@ static s32fp idref = 0;
 static int curki = 0;
 static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(2/3)*1.05 (inverter losses)
 static tim_oc_id ocChannels[3];
+static int32_t lastModIndex;
 static PiController qController;
 static PiController dController;
 static PiController fwController;
@@ -50,7 +51,7 @@ void PwmGeneration::Run()
    {
       static s32fp idcFiltered = 0;
       int dir = Param::GetInt(Param::dir);
-      int moddedfwkp;
+      //int moddedfwkp;
       int kifrqgain = Param::GetInt(Param::curkifrqgain);
       s32fp id, iq;
 
@@ -62,7 +63,7 @@ void PwmGeneration::Run()
       frqFiltered = IIRFILTER(frqFiltered, frq, 8);
       int moddedKi = curki + kifrqgain * FP_TOINT(frqFiltered);
 
-      if (frq < Param::Get(Param::ffwstart))
+      /*if (frq < Param::Get(Param::ffwstart))
       {
          moddedfwkp = 0;
       }
@@ -74,17 +75,17 @@ void PwmGeneration::Run()
       {
          moddedfwkp = fwBaseGain * (FP_TOINT(frq) - Param::GetInt(Param::ffwstart));
          moddedfwkp/= Param::GetInt(Param::fmax) - Param::GetInt(Param::ffwstart);
-      }
+      }*/
 
       qController.SetIntegralGain(moddedKi);
       dController.SetIntegralGain(moddedKi);
-      fwController.SetProportionalGain(moddedfwkp * dir);
+      //fwController.SetProportionalGain(fwBaseGain);
 
       ProcessCurrents(id, iq);
 
       if (opmode == MOD_RUN && initwait == 0)
       {
-         s32fp fwIdRef = fwController.RunProportionalOnly(iq);
+         s32fp fwIdRef = fwController.Run(lastModIndex / 16);
          dController.SetRef(idref + fwIdRef);
          Param::SetFixed(Param::ifw, fwIdRef);
       }
@@ -101,6 +102,7 @@ void PwmGeneration::Run()
       int32_t uq = qController.Run(iq);
       FOC::InvParkClarke(ud, uq);
 
+      lastModIndex = FOC::GetTotalVoltage(ud, uq);
       s32fp idc = (iq * uq + id * ud) / FOC::GetMaximumModulationIndex();
       idc = FP_MUL(idc, dcCurFac);
       idcFiltered = IIRFILTER(idcFiltered, idc, Param::GetInt(Param::idcflt));
@@ -110,6 +112,7 @@ void PwmGeneration::Run()
       Param::SetFixed(Param::idc, idcFiltered);
       Param::SetInt(Param::uq, uq);
       Param::SetInt(Param::ud, ud);
+      Param::SetInt(Param::modindex, lastModIndex);
 
       /* Shut down PWM on stopped motor or init phase */
       if ((0 == frq && 0 == idref && 0 == qController.GetRef()) || initwait > 0)
@@ -164,7 +167,7 @@ void PwmGeneration::SetTorquePercent(float torquePercent)
    FOC::Mtpa(is, id, iq);
 
    qController.SetRef(FP_FROMINT(iq));
-   fwController.SetRef(FP_FROMINT(iq));
+   //fwController.SetRef(FP_FROMINT(iq));
    idref = FP_FROMINT(id);
 }
 
@@ -172,13 +175,15 @@ void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp)
 {
    qController.SetGains(kp, ki);
    dController.SetGains(kp, ki);
+   //fwController.SetProportionalGain(fwkp);
+   fwController.SetGains(fwkp, Param::GetInt(Param::fwki));
    fwBaseGain = fwkp;
    curki = ki;
 }
 
 void PwmGeneration::PwmInit()
 {
-   int32_t maxVd = FOC::GetMaximumModulationIndex() - 2000;
+   int32_t maxVd = (FOC::GetMaximumModulationIndex() * 95) / 100;
    pwmfrq = TimerSetup(Param::GetInt(Param::deadtime), Param::GetInt(Param::pwmpol));
    slipIncr = FRQ_TO_ANGLE(fslip);
    Encoder::SetPwmFrequency(pwmfrq);
@@ -189,10 +194,11 @@ void PwmGeneration::PwmInit()
    qController.SetMinMaxY(-maxVd, maxVd);
    dController.ResetIntegrator();
    dController.SetCallingFrequency(pwmfrq);
-   dController.SetMinMaxY(-maxVd, maxVd / 2);
+   dController.SetMinMaxY(-maxVd, maxVd);
    fwController.ResetIntegrator();
    fwController.SetCallingFrequency(pwmfrq);
    fwController.SetMinMaxY(-50 * Param::Get(Param::throtcur), 0); //allow 50% of max current for extra field weakening
+   fwController.SetRef(((maxVd*95)/100)/16); //allow 95% bus voltage usage
 
    if ((Param::GetInt(Param::pinswap) & SWAP_PWM13) > 0)
    {

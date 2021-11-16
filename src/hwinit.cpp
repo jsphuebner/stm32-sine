@@ -148,7 +148,6 @@ HWREV io_setup()
       case HW_REV2:
       case HW_REV3:
       case HW_PRIUSMG1:
-      case HW_TESLAM3:
          break;
       case HW_PRIUS:
          DigIo::emcystop_in.Configure(GPIOC, GPIO7, PinMode::INPUT_PU);

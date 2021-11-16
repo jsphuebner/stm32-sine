@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.13.R
+#define VER 5.14.B
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -53,8 +53,8 @@
     PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      20000,  32,     107 ) \
     PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      100000, 20000,  108 ) \
     PARAM_ENTRY(CAT_MOTOR,   curkifrqgain,"dig/Hz",  0,      1000,   50,     120 ) \
-    PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        -10000, 0,      -100,   118 ) \
-    PARAM_ENTRY(CAT_MOTOR,   ffwstart,    "Hz",      0,      1000,   200,    136 ) \
+    PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        0,      1000,   10,     118 ) \
+    PARAM_ENTRY(CAT_MOTOR,   fwki,        "",        0,      100000, 10,     138 ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
     PARAM_ENTRY(CAT_MOTOR,   syncadv,     "dig/Hz",  0,      65535,  10,     133 )
 
@@ -197,6 +197,7 @@
     VALUE_ENTRY(ifw,     "A",     2048 ) \
     VALUE_ENTRY(ud,      "dig",   2046 ) \
     VALUE_ENTRY(uq,      "dig",   2047 ) \
+    VALUE_ENTRY(modindex,"dig",   2047 ) \
 
 #if CONTROL == CTRL_SINE
 #define PARAM_LIST \
