@@ -317,9 +317,8 @@ float VehicleControl::ProcessUdc()
    udcFiltered = IIRFILTER(udcFiltered, udcRaw, 2);
    udcfp = (udcFiltered - udcofs) / udcgain;
 
-   //On M3 pin is used for gate drive enable
    //On i3 pin is used as SPI_MOSI
-   if (hwRev != HW_TESLAM3 && snshs != TempMeas::TEMP_BMWI3HS)
+   if (snshs != TempMeas::TEMP_BMWI3HS)
    {
       if (udcfp < udcmin || udcfp > udcmax)
          DigIo::vtg_out.Set();

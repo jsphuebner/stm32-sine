@@ -212,15 +212,11 @@ static void Ms10Task(void)
       PwmGeneration::SetOpmode(opmode);
       DigIo::err_out.Clear();
       DigIo::prec_out.Clear();
-      if (hwRev == HW_TESLAM3)
-         DigIo::vtg_out.Clear();
       initWait = -1;
    }
    else if (initWait == 10)
    {
       PwmGeneration::SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
-      if (hwRev == HW_TESLAM3)
-         DigIo::vtg_out.Set();
       initWait--;
    }
    else if (initWait > 0)

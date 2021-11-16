@@ -392,7 +392,7 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, bool activeLow)
 
    timer_disable_break_automatic_output(PWM_TIMER);
 
-   if (hwRev == HW_BLUEPILL || hwRev == HW_PRIUS || hwRev == HW_TESLAM3)
+   if (hwRev == HW_BLUEPILL || hwRev == HW_PRIUS)
       timer_set_break_polarity_low(PWM_TIMER);
    else
       timer_set_break_polarity_high(PWM_TIMER);
