@@ -189,7 +189,7 @@ void PwmGeneration::PwmInit()
    qController.SetMinMaxY(-maxVd, maxVd);
    dController.ResetIntegrator();
    dController.SetCallingFrequency(pwmfrq);
-   dController.SetMinMaxY(-maxVd, maxVd / 2);
+   dController.SetMinMaxY(-maxVd, maxVd);
    fwController.ResetIntegrator();
    fwController.SetCallingFrequency(pwmfrq);
    fwController.SetMinMaxY(-50 * Param::Get(Param::throtcur), 0); //allow 50% of max current for extra field weakening
