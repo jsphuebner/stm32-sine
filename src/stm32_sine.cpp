@@ -248,7 +248,7 @@ static void Ms1Task(void)
 }
 
 /** This function is called when the user changes a parameter */
-extern void parm_Change(Param::PARAM_NUM paramNum)
+void Param::Change(Param::PARAM_NUM paramNum)
 {
    switch (paramNum)
    {
@@ -307,6 +307,7 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
          Throttle::throtmax = Param::GetFloat(Param::throtmax);
          Throttle::throtmin = Param::GetFloat(Param::throtmin);
          Throttle::idleSpeed = Param::GetInt(Param::idlespeed);
+         Throttle::holdkp = Param::GetFloat(Param::holdkp);
          Throttle::speedkp = Param::GetFloat(Param::speedkp);
          Throttle::speedflt = Param::GetInt(Param::speedflt);
          Throttle::idleThrotLim = Param::GetFloat(Param::idlethrotlim);
@@ -389,9 +390,9 @@ extern "C" int main(void)
       t.DisableTxDMA();
 
    UpgradeParameters();
-   parm_Change(Param::PARAM_LAST);
-   parm_Change(Param::nodeid);
-   parm_Change(Param::bootprec); //rewrite pininit structure if necessary
+   Param::Change(Param::PARAM_LAST);
+   Param::Change(Param::nodeid);
+   Param::Change(Param::bootprec); //rewrite pininit structure if necessary
 
    while(1)
       t.Run();

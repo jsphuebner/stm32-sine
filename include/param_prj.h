@@ -17,14 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.14.R
+#define VER 5.15.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 138
+//Next param id (increase when adding new parameter!): 139
 //Next value Id: 2049
 /*              category     name         unit       min     max     default id */
 
@@ -129,7 +129,8 @@
 #define AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
     PARAM_ENTRY(CAT_AUTOM,   idlespeed,   "rpm",     -100,   10000,  -100,   54  ) \
     PARAM_ENTRY(CAT_AUTOM,   idlethrotlim,"%",       0,      100,    50,     65  ) \
-    PARAM_ENTRY(CAT_AUTOM,   idlemode,    IDLEMODS,  0,      3,      0,      66  ) \
+    PARAM_ENTRY(CAT_AUTOM,   idlemode,    IDLEMODS,  0,      4,      3,      66  ) \
+    PARAM_ENTRY(CAT_AUTOM,   holdkp,      "",        -100,   100,    0.25,   138 ) \
     PARAM_ENTRY(CAT_AUTOM,   speedkp,     "",        0,      100,    0.25,   53  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedflt,    "",        0,      16,     5,      57  ) \
     PARAM_ENTRY(CAT_AUTOM,   cruisemode,  BTNSWITCH, 0,      2,      0,      62  ) \
@@ -248,7 +249,7 @@
 #define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=speedfrq"
 #define BTNSWITCH    "0=Button, 1=Switch, 2=CAN"
 #define DIRMODES     "0=Button, 1=Switch, 2=ButtonReversed, 3=SwitchReversed, 4=DefaultForward"
-#define IDLEMODS     "0=always, 1=nobrake, 2=cruise, 3=off"
+#define IDLEMODS     "0=Always, 1=NoBrake, 2=Cruise, 3=Off, 4=HillHold"
 #define ONOFF        "0=Off, 1=On, 2=na"
 #define OKERR        "0=Error, 1=Ok, 2=na"
 #define CHARGEMODS   "0=Off, 3=Boost, 4=Buck"
@@ -310,7 +311,8 @@ enum _idlemodes
    IDLE_MODE_ALWAYS = 0,
    IDLE_MODE_NOBRAKE,
    IDLE_MODE_CRUISE,
-   IDLE_MODE_OFF
+   IDLE_MODE_OFF,
+   IDLE_MODE_HILLHOLD
 };
 
 enum _modes

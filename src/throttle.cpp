@@ -31,6 +31,7 @@ float Throttle::brkcruise;
 int Throttle::idleSpeed;
 int Throttle::cruiseSpeed;
 float Throttle::speedkp;
+float Throttle::holdkp;
 int Throttle::speedflt;
 int Throttle::speedFiltered;
 float Throttle::idleThrotLim;
@@ -142,6 +143,13 @@ float Throttle::CalcCruiseSpeed(int speed)
    potnom = MAX(brkcruise, potnom);
 
    return potnom;
+}
+
+void Throttle::HoldPosition(int accumulatedTurns, float& finalSpnt)
+{
+   finalSpnt = (holdkp * accumulatedTurns) / 1000;
+   finalSpnt = MIN(idleThrotLim, finalSpnt);
+   finalSpnt = MAX(-idleThrotLim, finalSpnt);
 }
 
 bool Throttle::TemperatureDerate(float temp, float tempMax, float& finalSpnt)
