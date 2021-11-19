@@ -66,7 +66,6 @@
 		<Unit filename="include/anain_prj.h" />
 		<Unit filename="include/digio_prj.h" />
 		<Unit filename="include/errormessage_prj.h" />
-		<Unit filename="include/hw/stgap1as_gate_driver.h" />
 		<Unit filename="include/hwdefs.h" />
 		<Unit filename="include/hwinit.h" />
 		<Unit filename="include/inc_encoder.h" />
