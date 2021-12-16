@@ -105,6 +105,24 @@ float Throttle::CalcThrottle(float potnom, float pot2nom, bool brkpedal)
    return potnom;
 }
 
+float Throttle::CalcThrottleBiDir(float potval, bool brkpedal)
+{
+   if (brkpedal) return brknompedal; //in bidir mode brake pedal sends motor to idle
+
+   if (ABS(potval - 50.0f) <= brknom) potval = 50.0f;
+
+   float bidirPotval = 2 * potval - 100.0f;
+
+   if (bidirPotval < 0)
+      bidirPotval += 2 * brknom;
+   else if (bidirPotval > 0)
+      bidirPotval -= 2 * brknom;
+
+   bidirPotval *= (100.0f + 2 * brknom) / 100.0f;
+
+   return bidirPotval;
+}
+
 float Throttle::RampThrottle(float potnom)
 {
    potnom = MIN(potnom, throtmax);
@@ -145,9 +163,9 @@ float Throttle::CalcCruiseSpeed(int speed)
    return potnom;
 }
 
-void Throttle::HoldPosition(int accumulatedTurns, float& finalSpnt)
+void Throttle::HoldPosition(int distance, float& finalSpnt)
 {
-   finalSpnt = (holdkp * accumulatedTurns) / 1000;
+   finalSpnt = (holdkp * distance) / 1000;
    finalSpnt = MIN(idleThrotLim, finalSpnt);
    finalSpnt = MAX(-idleThrotLim, finalSpnt);
 }

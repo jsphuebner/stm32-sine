@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.15.R
+#define VER 5.16.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -106,7 +106,7 @@
     PARAM_ENTRY(CAT_THROTTLE,potmax,      "dig",     0,      4095,   4095,   18  ) \
     PARAM_ENTRY(CAT_THROTTLE,pot2min,     "dig",     0,      4095,   4095,   63  ) \
     PARAM_ENTRY(CAT_THROTTLE,pot2max,     "dig",     0,      4095,   4095,   64  ) \
-    PARAM_ENTRY(CAT_THROTTLE,potmode,     POTMODES,  0,      3,      0,      82  ) \
+    PARAM_ENTRY(CAT_THROTTLE,potmode,     POTMODES,  0,      6,      0,      82  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtramp,   "%/10ms",  0.1,    100,    100,    81  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtramprpm,"rpm",     0,      20000,  20000,  85  )
 
@@ -254,7 +254,7 @@
 #define OKERR        "0=Error, 1=Ok, 2=na"
 #define CHARGEMODS   "0=Off, 3=Boost, 4=Buck"
 #define ENCMODES     "0=Single, 1=AB, 2=ABZ, 3=SPI, 4=Resolver, 5=SinCos"
-#define POTMODES     "0=SingleRegen, 1=DualChannel, 2=CAN, 3=CANDual"
+#define POTMODES     "0=SingleRegen, 1=DualChannel, 2=CAN, 3=CANDual, 4=BiDir, 6=CANBiDir"
 #define CANSPEEDS    "0=250k, 1=500k, 2=800k, 3=1M"
 #define CANIOS       "1=Cruise, 2=Start, 4=Brake, 8=Fwd, 16=Rev, 32=Bms"
 #define CANPERIODS   "0=100ms, 1=10ms"
@@ -295,7 +295,8 @@ enum _potmodes
 {
    POTMODE_REGENADJ = 0,
    POTMODE_DUALCHANNEL = 1,
-   POTMODE_CAN = 2
+   POTMODE_CAN = 2,
+   POTMODE_BIDIR = 4
 };
 
 enum _pwmfuncs

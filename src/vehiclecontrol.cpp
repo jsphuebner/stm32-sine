@@ -107,6 +107,9 @@ void VehicleControl::SelectDirection()
    int userDirSelection = 0;
    int dirSign = (Param::GetInt(Param::dirmode) & DIR_REVERSED) ? -1 : 1;
 
+   //When in bidirection throttle mode, direction is determined by that
+   if (Param::GetInt(Param::potmode) & POTMODE_BIDIR) return;
+
    if (Param::GetInt(Param::dirmode) == DIR_DEFAULTFORWARD)
    {
       if (Param::GetBool(Param::din_forward) && Param::GetBool(Param::din_reverse))
@@ -540,7 +543,28 @@ float VehicleControl::GetUserThrottleCommand()
    potnom1 = Throttle::DigitsToPercent(potval, 0);
    potnom2 = Throttle::DigitsToPercent(pot2val, 1);
 
-   if ((potmode & POTMODE_DUALCHANNEL) > 0)
+   if ((potmode & POTMODE_BIDIR) > 0)
+   {
+      if (!inRange1) return 0;
+      float bidirThrot = Throttle::CalcThrottleBiDir(potnom1, brake);
+
+      if (bidirThrot == 0)
+      {
+         bidirThrot = Throttle::brkmax;
+         Param::SetInt(Param::dir, Encoder::GetRotorDirection());
+      }
+      else if (bidirThrot < 0)
+      {
+         bidirThrot = -bidirThrot;
+         Param::SetInt(Param::dir, -1);
+      }
+      else //bidirThrot > 0
+      {
+         Param::SetInt(Param::dir, 1);
+      }
+      return bidirThrot;
+   }
+   else if ((potmode & POTMODE_DUALCHANNEL) > 0)
    {
       if (inRange1 && inRange2)
       {
@@ -585,8 +609,9 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
    bool autoDertermineDirection = true;
    bool brake = Param::GetBool(Param::din_brake);
    int idlemode = Param::GetInt(Param::idlemode);
-   float idleSpnt = Throttle::CalcIdleSpeed(Encoder::GetSpeed());
-   float cruiseSpnt = Throttle::CalcCruiseSpeed(Encoder::GetSpeed());
+   uint32_t speed = Encoder::GetSpeed();
+   float idleSpnt = Throttle::CalcIdleSpeed(speed);
+   float cruiseSpnt = Throttle::CalcCruiseSpeed(speed);
 
    finalSpnt = throtSpnt; //assume no regulation
 
@@ -598,14 +623,14 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
    }
    else if (idlemode == IDLE_MODE_HILLHOLD)
    {
-      if (brake)
+      if (brake && speed == 0)
       {
-         Encoder::ResetAccumulatedTurns();
+         Encoder::ResetDistance();
          runHillHold = true;
       }
       else if (runHillHold)
       {
-         Throttle::HoldPosition(Encoder::GetAccumulatedTurns(), finalSpnt);
+         Throttle::HoldPosition(Encoder::GetDistance(), finalSpnt);
          autoDertermineDirection = false;
       }
 

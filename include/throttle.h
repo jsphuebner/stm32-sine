@@ -28,9 +28,10 @@ class Throttle
       static bool CheckAndLimitRange(int* potval, int potIdx);
       static float DigitsToPercent(int potval, int potidx);
       static float CalcThrottle(float potval, float pot2val, bool brkpedal);
+      static float CalcThrottleBiDir(float potval, bool brkpedal);
       static float CalcIdleSpeed(int speed);
       static float CalcCruiseSpeed(int speed);
-      static void HoldPosition(int accumulatedTurns, float& finalSpnt);
+      static void HoldPosition(int distance, float& finalSpnt);
       static bool TemperatureDerate(float tmp, float tmpMax, float& finalSpnt);
       static void BmsLimitCommand(float& finalSpnt, bool dinbms);
       static void UdcLimitCommand(float& finalSpnt, float udc);

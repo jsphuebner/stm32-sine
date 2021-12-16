@@ -123,16 +123,8 @@ void PwmGeneration::SetTorquePercent(float torque)
    }
    else
    {
-      float brkrampstr = Param::GetFloat(Param::brkrampstr);
-      float rotorFrq = FP_TOFLOAT(Encoder::GetRotorFrequency());
-
       ampnomLocal = -torque;
-
       fslipspnt = -fslipmin;
-      if (rotorFrq < brkrampstr)
-      {
-         ampnomLocal = rotorFrq / brkrampstr * ampnomLocal;
-      }
    }
 
    ampnomLocal = MIN(ampnomLocal, 100.0f);
