@@ -589,7 +589,7 @@ float VehicleControl::GetUserThrottleCommand()
          return 0;
       }
 
-      potnom2 = FP_FROMINT(100); //No regen attenuation
+      potnom2 = 100.0f; //No regen attenuation
    }
    else if (!inRange1)
    {
