@@ -130,7 +130,7 @@
     PARAM_ENTRY(CAT_AUTOM,   idlespeed,   "rpm",     -100,   10000,  -100,   54  ) \
     PARAM_ENTRY(CAT_AUTOM,   idlethrotlim,"%",       0,      100,    50,     65  ) \
     PARAM_ENTRY(CAT_AUTOM,   idlemode,    IDLEMODS,  0,      4,      3,      66  ) \
-    PARAM_ENTRY(CAT_AUTOM,   holdkp,      "",        -100,   100,    0.25,   138 ) \
+    PARAM_ENTRY(CAT_AUTOM,   holdkp,      "",        -100,   0,     -0.25,   138 ) \
     PARAM_ENTRY(CAT_AUTOM,   speedkp,     "",        0,      100,    0.25,   53  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedflt,    "",        0,      16,     5,      57  ) \
     PARAM_ENTRY(CAT_AUTOM,   cruisemode,  BTNSWITCH, 0,      2,      0,      62  ) \
