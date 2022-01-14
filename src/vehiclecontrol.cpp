@@ -197,15 +197,17 @@ float VehicleControl::ProcessThrottle()
       float rotorfreq = FP_TOFLOAT(Encoder::GetRotorFrequency());
       float brkrampstr = Param::GetFloat(Param::brkrampstr);
 
-      if (rotorfreq < brkrampstr && throtSpnt < 0)
+      if (rotorfreq < brkrampstr && finalSpnt < 0)
       {
          finalSpnt = (rotorfreq / brkrampstr) * finalSpnt;
       }
 
       if (finalSpnt < 0)
          finalSpnt *= Encoder::GetRotorDirection();
-      else
+#if CONTROL == CTRL_FOC
+      else //inconsistency here: in slip control negative always means regen
          finalSpnt *= Param::GetInt(Param::dir);
+#endif // CONTROL
    }
 
    return finalSpnt;
@@ -630,8 +632,8 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
       }
       else if (runHillHold)
       {
-         Throttle::HoldPosition(Encoder::GetDistance(), finalSpnt);
-         autoDertermineDirection = false;
+         runHillHold = Throttle::HoldPosition(Encoder::GetDistance(), finalSpnt);
+         autoDertermineDirection = !runHillHold;
       }
 
       if (throtSpnt > 0 && throtSpnt > finalSpnt)

@@ -163,11 +163,14 @@ float Throttle::CalcCruiseSpeed(int speed)
    return potnom;
 }
 
-void Throttle::HoldPosition(int distance, float& finalSpnt)
+bool Throttle::HoldPosition(int distance, float& finalSpnt)
 {
+   //do not act when rolling forward and exit hill hold mode
+   if (distance > 10000) return false;
    finalSpnt = (holdkp * distance) / 1000;
    finalSpnt = MIN(idleThrotLim, finalSpnt);
-   finalSpnt = MAX(-idleThrotLim, finalSpnt);
+   finalSpnt = MAX(0, finalSpnt);
+   return true;
 }
 
 bool Throttle::TemperatureDerate(float temp, float tempMax, float& finalSpnt)

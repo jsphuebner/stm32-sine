@@ -31,7 +31,7 @@ class Throttle
       static float CalcThrottleBiDir(float potval, bool brkpedal);
       static float CalcIdleSpeed(int speed);
       static float CalcCruiseSpeed(int speed);
-      static void HoldPosition(int distance, float& finalSpnt);
+      static bool HoldPosition(int distance, float& finalSpnt);
       static bool TemperatureDerate(float tmp, float tmpMax, float& finalSpnt);
       static void BmsLimitCommand(float& finalSpnt, bool dinbms);
       static void UdcLimitCommand(float& finalSpnt, float udc);
