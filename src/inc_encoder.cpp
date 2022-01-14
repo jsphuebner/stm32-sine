@@ -74,6 +74,7 @@ static bool ignore = true;
 static enum Encoder::mode encMode = Encoder::INVALID;
 static bool seenNorthSignal = false;
 static int32_t turnsSinceLastSample = 0;
+static int32_t distance = 0;
 static int32_t resolverMin = 0, resolverMax = 0, startupDelay;
 static int32_t sinChan = 3, cosChan = 2;
 static int32_t detectedDirection = 0;
@@ -238,6 +239,8 @@ void Encoder::UpdateRotorAngle(int dir)
  */
 void Encoder::UpdateRotorFrequency(int callingFrequency)
 {
+   distance += turnsSinceLastSample;
+
    if ((encMode == AB) || (encMode == ABZ))
    {
       //65536 is one turn
@@ -273,6 +276,16 @@ uint16_t Encoder::GetRotorAngle()
 u32fp Encoder::GetRotorFrequency()
 {
    return lastFrequency;
+}
+
+void Encoder::ResetDistance()
+{
+   distance = 0;
+}
+
+int32_t Encoder::GetDistance()
+{
+   return distance;
 }
 
 int Encoder::GetRotorDirection()

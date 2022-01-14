@@ -17,14 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.14.R
+#define VER 5.16.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 138
+//Next param id (increase when adding new parameter!): 139
 //Next value Id: 2049
 /*              category     name         unit       min     max     default id */
 
@@ -106,7 +106,7 @@
     PARAM_ENTRY(CAT_THROTTLE,potmax,      "dig",     0,      4095,   4095,   18  ) \
     PARAM_ENTRY(CAT_THROTTLE,pot2min,     "dig",     0,      4095,   4095,   63  ) \
     PARAM_ENTRY(CAT_THROTTLE,pot2max,     "dig",     0,      4095,   4095,   64  ) \
-    PARAM_ENTRY(CAT_THROTTLE,potmode,     POTMODES,  0,      3,      0,      82  ) \
+    PARAM_ENTRY(CAT_THROTTLE,potmode,     POTMODES,  0,      6,      0,      82  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtramp,   "%/10ms",  0.1,    100,    100,    81  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtramprpm,"rpm",     0,      20000,  20000,  85  )
 
@@ -129,7 +129,8 @@
 #define AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
     PARAM_ENTRY(CAT_AUTOM,   idlespeed,   "rpm",     -100,   10000,  -100,   54  ) \
     PARAM_ENTRY(CAT_AUTOM,   idlethrotlim,"%",       0,      100,    50,     65  ) \
-    PARAM_ENTRY(CAT_AUTOM,   idlemode,    IDLEMODS,  0,      3,      0,      66  ) \
+    PARAM_ENTRY(CAT_AUTOM,   idlemode,    IDLEMODS,  0,      4,      3,      66  ) \
+    PARAM_ENTRY(CAT_AUTOM,   holdkp,      "",        -100,   100,    0.25,   138 ) \
     PARAM_ENTRY(CAT_AUTOM,   speedkp,     "",        0,      100,    0.25,   53  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedflt,    "",        0,      16,     5,      57  ) \
     PARAM_ENTRY(CAT_AUTOM,   cruisemode,  BTNSWITCH, 0,      2,      0,      62  ) \
@@ -248,12 +249,12 @@
 #define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=speedfrq"
 #define BTNSWITCH    "0=Button, 1=Switch, 2=CAN"
 #define DIRMODES     "0=Button, 1=Switch, 2=ButtonReversed, 3=SwitchReversed, 4=DefaultForward"
-#define IDLEMODS     "0=always, 1=nobrake, 2=cruise, 3=off"
+#define IDLEMODS     "0=Always, 1=NoBrake, 2=Cruise, 3=Off, 4=HillHold"
 #define ONOFF        "0=Off, 1=On, 2=na"
 #define OKERR        "0=Error, 1=Ok, 2=na"
 #define CHARGEMODS   "0=Off, 3=Boost, 4=Buck"
 #define ENCMODES     "0=Single, 1=AB, 2=ABZ, 3=SPI, 4=Resolver, 5=SinCos"
-#define POTMODES     "0=SingleRegen, 1=DualChannel, 2=CAN, 3=CANDual"
+#define POTMODES     "0=SingleRegen, 1=DualChannel, 2=CAN, 3=CANDual, 4=BiDir, 6=CANBiDir"
 #define CANSPEEDS    "0=250k, 1=500k, 2=800k, 3=1M"
 #define CANIOS       "1=Cruise, 2=Start, 4=Brake, 8=Fwd, 16=Rev, 32=Bms"
 #define CANPERIODS   "0=100ms, 1=10ms"
@@ -294,7 +295,8 @@ enum _potmodes
 {
    POTMODE_REGENADJ = 0,
    POTMODE_DUALCHANNEL = 1,
-   POTMODE_CAN = 2
+   POTMODE_CAN = 2,
+   POTMODE_BIDIR = 4
 };
 
 enum _pwmfuncs
@@ -310,7 +312,8 @@ enum _idlemodes
    IDLE_MODE_ALWAYS = 0,
    IDLE_MODE_NOBRAKE,
    IDLE_MODE_CRUISE,
-   IDLE_MODE_OFF
+   IDLE_MODE_OFF,
+   IDLE_MODE_HILLHOLD
 };
 
 enum _modes

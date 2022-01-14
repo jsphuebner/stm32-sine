@@ -50,7 +50,7 @@ class VehicleControl
 
       static void GetTemps(float& tmphs, float &tmpm);
       static float GetUserThrottleCommand();
-      static void GetCruiseCreepCommand(float& finalSpnt, float throtSpnt);
+      static bool GetCruiseCreepCommand(float& finalSpnt, float throtSpnt);
       static void BmwAdcAcquire();
 };
 
