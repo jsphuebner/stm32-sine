@@ -118,13 +118,13 @@
    PARAM_ENTRY(CAT_THROTTLE,throtcur,    "A/%",       0,     10,     1,     105  )
 
 #define REGEN_PARAMETERS \
-    PARAM_ENTRY(CAT_REGEN,   brknompedal, "%",       -100,   0,      -50,    38  ) \
+    PARAM_ENTRY(CAT_REGEN,   brakeregen,  "%",       -100,   0,      -50,    38  ) \
     PARAM_ENTRY(CAT_REGEN,   regenramp,   "%/10ms",  0.1,    100,    100,    68  ) \
-    PARAM_ENTRY(CAT_REGEN,   brknom,      "%",       0,      100,    30,     19  ) \
-    PARAM_ENTRY(CAT_REGEN,   brkmax,      "%",       -100,   0,      -30,    49  ) \
-    PARAM_ENTRY(CAT_REGEN,   brkcruise,   "%",       -100,   0,      -30,    124 ) \
-    PARAM_ENTRY(CAT_REGEN,   brkrampstr,  "Hz",      0,      400,    10,     39  ) \
-    PARAM_ENTRY(CAT_REGEN,   brkout,      "%",       -100,   -1,     -50,    67  )
+    PARAM_ENTRY(CAT_REGEN,   regentravel, "%",       0,      100,    30,     19  ) \
+    PARAM_ENTRY(CAT_REGEN,   offthrotregen,"%",      -100,   0,      -30,    49  ) \
+    PARAM_ENTRY(CAT_REGEN,   cruiseregen, "%",       -100,   0,      -30,    124 ) \
+    PARAM_ENTRY(CAT_REGEN,   regenrampstr,"Hz",      0,      400,    10,     39  ) \
+    PARAM_ENTRY(CAT_REGEN,   brklightout, "%",       -100,   -1,     -50,    67  )
 
 #define AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
     PARAM_ENTRY(CAT_AUTOM,   idlespeed,   "rpm",     -100,   10000,  -100,   54  ) \

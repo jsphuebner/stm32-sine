@@ -187,7 +187,7 @@ float VehicleControl::ProcessThrottle()
 
    Param::SetFloat(Param::potnom, finalSpnt);
 
-   if (finalSpnt < Param::GetFloat(Param::brkout))
+   if (finalSpnt < Param::GetFloat(Param::brklightout))
       DigIo::brk_out.Set();
    else
       DigIo::brk_out.Clear();
@@ -195,7 +195,7 @@ float VehicleControl::ProcessThrottle()
    if (determineDirection)
    {
       float rotorfreq = FP_TOFLOAT(Encoder::GetRotorFrequency());
-      float brkrampstr = Param::GetFloat(Param::brkrampstr);
+      float brkrampstr = Param::GetFloat(Param::regenrampstr);
 
       if (rotorfreq < brkrampstr && finalSpnt < 0)
       {
