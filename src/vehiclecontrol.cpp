@@ -147,8 +147,8 @@ void VehicleControl::SelectDirection()
       selectedDir = userDirSelection;
 
    /* Current direction doesn't match selected direction -> neutral */
-   if (selectedDir != userDirSelection)
-      selectedDir = 0;
+   //if (selectedDir != userDirSelection)
+     // selectedDir = 0;
 
    Param::SetInt(Param::dir, selectedDir);
 }
@@ -549,11 +549,14 @@ float VehicleControl::GetUserThrottleCommand()
    {
       if (!inRange1) return 0;
       float bidirThrot = Throttle::CalcThrottleBiDir(potnom1, brake);
+      int rotorDirection = Encoder::GetRotorDirection();
+      int requestedDirection = bidirThrot < 0 ? -1 : 1;
+      int speed = Encoder::GetSpeed();
 
-      if (bidirThrot == 0)
+      if (bidirThrot == 0 || (requestedDirection != rotorDirection && speed > 30))
       {
          bidirThrot = Throttle::brkmax;
-         Param::SetInt(Param::dir, Encoder::GetRotorDirection());
+         Param::SetInt(Param::dir, rotorDirection);
       }
       else if (bidirThrot < 0)
       {

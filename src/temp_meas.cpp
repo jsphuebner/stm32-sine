@@ -78,6 +78,9 @@ static const uint16_t Tesla10k[] = { TESLA_10K };
 /* Temp sensor embedded in many Toyota motors */
 static const uint16_t Toyota[] = { TOYOTA_M };
 
+/* Temp sensor embedded in many Toyota motors (Gen2 controller) */
+static const uint16_t ToyotaGen2[] = { TOYOTA_MGEN2 };
+
 /* contributed by Fabian Brauss */
 /* Temp sensor KTY81-121 */
 static const uint16_t Kty81hs[] = { KTY81_HS };
@@ -115,6 +118,7 @@ static const TEMP_SENSOR sensors[] =
    { -20, 190, 5,  TABLEN(Tesla10k),       PTC, Tesla10k   },
    { -40, 300, 10, TABLEN(OutlanderFront), NTC, OutlanderFront },
    { -50, 150, 10, TABLEN(epcosb57861),    NTC, epcosb57861},
+   { -20, 200, 5,  TABLEN(ToyotaGen2),     NTC, ToyotaGen2 },
 };
 
 float TempMeas::Lookup(int digit, Sensors sensorId)

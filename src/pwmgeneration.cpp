@@ -264,9 +264,9 @@ void PwmGeneration::SetCurrentLimitThreshold(s32fp ocurlim)
    timer_set_oc_value(OVER_CUR_TIMER, OVER_CUR_POS, limPos);
 }
 
-void PwmGeneration::SetChargeCurrent(s32fp cur)
+void PwmGeneration::SetChargeCurrent(float cur)
 {
-   chargeController.SetRef(cur);
+   chargeController.SetRef(FP_FROMFLT(cur));
 }
 
 
@@ -296,20 +296,26 @@ void PwmGeneration::CalcNextAngleConstant(int dir)
 void PwmGeneration::Charge()
 {
    static s32fp iFlt;
+   int pwmin = FP_TOINT((Param::Get(Param::chargepwmin) * (1 << pwmdigits)) / 100);
+   int pwmax = FP_TOINT((Param::Get(Param::chargepwmax) * (1 << pwmdigits)) / 100);
+
    s32fp il1 = GetCurrent(AnaIn::il1, ilofs[0], Param::Get(Param::il1gain));
    s32fp il2 = GetCurrent(AnaIn::il2, ilofs[1], Param::Get(Param::il2gain));
 
    il1 = ABS(il1);
    il2 = ABS(il2);
 
-   s32fp ilMax = MAX(il1, il2);
+   s32fp ilSum = il1 + il2;
 
-   iFlt = IIRFILTER(iFlt, ilMax, Param::GetInt(Param::chargeflt));
+   iFlt = IIRFILTER(iFlt, ilSum, Param::GetInt(Param::chargeflt));
+
+   chargeController.SetMinMaxY(pwmin, pwmax);
+   chargeController.SetGains(Param::GetInt(Param::chargekp), Param::GetInt(Param::chargeki));
 
    int dc = chargeController.Run(iFlt);
 
    if (opmode == MOD_BOOST)
-      Param::SetFixed(Param::idc, FP_MUL((FP_FROMINT(100) - ampnom), iFlt) / 100);
+      Param::SetFixed(Param::idc, (((1 << pwmdigits) - dc) * iFlt) / (1 << pwmdigits));
    else
       Param::SetFixed(Param::idc, iFlt);
 

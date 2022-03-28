@@ -138,7 +138,6 @@ float Throttle::RampThrottle(float potnom)
    }
    else //potnom < throttleRamped && potnom <= 0
    {
-      //throttleRamped = MIN(0, throttleRamped); //start ramping at 0
       throttleRamped = RAMPDOWN(throttleRamped, potnom, regenRamp);
    }
 

@@ -163,7 +163,7 @@ static void Ms10Task(void)
             newMode = chargemode;
 
             //Prius needs to run PWM before closing the contactor
-            if (hwRev == HW_PRIUS)
+            if (hwRev == HW_PRIUS && opmode != MOD_BOOST && opmode != MOD_BUCK)
             {
                PwmGeneration::SetChargeCurrent(0);
                PwmGeneration::SetOpmode(newMode);
