@@ -133,7 +133,7 @@ static void Ms10Task(void)
       RunCharger(udc);
    }
 
-   stt |= DigIo::emcystop_in.Get() || hwRev == HW_REV3 ? STAT_NONE : STAT_EMCYSTOP;
+   stt |= DigIo::emcystop_in.Get() ? STAT_NONE : STAT_EMCYSTOP;
    stt |= DigIo::mprot_in.Get() ? STAT_NONE : STAT_MPROT;
    stt |= Param::GetInt(Param::potnom) <= 0 ? STAT_NONE : STAT_POTPRESSED;
    stt |= udc >= Param::GetFloat(Param::udcsw) ? STAT_NONE : STAT_UDCBELOWUDCSW;
@@ -163,7 +163,7 @@ static void Ms10Task(void)
             newMode = chargemode;
 
             //Prius needs to run PWM before closing the contactor
-            if (hwRev == HW_PRIUS)
+            if (hwRev == HW_PRIUS && opmode != MOD_BOOST && opmode != MOD_BUCK)
             {
                PwmGeneration::SetChargeCurrent(0);
                PwmGeneration::SetOpmode(newMode);
@@ -202,10 +202,6 @@ static void Ms10Task(void)
       VehicleControl::SetContactorsOffState();
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
-   }
-   else if (MOD_MANUAL == opmode)
-   {
-      PwmGeneration::SetOpmode(opmode);
    }
    else if (0 == initWait)
    {
@@ -252,7 +248,7 @@ static void Ms1Task(void)
 }
 
 /** This function is called when the user changes a parameter */
-extern void parm_Change(Param::PARAM_NUM paramNum)
+void Param::Change(Param::PARAM_NUM paramNum)
 {
    switch (paramNum)
    {
@@ -274,13 +270,13 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
       case Param::throtmin:
       case Param::idcmin:
       case Param::idcmax:
-      case Param::brkmax:
+      case Param::offthrotregen:
          //These are candidates to be frequently set by CAN, so we handle them separately
          Throttle::throtmax = Param::GetFloat(Param::throtmax);
          Throttle::throtmin = Param::GetFloat(Param::throtmin);
          Throttle::idcmin = Param::GetFloat(Param::idcmin);
          Throttle::idcmax = Param::GetFloat(Param::idcmax);
-         Throttle::brkmax = Param::GetFloat(Param::brkmax);
+         Throttle::brkmax = Param::GetFloat(Param::offthrotregen);
          break;
       case Param::nodeid:
          can->SetNodeId(Param::GetInt(Param::nodeid));
@@ -303,21 +299,22 @@ extern void parm_Change(Param::PARAM_NUM paramNum)
          Throttle::potmax[0] = Param::GetInt(Param::potmax);
          Throttle::potmin[1] = Param::GetInt(Param::pot2min);
          Throttle::potmax[1] = Param::GetInt(Param::pot2max);
-         Throttle::brknom = Param::GetFloat(Param::brknom);
-         Throttle::brknompedal = Param::GetFloat(Param::brknompedal);
+         Throttle::brknom = Param::GetFloat(Param::regentravel);
+         Throttle::brknompedal = Param::GetFloat(Param::brakeregen);
          Throttle::regenRamp = Param::GetFloat(Param::regenramp);
-         Throttle::brkmax = Param::GetFloat(Param::brkmax);
-         Throttle::brkcruise = Param::GetFloat(Param::brkcruise);
+         Throttle::brkmax = Param::GetFloat(Param::offthrotregen);
+         Throttle::brkcruise = Param::GetFloat(Param::cruiseregen);
          Throttle::throtmax = Param::GetFloat(Param::throtmax);
          Throttle::throtmin = Param::GetFloat(Param::throtmin);
          Throttle::idleSpeed = Param::GetInt(Param::idlespeed);
+         Throttle::holdkp = Param::GetFloat(Param::holdkp);
          Throttle::speedkp = Param::GetFloat(Param::speedkp);
          Throttle::speedflt = Param::GetInt(Param::speedflt);
          Throttle::idleThrotLim = Param::GetFloat(Param::idlethrotlim);
          Throttle::bmslimlow = Param::GetInt(Param::bmslimlow);
          Throttle::bmslimhigh = Param::GetInt(Param::bmslimhigh);
-         Throttle::udcmin = Param::GetFloat(Param::udcmin) * 0.95; //Leave some room for the notification light
-         Throttle::udcmax = Param::GetFloat(Param::udcmax) * 1.05;
+         Throttle::udcmin = Param::GetFloat(Param::udcmin) * 0.99; //Leave some room for the notification light
+         Throttle::udcmax = Param::GetFloat(Param::udcmax) * 1.01;
          Throttle::idcmin = Param::GetFloat(Param::idcmin);
          Throttle::idcmax = Param::GetFloat(Param::idcmax);
          Throttle::idckp = Param::GetFloat(Param::idckp);
@@ -341,8 +338,8 @@ static void UpgradeParameters()
 
    if (Param::GetInt(Param::snsm) < 12)
       Param::SetInt(Param::snsm, Param::GetInt(Param::snsm) + 10); //upgrade parameter
-   if (Param::Get(Param::brkmax) > 0)
-      Param::Set(Param::brkmax, -Param::Get(Param::brkmax));
+   if (Param::Get(Param::offthrotregen) > 0)
+      Param::Set(Param::offthrotregen, -Param::Get(Param::offthrotregen));
 }
 
 extern "C" void tim2_isr(void)
@@ -393,9 +390,9 @@ extern "C" int main(void)
       t.DisableTxDMA();
 
    UpgradeParameters();
-   parm_Change(Param::PARAM_LAST);
-   parm_Change(Param::nodeid);
-   parm_Change(Param::bootprec); //rewrite pininit structure if necessary
+   Param::Change(Param::PARAM_LAST);
+   Param::Change(Param::nodeid);
+   Param::Change(Param::bootprec); //rewrite pininit structure if necessary
 
    while(1)
       t.Run();

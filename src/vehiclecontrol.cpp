@@ -107,6 +107,9 @@ void VehicleControl::SelectDirection()
    int userDirSelection = 0;
    int dirSign = (Param::GetInt(Param::dirmode) & DIR_REVERSED) ? -1 : 1;
 
+   //When in bidirection throttle mode, direction is determined by that
+   if (Param::GetInt(Param::potmode) & POTMODE_BIDIR) return;
+
    if (Param::GetInt(Param::dirmode) == DIR_DEFAULTFORWARD)
    {
       if (Param::GetBool(Param::din_forward) && Param::GetBool(Param::din_reverse))
@@ -144,8 +147,8 @@ void VehicleControl::SelectDirection()
       selectedDir = userDirSelection;
 
    /* Current direction doesn't match selected direction -> neutral */
-   if (selectedDir != userDirSelection)
-      selectedDir = 0;
+   //if (selectedDir != userDirSelection)
+     // selectedDir = 0;
 
    Param::SetInt(Param::dir, selectedDir);
 }
@@ -160,7 +163,7 @@ float VehicleControl::ProcessThrottle()
       Throttle::throttleRamp = FP_TOFLOAT(Param::GetAttrib(Param::throtramp)->max);
 
    throtSpnt = GetUserThrottleCommand();
-   GetCruiseCreepCommand(finalSpnt, throtSpnt);
+   bool determineDirection = GetCruiseCreepCommand(finalSpnt, throtSpnt);
    finalSpnt = Throttle::RampThrottle(finalSpnt);
 
    if (hwRev != HW_TESLA)
@@ -184,10 +187,28 @@ float VehicleControl::ProcessThrottle()
 
    Param::SetFloat(Param::potnom, finalSpnt);
 
-   if (finalSpnt < Param::GetFloat(Param::brkout))
+   if (finalSpnt < Param::GetFloat(Param::brklightout))
       DigIo::brk_out.Set();
    else
       DigIo::brk_out.Clear();
+
+   if (determineDirection)
+   {
+      float rotorfreq = FP_TOFLOAT(Encoder::GetRotorFrequency());
+      float brkrampstr = Param::GetFloat(Param::regenrampstr);
+
+      if (rotorfreq < brkrampstr && finalSpnt < 0)
+      {
+         finalSpnt = (rotorfreq / brkrampstr) * finalSpnt;
+      }
+
+      if (finalSpnt < 0)
+         finalSpnt *= Encoder::GetRotorDirection();
+#if CONTROL == CTRL_FOC
+      else //inconsistency here: in slip control negative always means regen
+         finalSpnt *= Param::GetInt(Param::dir);
+#endif // CONTROL
+   }
 
    return finalSpnt;
 }
@@ -524,7 +545,31 @@ float VehicleControl::GetUserThrottleCommand()
    potnom1 = Throttle::DigitsToPercent(potval, 0);
    potnom2 = Throttle::DigitsToPercent(pot2val, 1);
 
-   if ((potmode & POTMODE_DUALCHANNEL) > 0)
+   if ((potmode & POTMODE_BIDIR) > 0)
+   {
+      if (!inRange1) return 0;
+      float bidirThrot = Throttle::CalcThrottleBiDir(potnom1, brake);
+      int rotorDirection = Encoder::GetRotorDirection();
+      int requestedDirection = bidirThrot < 0 ? -1 : 1;
+      int speed = Encoder::GetSpeed();
+
+      if (bidirThrot == 0 || (requestedDirection != rotorDirection && speed > 30))
+      {
+         bidirThrot = Throttle::brkmax;
+         Param::SetInt(Param::dir, rotorDirection);
+      }
+      else if (bidirThrot < 0)
+      {
+         bidirThrot = -bidirThrot;
+         Param::SetInt(Param::dir, -1);
+      }
+      else //bidirThrot > 0
+      {
+         Param::SetInt(Param::dir, 1);
+      }
+      return bidirThrot;
+   }
+   else if ((potmode & POTMODE_DUALCHANNEL) > 0)
    {
       if (inRange1 && inRange2)
       {
@@ -549,7 +594,7 @@ float VehicleControl::GetUserThrottleCommand()
          return 0;
       }
 
-      potnom2 = FP_FROMINT(100); //No regen attenuation
+      potnom2 = 100.0f; //No regen attenuation
    }
    else if (!inRange1)
    {
@@ -563,19 +608,41 @@ float VehicleControl::GetUserThrottleCommand()
    return Throttle::CalcThrottle(potnom1, potnom2, brake);
 }
 
-void VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
+bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
 {
+   static bool runHillHold = false;
+   bool autoDertermineDirection = true;
    bool brake = Param::GetBool(Param::din_brake);
-   float idleSpnt = Throttle::CalcIdleSpeed(Encoder::GetSpeed());
-   float cruiseSpnt = Throttle::CalcCruiseSpeed(Encoder::GetSpeed());
+   int idlemode = Param::GetInt(Param::idlemode);
+   uint32_t speed = Encoder::GetSpeed();
+   float idleSpnt = Throttle::CalcIdleSpeed(speed);
+   float cruiseSpnt = Throttle::CalcCruiseSpeed(speed);
 
    finalSpnt = throtSpnt; //assume no regulation
 
-   if (Param::GetInt(Param::idlemode) == IDLE_MODE_ALWAYS ||
-      (Param::GetInt(Param::idlemode) == IDLE_MODE_NOBRAKE && !brake) ||
-      (Param::GetInt(Param::idlemode) == IDLE_MODE_CRUISE && !brake && Param::GetBool(Param::din_cruise)))
+   if (idlemode == IDLE_MODE_ALWAYS ||
+      (idlemode == IDLE_MODE_NOBRAKE && !brake) ||
+      (idlemode == IDLE_MODE_CRUISE && !brake && Param::GetBool(Param::din_cruise)))
    {
       finalSpnt = MAX(throtSpnt, idleSpnt);
+   }
+   else if (idlemode == IDLE_MODE_HILLHOLD)
+   {
+      if (brake && speed == 0)
+      {
+         Encoder::ResetDistance();
+         runHillHold = true;
+      }
+      else if (runHillHold)
+      {
+         runHillHold = Throttle::HoldPosition(Encoder::GetDistance(), finalSpnt);
+         autoDertermineDirection = !runHillHold;
+      }
+
+      if (throtSpnt > 0 && throtSpnt > finalSpnt)
+      {
+         runHillHold = false;
+      }
    }
 
    if (Throttle::cruiseSpeed > 0 && Throttle::cruiseSpeed > Throttle::idleSpeed)
@@ -585,6 +652,8 @@ void VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
       else if (throtSpnt > 0)
          finalSpnt = MAX(cruiseSpnt, throtSpnt);
    }
+
+   return autoDertermineDirection;
 }
 
 void VehicleControl::BmwAdcAcquire()
