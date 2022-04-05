@@ -35,7 +35,6 @@
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
 
 static int initwait = 0;
-static int fwBaseGain = 0;
 static s32fp idref = 0;
 static int curki = 0;
 static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(2/3)*1.05 (inverter losses)
@@ -51,7 +50,6 @@ void PwmGeneration::Run()
       static s32fp idcFiltered = 0;
       static int lastqLimit = 0, lastUq = 0;
       int dir = Param::GetInt(Param::dir);
-      //int moddedfwkp;
       int kifrqgain = Param::GetInt(Param::curkifrqgain);
       s32fp id, iq;
 
@@ -63,30 +61,15 @@ void PwmGeneration::Run()
       frqFiltered = IIRFILTER(frqFiltered, frq, 8);
       int moddedKi = curki + kifrqgain * FP_TOINT(frqFiltered);
 
-      /*if (frq < Param::Get(Param::ffwstart))
-      {
-         moddedfwkp = 0;
-      }
-      else if (frq > Param::Get(Param::fmax))
-      {
-         moddedfwkp = fwBaseGain;
-      }
-      else
-      {
-         moddedfwkp = fwBaseGain * (FP_TOINT(frq) - Param::GetInt(Param::ffwstart));
-         moddedfwkp/= Param::GetInt(Param::fmax) - Param::GetInt(Param::ffwstart);
-      }*/
-
       qController.SetIntegralGain(moddedKi);
       dController.SetIntegralGain(moddedKi);
-      fwController.SetProportionalGain(fwBaseGain * dir);
 
       ProcessCurrents(id, iq);
 
       if (opmode == MOD_RUN && initwait == 0)
       {
          fwController.SetRef(lastqLimit - Param::GetInt(Param::qmargin));
-         s32fp fwIdRef = fwController.RunProportionalOnly(lastUq);
+         s32fp fwIdRef = fwController.Run(ABS(lastUq));
          dController.SetRef(idref + fwIdRef);
          Param::SetFixed(Param::ifw, fwIdRef);
       }
@@ -110,7 +93,7 @@ void PwmGeneration::Run()
       Param::SetFixed(Param::fstat, frq);
       Param::SetFixed(Param::angle, DIGIT_TO_DEGREE(angle));
       Param::SetFixed(Param::idc, idcFiltered);
-      Param::SetFixed(Param::amp, lastqLimit);
+      Param::SetInt(Param::amp, lastqLimit);
       Param::SetInt(Param::uq, lastUq);
       Param::SetInt(Param::ud, ud);
 
@@ -153,15 +136,15 @@ void PwmGeneration::SetTorquePercent(float torquePercent)
    FOC::Mtpa(is, id, iq);
 
    qController.SetRef(FP_FROMINT(iq));
-   //fwController.SetRef(FP_FROMINT(iq));
    idref = FP_FROMINT(id);
 }
 
-void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp)
+void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp, int fwki)
 {
    qController.SetGains(kp, ki);
    dController.SetGains(kp, ki);
-   fwBaseGain = fwkp;
+   fwController.SetGains(fwkp, fwki);
+   //fwBaseGain = fwkp;
    curki = ki;
 }
 
