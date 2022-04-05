@@ -123,16 +123,8 @@ void PwmGeneration::SetTorquePercent(float torque)
    }
    else
    {
-      float brkrampstr = Param::GetFloat(Param::brkrampstr);
-      float rotorFrq = FP_TOFLOAT(Encoder::GetRotorFrequency());
-
       ampnomLocal = -torque;
-
       fslipspnt = -fslipmin;
-      if (rotorFrq < brkrampstr)
-      {
-         ampnomLocal = rotorFrq / brkrampstr * ampnomLocal;
-      }
    }
 
    ampnomLocal = MIN(ampnomLocal, 100.0f);
@@ -255,7 +247,7 @@ s32fp PwmGeneration::ProcessCurrents()
       {
          //rough approximation as we do not take power factor into account
          s32fp idc = (SineCore::GetAmp() * rms) / SineCore::MAXAMP;
-         idc = FP_DIV(idc, FP_FROMFLT(1.2247)); //divide by sqrt(3)/sqrt(2)
+         idc = FP_MUL(idc, FP_FROMFLT(1.2247)); //multiply by sqrt(3)/sqrt(2)
          idc *= fslip < 0 ? -1 : 1;
          Param::SetFixed(Param::idc, idc);
       }
