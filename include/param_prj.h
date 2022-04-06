@@ -24,7 +24,7 @@
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 140
+//Next param id (increase when adding new parameter!): 141
 //Next value Id: 2049
 /*              category     name         unit       min     max     default id */
 
@@ -52,10 +52,9 @@
 #define MOTOR_PARAMETERS_FOC \
     PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      20000,  32,     107 ) \
     PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      100000, 20000,  108 ) \
-    PARAM_ENTRY(CAT_MOTOR,   curkifrqgain,"dig/Hz",  0,      1000,   50,     120 ) \
     PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        0,      10000,  100,    118 ) \
     PARAM_ENTRY(CAT_MOTOR,   fwki,        "",        0,      10000,  1,      139 ) \
-    PARAM_ENTRY(CAT_MOTOR,   qmargin,    "dig",      0,      32000,  2000,   136 ) \
+    PARAM_ENTRY(CAT_MOTOR,   qmargin,    "dig",      0,      32000,  2000,   140 ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
     PARAM_ENTRY(CAT_MOTOR,   syncadv,     "dig/Hz",  0,      65535,  10,     133 )
 

@@ -51,20 +51,12 @@ void PwmGeneration::Run()
       static s32fp idcFiltered = 0;
       static int lastqLimit = 0, lastUq = 0, lastUd = 0;
       int dir = Param::GetInt(Param::dir);
-      int kifrqgain = Param::GetInt(Param::curkifrqgain);
       s32fp id, iq;
 
       Encoder::UpdateRotorAngle(dir);
 
       CalcNextAngleSync(dir);
       FOC::SetAngle(angle);
-
-      frqFiltered = IIRFILTER(frqFiltered, frq, 8);
-      int moddedKi = curki + kifrqgain * FP_TOINT(frqFiltered);
-
-      qController.SetIntegralGain(moddedKi);
-      dController.SetIntegralGain(moddedKi);
-
       ProcessCurrents(id, iq);
 
       if (opmode == MOD_RUN && initwait == 0)
@@ -229,6 +221,9 @@ s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
 
 void PwmGeneration::CalcNextAngleSync(int dir)
 {
+   static s32fp frqFiltered = 0;
+   frqFiltered = IIRFILTER(frqFiltered, frq, 8);
+
    if (Encoder::SeenNorthSignal())
    {
       uint16_t syncOfs = Param::GetInt(Param::syncofs);
