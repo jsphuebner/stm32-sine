@@ -17,14 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.18.OFW
+#define VER 5.22.B
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 141
+//Next param id (increase when adding new parameter!): 143
 //Next value Id: 2049
 /*              category     name         unit       min     max     default id */
 
@@ -52,9 +52,10 @@
 #define MOTOR_PARAMETERS_FOC \
     PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      20000,  32,     107 ) \
     PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      100000, 20000,  108 ) \
-    PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        0,      10000,  100,    118 ) \
-    PARAM_ENTRY(CAT_MOTOR,   fwki,        "",        0,      10000,  1,      139 ) \
-    PARAM_ENTRY(CAT_MOTOR,   qmargin,    "dig",      0,      32000,  2000,   140 ) \
+    PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        0,      10000,  80,     141 ) \
+    PARAM_ENTRY(CAT_MOTOR,   fwki,        "",        0,      10000,  10,     139 ) \
+    PARAM_ENTRY(CAT_MOTOR,   qmargin,     "dig",     0,      10000,  4000,   140 ) \
+    PARAM_ENTRY(CAT_MOTOR,   idiqsplit,   "%",       0,      100,    50,     142 ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
     PARAM_ENTRY(CAT_MOTOR,   syncadv,     "dig/Hz",  0,      65535,  10,     133 )
 

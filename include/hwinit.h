@@ -35,7 +35,7 @@ void rtc_setup(void);
 void tim_setup(void);
 void spi_setup(void);
 HWREV detect_hw(void);
-void write_bootloader_pininit(bool bootprec);
+void write_bootloader_pininit(bool bootprec, bool pwmActiveLow);
 HWREV io_setup();
 uint16_t pwmio_setup(bool activeLow);
 
