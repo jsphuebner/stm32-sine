@@ -135,7 +135,6 @@ void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp, int fwki)
    qController.SetGains(kp, ki);
    dController.SetGains(kp, ki);
    fwController.SetGains(fwkp, fwki);
-   //curki = ki;
 }
 
 void PwmGeneration::PwmInit()
