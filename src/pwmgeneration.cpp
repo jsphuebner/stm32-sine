@@ -46,9 +46,10 @@ uint8_t  PwmGeneration::shiftForTimer;
 int      PwmGeneration::opmode;
 s32fp    PwmGeneration::ilofs[2];
 int      PwmGeneration::polePairRatio;
+bool     PwmGeneration::tripped;
 
+static bool     trippedHw;
 static int      execTicks;
-static bool     tripped;
 static uint8_t  pwmdigits;
 static PiController chargeController;
 
@@ -59,7 +60,7 @@ uint16_t PwmGeneration::GetAngle()
 
 bool PwmGeneration::Tripped()
 {
-   return tripped;
+   return tripped || trippedHw;
 }
 
 void PwmGeneration::SetAmpnom(s32fp amp)
@@ -116,6 +117,7 @@ void PwmGeneration::SetOpmode(int _opmode)
    if (opmode != MOD_OFF)
    {
       tripped = false;
+      trippedHw = false;
       pwmdigits = MIN_PWM_DIGITS + Param::GetInt(Param::pwmfrq);
       shiftForTimer = SineCore::BITS - pwmdigits;
       PwmInit();
@@ -163,12 +165,12 @@ extern "C" void tim1_brk_isr(void)
    else if (!DigIo::mprot_in.Get() && hwRev != HW_BLUEPILL)
       ErrorMessage::Post(ERR_MPROT);
    else //if (ocur || hwRev == HW_REV1)
-      ErrorMessage::Post(ERR_OVERCURRENT);
+      ErrorMessage::Post(ERR_OVERCURRENT_HW);
 
    timer_disable_irq(PWM_TIMER, TIM_DIER_BIE);
    Param::SetInt(Param::opmode, MOD_OFF);
    DigIo::err_out.Set();
-   tripped = true;
+   trippedHw = true;
 }
 
 extern "C" void pwm_timer_isr(void)

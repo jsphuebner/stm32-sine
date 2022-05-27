@@ -113,17 +113,21 @@ void PwmGeneration::Run()
 
 void PwmGeneration::SetTorquePercent(float torquePercent)
 {
+   float throtcur = Param::GetFloat(Param::throtcur);
    float idiqSplit = Param::GetFloat(Param::idiqsplit);
-   float is = Param::GetFloat(Param::throtcur) * torquePercent;
+   float is = throtcur * torquePercent;
 
    int32_t fwRef = qlimit - Param::GetInt(Param::qmargin);
    fwRef = MAX(fwRef, 2000); //allow at least 2000 digits of q voltage before field weakening
    fwController.SetRef(fwRef);
-   s32fp fwRequest = fwController.Run(ABS(Param::GetInt(Param::uq)));
+   float fwRequest = FP_TOFLOAT(fwController.Run(ABS(Param::GetInt(Param::uq))));
    Param::SetFixed(Param::ifw, fwRequest);
 
    float id = idiqSplit * is / 100.0f;
-   id = -ABS(id) + FP_TOFLOAT(fwRequest);
+   id = -ABS(id) + fwRequest;
+   id = MAX(id, -100 * throtcur); //Limit id to 100% throttle. MAX function because negative
+   is += -fwRequest; //fwRequest is always negative
+   is = MIN(is, 100 * throtcur);
    s32fp iq = SIGN(torquePercent) * fp_sqrt(FP_FROMFLT(is * is) - FP_FROMFLT(id * id));
 
    qController.SetRef(iq);
@@ -179,6 +183,9 @@ void PwmGeneration::PwmInit()
 
 s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
 {
+   s32fp ocurlim = Param::Get(Param::ocurlim);
+   ocurlim = ABS(ocurlim);
+
    if (initwait > 0)
    {
       initwait--;
@@ -198,6 +205,13 @@ s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
    Param::SetFixed(Param::iq, FOC::iq);
    Param::SetFixed(Param::il1, il1);
    Param::SetFixed(Param::il2, il2);
+
+   if (ABS(il1) > ocurlim || ABS(il2) > ocurlim)
+   {
+      Param::SetInt(Param::opmode, MOD_OFF);
+      tripped = true;
+      ErrorMessage::Post(ERR_OVERCURRENT_SW);
+   }
 
    return 0;
 }

@@ -72,6 +72,7 @@ class PwmGeneration
       static int opmode;
       static s32fp ilofs[2];
       static int polePairRatio;
+      static bool tripped;
 };
 
 #endif // PWMGENERATION_H
