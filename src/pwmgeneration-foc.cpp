@@ -121,7 +121,7 @@ void PwmGeneration::SetTorquePercent(float torquePercent)
    fwRef = MAX(fwRef, 2000); //allow at least 2000 digits of q voltage before field weakening
    fwController.SetRef(fwRef);
    float fwRequest = FP_TOFLOAT(fwController.Run(ABS(Param::GetInt(Param::uq))));
-   Param::SetFixed(Param::ifw, fwRequest);
+   Param::SetFloat(Param::ifw, fwRequest);
 
    float id = idiqSplit * is / 100.0f;
    id = -ABS(id) + fwRequest;
