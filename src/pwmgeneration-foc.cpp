@@ -38,6 +38,8 @@ static int initwait = 0;
 static int32_t qlimit = 0;
 static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(2/3)*1.05 (inverter losses)
 static tim_oc_id ocChannels[3];
+static int curki = 0;
+static int curkp = 0;
 static PiController qController;
 static PiController dController;
 static PiController fwController;
@@ -48,13 +50,28 @@ void PwmGeneration::Run()
    {
       static s32fp idcFiltered = 0;
       int dir = Param::GetInt(Param::dir);
+      float kpfrqgain = Param::GetFloat(Param::curkpfrqgain);
+      int kifrqgain = Param::GetInt(Param::curkifrqgain);
       s32fp id, iq;
 
       Encoder::UpdateRotorAngle(dir);
 
       CalcNextAngleSync(dir);
       FOC::SetAngle(angle);
+      static s32fp frqFiltered = 0;
+      frqFiltered = IIRFILTER(frqFiltered, frq, 8);
+
+      int moddedKp = curkp + kpfrqgain * FP_TOINT(frqFiltered);
+      int moddedKi = curki + kifrqgain * FP_TOINT(frqFiltered);
+
+      qController.SetIntegralGain(moddedKi);
+      dController.SetIntegralGain(moddedKi);
+      qController.SetProportionalGain(moddedKp);
+      dController.SetProportionalGain(moddedKp);
+
+
       ProcessCurrents(id, iq);
+
 
       if (opmode == MOD_MANUAL)
       {
@@ -64,7 +81,7 @@ void PwmGeneration::Run()
 
       int32_t ud = dController.Run(id);
       qlimit = FOC::GetQLimit(ud);
-      qController.SetMinMaxY(dir < 0 ? -qlimit : 0, dir > 0 ? qlimit : 0);
+      qController.SetMinMaxY(dir < 0 ? -qlimit : -Param::GetInt(Param::negQLim) * qlimit, dir > 0 ? qlimit : Param::GetInt(Param::negQLim) * qlimit);
       int32_t uq = qController.Run(iq);
 
       FOC::InvParkClarke(ud, uq);
@@ -116,22 +133,54 @@ void PwmGeneration::SetTorquePercent(float torquePercent)
    float throtcur = Param::GetFloat(Param::throtcur);
    float idiqSplit = Param::GetFloat(Param::idiqsplit);
    float is = throtcur * torquePercent;
+   float fwId = 0;
+   float fwIdMax = Param::GetFloat(Param::fwIdMax);
+   int maxOverdrive = Param::GetInt(Param::overdrive);
 
-   int32_t fwRef = qlimit - Param::GetInt(Param::qmargin);
-   fwRef = MAX(fwRef, 2000); //allow at least 2000 digits of q voltage before field weakening
-   fwController.SetRef(fwRef);
-   float fwRequest = FP_TOFLOAT(fwController.Run(ABS(Param::GetInt(Param::uq))));
-   Param::SetFloat(Param::ifw, fwRequest);
+   float fwIq = 0;
+   float fwIqMax = Param::GetFloat(Param::fwIqMax);
+
+   if(frq > Param::Get(Param::fwIdEnd)){
+      fwId = fwIdMax;
+      fwIq = fwIqMax;
+   }else if(frq > Param::Get(Param::fwIdStart)){
+      fwId = fwIdMax * (frq - Param::Get(Param::fwIdStart))/(Param::Get(Param::fwIdEnd)-Param::Get(Param::fwIdStart));
+      fwIq = fwIqMax * (frq - Param::Get(Param::fwIdStart))/(Param::Get(Param::fwIdEnd)-Param::Get(Param::fwIdStart));
+   }else{
+      fwId = 0;
+      fwIq = 0;
+   }
+
+   Param::SetFloat(Param::ifw, fwId);
+   Param::SetFloat(Param::ifwq, fwIq);
 
    float id = idiqSplit * is / 100.0f;
-   id = -ABS(id) + fwRequest;
+   id = -ABS(id) - fwId; 
    id = MAX(id, -100 * throtcur); //Limit id to 100% throttle. MAX function because negative
-   is += -fwRequest; //fwRequest is always negative
-   is = MIN(is, 100 * throtcur);
-   s32fp iq = SIGN(torquePercent) * fp_sqrt(FP_FROMFLT(is * is) - FP_FROMFLT(id * id));
 
-   qController.SetRef(iq);
-   dController.SetRef(FP_FROMFLT(id));
+   float iq = (100.0f-idiqSplit) * is / 100.0f;
+   iq = ABS(iq + fwIq);
+   iq = MIN(iq,100*throtcur);
+
+   is += ABS(fwId) + ABS(fwIq); 
+   is = MIN(is, maxOverdrive * throtcur);
+
+   s32fp iAbs = fp_sqrt(FP_FROMFLT(iq * iq) + FP_FROMFLT(id * id));
+   s32fp norm = FP_FROMFLT(1.0f);
+
+   if (FP_TOFLOAT(iAbs) > is){
+      norm = FP_DIV(FP_FROMFLT(is), iAbs );
+   }
+
+   Param::SetFloat(Param::iAbs, FP_TOFLOAT(iAbs));
+   Param::SetFloat(Param::norm, FP_TOFLOAT(norm));
+   Param::SetFloat(Param::is, is);
+   Param::SetFloat(Param::idReq, (FP_MUL(FP_FROMFLT(id),norm)));
+   Param::SetFloat(Param::iqReq, iq);
+
+   s32fp iqRef = SIGN(torquePercent) * FP_MUL(FP_FROMFLT(ABS(iq)),norm);
+   qController.SetRef(iqRef);
+   dController.SetRef(FP_MUL(FP_FROMFLT(id),norm));
 }
 
 void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp, int fwki)
@@ -139,6 +188,8 @@ void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp, int fwki)
    qController.SetGains(kp, ki);
    dController.SetGains(kp, ki);
    fwController.SetGains(fwkp, fwki);
+   curki = ki;
+   curkp = kp;
 }
 
 void PwmGeneration::PwmInit()
@@ -156,7 +207,7 @@ void PwmGeneration::PwmInit()
    dController.SetMinMaxY(-maxVd, maxVd);
    fwController.ResetIntegrator();
    fwController.SetCallingFrequency(100);
-   fwController.SetMinMaxY(-50 * Param::Get(Param::throtcur), 0); //allow 50% of max current for extra field weakening
+   fwController.SetMinMaxY(-100 * Param::Get(Param::throtcur), 0); //allow 100% of max current for extra field weakening
 
    if ((Param::GetInt(Param::pinswap) & SWAP_PWM13) > 0)
    {

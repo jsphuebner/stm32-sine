@@ -285,7 +285,7 @@ void Param::Change(Param::PARAM_NUM paramNum)
 
          #if CONTROL == CTRL_FOC
          PwmGeneration::SetControllerGains(Param::GetInt(Param::curkp), Param::GetInt(Param::curki),
-                                           Param::GetInt(Param::fwkp), Param::GetInt(Param::fwki));
+                                           0, 0);
          Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
          #endif // CONTROL
 

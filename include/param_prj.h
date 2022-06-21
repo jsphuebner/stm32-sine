@@ -17,15 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.23.B
+#define VER 5.25.A
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 143
-//Next value Id: 2049
+//Next param id (increase when adding new parameter!): 149
+//Next value Id: 2052
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -51,9 +51,15 @@
 
 #define MOTOR_PARAMETERS_FOC \
     PARAM_ENTRY(CAT_MOTOR,   curkp,       "",        0,      20000,  32,     107 ) \
+    PARAM_ENTRY(CAT_MOTOR,   curkpfrqgain,       "",        0,      1000,  0,     147 ) \
     PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      100000, 20000,  108 ) \
-    PARAM_ENTRY(CAT_MOTOR,   fwkp,        "",        0,      10000,  80,     141 ) \
-    PARAM_ENTRY(CAT_MOTOR,   fwki,        "",        0,      10000,  10,     139 ) \
+    PARAM_ENTRY(CAT_MOTOR,   curkifrqgain,       "",        0,      1000,  0,     148 ) \
+    PARAM_ENTRY(CAT_MOTOR,   fwIdMax,   "",          -200,      200,  0,     143 ) \
+    PARAM_ENTRY(CAT_MOTOR,   fwIdStart,   "",        0,      1000,  200,     144 ) \
+    PARAM_ENTRY(CAT_MOTOR,   fwIdEnd,   "",          0,      1000,  400,     145 ) \
+    PARAM_ENTRY(CAT_MOTOR,   fwIqMax,   "",          -200,      200,  0,     141 ) \
+    PARAM_ENTRY(CAT_MOTOR,   overdrive,   "",          0,      200,  100,     139 ) \
+    PARAM_ENTRY(CAT_MOTOR,   negQLim,   "",          0,      1,  0,     146 ) \
     PARAM_ENTRY(CAT_MOTOR,   qmargin,     "dig",     0,      10000,  4000,   140 ) \
     PARAM_ENTRY(CAT_MOTOR,   idiqsplit,   "%",       0,      100,    50,     142 ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
@@ -83,8 +89,8 @@
     PARAM_ENTRY(CAT_DERATE,  idcmin,      "A",       -5000,  0,     -5000,   98  ) \
     PARAM_ENTRY(CAT_DERATE,  idckp,       "dig",     0.1,    20,    2,       130 ) \
     PARAM_ENTRY(CAT_DERATE,  idcflt,      "dig",     0,      11,    9,       132 ) \
-    PARAM_ENTRY(CAT_DERATE,  tmphsmax,    "°C",      50,     150,   85,      125 ) \
-    PARAM_ENTRY(CAT_DERATE,  tmpmmax,     "°C",      70,     300,   300,     127 ) \
+    PARAM_ENTRY(CAT_DERATE,  tmphsmax,    "Â°C",      50,     150,   85,      125 ) \
+    PARAM_ENTRY(CAT_DERATE,  tmpmmax,     "Â°C",      70,     300,   300,     127 ) \
     PARAM_ENTRY(CAT_DERATE,  throtmax,    "%",       0,      100,   100,     97  ) \
     PARAM_ENTRY(CAT_DERATE,  throtmin,    "%",       -100,   0,     -100,    119 )
 
@@ -163,13 +169,13 @@
     VALUE_ENTRY(cruisespeed, "rpm",   2041 ) \
     VALUE_ENTRY(turns,       "",      2037 ) \
     VALUE_ENTRY(amp,         "dig",   2013 ) \
-    VALUE_ENTRY(angle,       "°",     2014 ) \
+    VALUE_ENTRY(angle,       "Â°",     2014 ) \
     VALUE_ENTRY(pot,         "dig",   2015 ) \
     VALUE_ENTRY(pot2,        "dig",   2016 ) \
     VALUE_ENTRY(potnom,      "%",     2017 ) \
     VALUE_ENTRY(dir,         DIRS,    2018 ) \
-    VALUE_ENTRY(tmphs,       "°C",    2019 ) \
-    VALUE_ENTRY(tmpm,        "°C",    2020 ) \
+    VALUE_ENTRY(tmphs,       "Â°C",    2019 ) \
+    VALUE_ENTRY(tmpm,        "Â°C",    2020 ) \
     VALUE_ENTRY(uaux,        "V",     2021 ) \
     VALUE_ENTRY(pwmio,       "",      2045 ) \
     VALUE_ENTRY(canio,       CANIOS,  2022 ) \
@@ -197,6 +203,12 @@
     VALUE_ENTRY(id,      "A",     2003 ) \
     VALUE_ENTRY(iq,      "A",     2004 ) \
     VALUE_ENTRY(ifw,     "A",     2048 ) \
+    VALUE_ENTRY(ifwq,     "A",     2049 ) \
+    VALUE_ENTRY(norm,     "",     2050 ) \
+    VALUE_ENTRY(is,     "A",     2051 ) \
+    VALUE_ENTRY(idReq,     "A",     2052 ) \
+    VALUE_ENTRY(iqReq,     "A",     2053 ) \
+    VALUE_ENTRY(iAbs,     "A",     2054 ) \
     VALUE_ENTRY(ud,      "dig",   2046 ) \
     VALUE_ENTRY(uq,      "dig",   2047 ) \
 
