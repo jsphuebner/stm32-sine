@@ -388,7 +388,7 @@ float VehicleControl::ProcessUdc()
          float factor = 1.0 + udcdiff / udcnom;
          //increase fweak on voltage above nominal
          fweak = fweak * factor;
-         //decrease boost on voltage below nominal
+         //decrease boost on voltage above nominal
          boost = boost / factor;
       }
 
