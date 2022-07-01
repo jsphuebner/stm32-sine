@@ -179,7 +179,7 @@ uint16_t pwmio_setup(bool activeLow)
    return actualPattern;
 }
 
-void write_bootloader_pininit(bool bootprec)
+void write_bootloader_pininit(bool bootprec, bool pwmActiveLow)
 {
    uint32_t flashSize = desig_get_flash_size();
    uint32_t pindefAddr = FLASH_BASE + flashSize * 1024 - PINDEF_BLKNUM * PINDEF_BLKSIZE;
@@ -205,6 +205,19 @@ void write_bootloader_pininit(bool bootprec)
    {
       commands.pindef[0].pin = GPIO13;
       commands.pindef[1].pin = GPIO1;
+   }
+
+   //When PWM pins are in active high mode, we pull them low in the bootloader
+   if (!pwmActiveLow)
+   {
+      commands.pindef[2].port = GPIOA;
+      commands.pindef[2].pin = GPIO8 | GPIO9 | GPIO10;
+      commands.pindef[2].inout = PIN_OUT;
+      commands.pindef[2].level = 0;
+      commands.pindef[3].port = GPIOB;
+      commands.pindef[3].pin = GPIO13 | GPIO14 | GPIO15;
+      commands.pindef[3].inout = PIN_OUT;
+      commands.pindef[3].level = 0;
    }
 
    crc_reset();

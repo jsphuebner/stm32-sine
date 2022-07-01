@@ -202,9 +202,9 @@ float VehicleControl::ProcessThrottle()
          finalSpnt = (rotorfreq / brkrampstr) * finalSpnt;
       }
 
+#if CONTROL == CTRL_FOC
       if (finalSpnt < 0)
          finalSpnt *= Encoder::GetRotorDirection();
-#if CONTROL == CTRL_FOC
       else //inconsistency here: in slip control negative always means regen
          finalSpnt *= Param::GetInt(Param::dir);
 #endif // CONTROL

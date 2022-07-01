@@ -260,9 +260,6 @@ void Param::Change(Param::PARAM_NUM paramNum)
          PwmGeneration::SetAmpnom(Param::Get(Param::ampnom));
          break;
    #endif
-      case Param::bootprec:
-         write_bootloader_pininit(Param::GetBool(Param::bootprec));
-         break;
       case Param::canspeed:
          can->SetBaudrate((Can::baudrates)Param::GetInt(Param::canspeed));
          break;
@@ -392,7 +389,7 @@ extern "C" int main(void)
    UpgradeParameters();
    Param::Change(Param::PARAM_LAST);
    Param::Change(Param::nodeid);
-   Param::Change(Param::bootprec); //rewrite pininit structure if necessary
+   write_bootloader_pininit(Param::GetBool(Param::bootprec), Param::GetBool(Param::pwmpol));
 
    while(1)
       t.Run();
