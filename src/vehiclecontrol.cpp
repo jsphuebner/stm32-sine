@@ -58,6 +58,8 @@ void VehicleControl::PostErrorIfRunning(ERROR_MESSAGE_NUM err)
 
 void VehicleControl::CruiseControl()
 {
+   int cruisemode = Param::GetInt(Param::cruisemode) ;
+
    //Always disable cruise control when brake pedal is pressed
    if (Param::GetBool(Param::din_brake))
    {
@@ -65,7 +67,7 @@ void VehicleControl::CruiseControl()
    }
    else
    {
-      if (Param::GetInt(Param::cruisemode) == CRUISE_BUTTON)
+      if (CRUISE_BUTTON == cruisemode)
       {
          //Enable/update cruise control when button is pressed
          if (Param::GetBool(Param::din_cruise))
@@ -73,7 +75,7 @@ void VehicleControl::CruiseControl()
             Throttle::cruiseSpeed = Encoder::GetSpeed();
          }
       }
-      else if (Param::GetInt(Param::cruisemode) == CRUISE_SWITCH)
+      else if (CRUISE_SWITCH == cruisemode)
       {
          //Enable/update cruise control when switch is toggled on
          if (Param::GetBool(Param::din_cruise) && !lastCruiseSwitchState)
@@ -87,13 +89,19 @@ void VehicleControl::CruiseControl()
             Throttle::cruiseSpeed = -1;
          }
       }
-      else if (Param::GetInt(Param::cruisemode) == CRUISE_CAN)
+      else if (CRUISE_CAN == cruisemode)
       {
          Throttle::cruiseSpeed = Param::GetInt(Param::cruisespeed);
       }
+      else if (CRUISE_POT == cruisemode)
+      {
+         float potnom = GetUserThrottleCommand();
+         float maxSpeed = 0.9f * 60 * Param::GetFloat(Param::fmax) / Param::GetFloat(Param::polepairs);
+         Throttle::cruiseSpeed = potnom * maxSpeed / 100.0f;
+      }
    }
 
-   if (Param::GetInt(Param::cruisemode) != CRUISE_CAN)
+   if (CRUISE_CAN != cruisemode)
    {
       Param::SetInt(Param::cruisespeed, Throttle::cruiseSpeed);
    }
@@ -155,14 +163,18 @@ void VehicleControl::SelectDirection()
 
 float VehicleControl::ProcessThrottle()
 {
-   float throtSpnt, finalSpnt;
+   float throtSpnt = 0, finalSpnt;
 
    if ((int)Encoder::GetSpeed() < Param::GetInt(Param::throtramprpm))
       Throttle::throttleRamp = Param::GetFloat(Param::throtramp);
    else
       Throttle::throttleRamp = FP_TOFLOAT(Param::GetAttrib(Param::throtramp)->max);
 
-   throtSpnt = GetUserThrottleCommand();
+   if (Param::GetInt(Param::cruisemode) != CRUISE_POT)
+   {
+      throtSpnt = GetUserThrottleCommand();
+   }
+
    bool determineDirection = GetCruiseCreepCommand(finalSpnt, throtSpnt);
    finalSpnt = Throttle::RampThrottle(finalSpnt);
 
