@@ -627,15 +627,19 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
    bool brake = Param::GetBool(Param::din_brake);
    int idlemode = Param::GetInt(Param::idlemode);
    uint32_t speed = Encoder::GetSpeed();
-   float idleSpnt = Throttle::CalcIdleSpeed(speed);
    float cruiseSpnt = Throttle::CalcCruiseSpeed(speed);
 
    finalSpnt = throtSpnt; //assume no regulation
 
-   if (idlemode == IDLE_MODE_ALWAYS ||
+   if (Param::GetInt(Param::opmode) == MOD_OFF)
+   {
+      //don't run controllers
+   }
+   else if (idlemode == IDLE_MODE_ALWAYS ||
       (idlemode == IDLE_MODE_NOBRAKE && !brake) ||
       (idlemode == IDLE_MODE_CRUISE && !brake && Param::GetBool(Param::din_cruise)))
    {
+      float idleSpnt = Throttle::CalcIdleSpeed(speed);
       finalSpnt = MAX(throtSpnt, idleSpnt);
    }
    else if (idlemode == IDLE_MODE_HILLHOLD)
