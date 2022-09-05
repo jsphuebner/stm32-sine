@@ -234,7 +234,7 @@ void PwmGeneration::CalcNextAngleSync(int dir)
    {
       uint16_t syncOfs = Param::GetInt(Param::syncofs);
       uint16_t rotorAngle = Encoder::GetRotorAngle();
-      int syncadv = frqFiltered * Param::GetInt(Param::syncadv);
+      s32fp syncadv = FP_MUL(frqFiltered, Param::GetInt(Param::syncadv));
       syncadv = MAX(0, syncadv);
 
       //Compensate rotor movement that happened between sampling and processing
