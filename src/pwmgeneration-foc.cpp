@@ -110,6 +110,7 @@ void PwmGeneration::Run()
       Param::SetFixed(Param::idc, idcFiltered);
       Param::SetInt(Param::uq, uq);
       Param::SetInt(Param::ud, ud);
+      Param::SetInt(Param::amp, qlimit);
 
       /* Shut down PWM on stopped motor or init phase */
       if ((0 == frq && 0 == idref && 0 == qController.GetRef()) || initwait > 0)
@@ -144,14 +145,16 @@ void PwmGeneration::Run()
 
 void PwmGeneration::SetTorquePercent(float torquePercent)
 {
-   int32_t is = Param::GetFloat(Param::throtcur) * torquePercent;
-   int32_t id, iq;
+   float is = Param::GetFloat(Param::throtcur) * torquePercent;
+   float id, iq;
 
    FOC::Mtpa(is, id, iq);
 
-   qController.SetRef(FP_FROMINT(iq));
-   fwController.SetRef(FP_FROMINT(iq));
-   idref = FP_FROMINT(id);
+   qController.SetRef(FP_FROMFLT(iq));
+   fwController.SetRef(FP_FROMFLT(iq));
+   Param::SetFloat(Param::iqref, iq);
+   Param::SetFixed(Param::idref, dController.GetRef());
+   idref = FP_FROMFLT(id);
 }
 
 void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp)

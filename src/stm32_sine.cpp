@@ -28,6 +28,7 @@
 #include "terminal.h"
 #include "sine_core.h"
 #include "fu.h"
+#include "foc.h"
 #include "hwdefs.h"
 #include "hwinit.h"
 #include "params.h"
@@ -286,6 +287,7 @@ void Param::Change(Param::PARAM_NUM paramNum)
          #if CONTROL == CTRL_FOC
          PwmGeneration::SetControllerGains(Param::GetInt(Param::curkp), Param::GetInt(Param::curki), Param::GetInt(Param::fwkp));
          Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
+         FOC::SetMotorParameters(Param::GetFloat(Param::ldminuslq) / 1000.0f, Param::GetFloat(Param::fluxlinkage) / 1000.0f);
          #endif // CONTROL
 
          Encoder::SetMode((enum Encoder::mode)Param::GetInt(Param::encmode));
