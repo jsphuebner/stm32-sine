@@ -149,12 +149,12 @@ void PwmGeneration::SetTorquePercent(float torquePercent)
    idref = FP_FROMFLT(id);
 }
 
-void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp)
+void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp, int fwki, int fwmargin)
 {
    qController.SetGains(kp, ki);
    dController.SetGains(kp, ki);
-   fwController.SetProportionalGain(fwkp);
-   fwController.SetRef(FOC::GetMaximumModulationIndex() - Param::GetInt(Param::fwmargin));
+   fwController.SetGains(fwkp, fwki);
+   fwController.SetRef(FOC::GetMaximumModulationIndex() - fwmargin);
    curki = ki;
 }
 
@@ -173,7 +173,7 @@ void PwmGeneration::PwmInit()
    dController.SetCallingFrequency(pwmfrq);
    dController.SetMinMaxY(-maxVd, maxVd);
    fwController.ResetIntegrator();
-   fwController.SetCallingFrequency(pwmfrq);
+   fwController.SetCallingFrequency(100); //runs in 10ms/100Hz task
    fwController.SetMinMaxY(-50 * Param::Get(Param::throtcur), 0); //allow 50% of max current for extra field weakening
 
    if ((Param::GetInt(Param::pinswap) & SWAP_PWM13) > 0)
