@@ -52,6 +52,7 @@ void PwmGeneration::Run()
       int kifrqgain = Param::GetInt(Param::curkifrqgain);
       s32fp id, iq;
 
+      ProcessCurrents(id, iq);
       Encoder::UpdateRotorAngle(dir);
 
       CalcNextAngleSync(dir);
@@ -62,8 +63,6 @@ void PwmGeneration::Run()
 
       qController.SetIntegralGain(moddedKi);
       dController.SetIntegralGain(moddedKi);
-
-      ProcessCurrents(id, iq);
 
       if (opmode == MOD_RUN && initwait == 0)
       {
