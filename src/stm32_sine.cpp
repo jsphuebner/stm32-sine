@@ -289,7 +289,7 @@ void Param::Change(Param::PARAM_NUM paramNum)
                                            Param::GetInt(Param::fwkp), Param::GetInt(Param::fwki),
                                            Param::GetInt(Param::fwmargin));
          Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
-         FOC::SetMotorParameters(Param::GetFloat(Param::ldminuslq) / 1000.0f, Param::GetFloat(Param::fluxlinkage) / 1000.0f);
+         FOC::SetMotorParameters(Param::GetFloat(Param::lqminusld) / 1000.0f, Param::GetFloat(Param::fluxlinkage) / 1000.0f);
          #endif // CONTROL
 
          Encoder::SetMode((enum Encoder::mode)Param::GetInt(Param::encmode));

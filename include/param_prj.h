@@ -58,7 +58,7 @@
     PARAM_ENTRY(CAT_MOTOR,   fwmargin,    "dig",     0,      10000,  2000,   141 ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
     PARAM_ENTRY(CAT_MOTOR,   syncadv,     "dig/Hz",  0,      65535,  10,     133 ) \
-    PARAM_ENTRY(CAT_MOTOR,   ldminuslq,   "mH",      0,      1000,   0,      139 ) \
+    PARAM_ENTRY(CAT_MOTOR,   lqminusld,   "mH",      0,      1000,   0,      139 ) \
     PARAM_ENTRY(CAT_MOTOR,   fluxlinkage, "mWeber",  0,      1000,   90,     140 )
 
 #define INVERTER_PARAMETERS_COMMON \
