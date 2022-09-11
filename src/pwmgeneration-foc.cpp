@@ -35,7 +35,6 @@
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
 
 static int initwait = 0;
-static int curki = 0;
 static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(2/3)*1.05 (inverter losses)
 static s32fp idMtpa = 0;
 static tim_oc_id ocChannels[3];
@@ -49,7 +48,6 @@ void PwmGeneration::Run()
    {
       static s32fp idcFiltered = 0;
       int dir = Param::GetInt(Param::dir);
-      int kifrqgain = Param::GetInt(Param::curkifrqgain);
       s32fp id, iq;
 
       ProcessCurrents(id, iq);
@@ -59,10 +57,6 @@ void PwmGeneration::Run()
       FOC::SetAngle(angle);
 
       frqFiltered = IIRFILTER(frqFiltered, frq, 8);
-      int moddedKi = curki + kifrqgain * FP_TOINT(frqFiltered);
-
-      qController.SetIntegralGain(moddedKi);
-      dController.SetIntegralGain(moddedKi);
 
       if (opmode == MOD_RUN && initwait == 0)
       {
@@ -150,7 +144,6 @@ void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp, int fwki, int f
    dController.SetGains(kp, ki);
    fwController.SetGains(fwkp, fwki);
    fwController.SetRef(FOC::GetMaximumModulationIndex() - fwmargin);
-   curki = ki;
 }
 
 void PwmGeneration::PwmInit()
