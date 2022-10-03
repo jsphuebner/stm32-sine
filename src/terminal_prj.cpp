@@ -48,6 +48,7 @@ extern "C" const TERM_CMD TermCmds[] =
   { "get", TerminalCommands::ParamGet },
   { "flag", TerminalCommands::ParamFlag },
   { "stream", TerminalCommands::ParamStream },
+  { "binstream", TerminalCommands::ParamStreamBinary },
   { "json", TerminalCommands::PrintParamsJson },
   { "can", TerminalCommands::MapCan },
   { "save", SaveParameters },
