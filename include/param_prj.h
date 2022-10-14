@@ -57,7 +57,9 @@
     PARAM_ENTRY(CAT_MOTOR,   fwmargin,    "dig",     0,      10000,  2500,   141 ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
     PARAM_ENTRY(CAT_MOTOR,   lqminusld,   "mH",      0,      1000,   0,      139 ) \
-    PARAM_ENTRY(CAT_MOTOR,   fluxlinkage, "mWeber",  0,      1000,   90,     140 )
+    PARAM_ENTRY(CAT_MOTOR,   fluxlinkage, "mWeber",  0,      1000,   90,     140 ) \
+    PARAM_ENTRY(CAT_MOTOR,   syncadv,     "dig/Hz",  0,      65535,  10,     133 ) \
+    PARAM_ENTRY(CAT_MOTOR,   ffwstart,    "Hz",      0,      1000,   200,    136 ) \
 
 #define INVERTER_PARAMETERS_COMMON \
     PARAM_ENTRY(CAT_INVERTER,pwmfrq,      PWMFRQS,   0,      2,      1,      13  ) \
@@ -233,6 +235,7 @@
     AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
     PARAM_ENTRY(CAT_TEST,    manualiq,    "A",       -400,   400,    0,      0  ) \
     PARAM_ENTRY(CAT_TEST,    manualid,    "A",       -400,   400,    0,      0  ) \
+    PARAM_ENTRY(CAT_TEST,    manualifw,   "A",       -400,   400,    0,      0  ) \
     VALUE_BLOCK1 \
     VALUES_FOC \
     VALUE_BLOCK2 \
