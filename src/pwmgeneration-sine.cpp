@@ -34,6 +34,8 @@
 #define FRQ_TO_ANGLE(frq) FP_TOINT((frq << SineCore::BITS) / pwmfrq)
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
 
+uint16_t PwmGeneration::slipIncr;
+
 void PwmGeneration::Run()
 {
    if (opmode == MOD_MANUAL || opmode == MOD_RUN || opmode == MOD_SINE)

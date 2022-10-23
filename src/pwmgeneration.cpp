@@ -39,7 +39,6 @@
 uint16_t PwmGeneration::pwmfrq = 1;
 uint16_t PwmGeneration::angle;
 s32fp    PwmGeneration::ampnom;
-uint16_t PwmGeneration::slipIncr;
 s32fp    PwmGeneration::fslip;
 s32fp    PwmGeneration::frq;
 s32fp    PwmGeneration::frqFiltered;

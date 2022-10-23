@@ -162,7 +162,6 @@ void PwmGeneration::PwmInit()
    iMaxSquared = 100 * Param::Get(Param::throtcur);
    iMaxSquared = FP_MUL(iMaxSquared, iMaxSquared);
    pwmfrq = TimerSetup(Param::GetInt(Param::deadtime), Param::GetInt(Param::pwmpol));
-   slipIncr = FRQ_TO_ANGLE(fslip);
    Encoder::SetPwmFrequency(pwmfrq);
    initwait = pwmfrq / 2; //0.5s
    qController.ResetIntegrator();
