@@ -36,12 +36,11 @@
 
 static int initwait = 0;
 static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(2/3)*1.05 (inverter losses)
-static s32fp idMtpa = 0;
+static s32fp idMtpa = 0, iqMtpa = 0, iMaxSquared = 0;
 static tim_oc_id ocChannels[3];
 static PiController qController;
 static PiController dController;
 static PiController fwController;
-static PiController throttleLimitController;
 
 void PwmGeneration::Run()
 {
@@ -62,17 +61,23 @@ void PwmGeneration::Run()
       CalcNextAngleSync(dir);
       FOC::SetAngle(angle);
 
-      frqFiltered = IIRFILTER(frqFiltered, frq, 8);
+      frqFiltered = IIRFILTER(frqFiltered, frq, 4);
 
       if (opmode == MOD_RUN && initwait == 0)
       {
          s32fp ffwstart = Param::Get(Param::ffwstart);
-         s32fp fwMax = FP_DIV(50 * FP_MUL(Param::Get(Param::throtcur), (ffwstart - frq)), (Param::Get(Param::fmax) - ffwstart));
+         s32fp fwMax = FP_DIV(FP_MUL(Param::Get(Param::fwcurmax), (ffwstart - frq)), (Param::Get(Param::fmax) - ffwstart));
          fwMax = MIN(0, fwMax);
          fwController.SetMinMaxY(fwMax,0);
          s32fp ifw = Param::Get(Param::manualifw) + fwController.Run(Param::GetInt(Param::amp));
-         dController.SetRef(idMtpa + ifw);
          Param::SetFixed(Param::ifw, ifw);
+         s32fp idRefTotal = idMtpa + ifw;
+         dController.SetRef(idRefTotal);
+
+         s32fp limitedIq = fp_sqrt(iMaxSquared - idRefTotal * idRefTotal);
+         s32fp iqMtpaAbs = ABS(iqMtpa);
+         limitedIq = SIGN(iqMtpa) * MIN(limitedIq, iqMtpaAbs);
+         qController.SetRef(limitedIq);
       }
       if (opmode == MOD_MANUAL)
       {
@@ -134,19 +139,12 @@ void PwmGeneration::Run()
 
 void PwmGeneration::SetTorquePercent(float torquePercent)
 {
-   float maxThrot = throttleLimitController.RunProportionalOnly(Param::GetInt(Param::amp));
-
-   if (torquePercent > 0)
-      torquePercent = MIN(maxThrot, torquePercent);
-   else
-      torquePercent = -MIN(maxThrot, -torquePercent);
-
    float is = Param::GetFloat(Param::throtcur) * torquePercent;
    float id, iq;
 
    FOC::Mtpa(is, id, iq);
 
-   qController.SetRef(FP_FROMFLT(iq));
+   iqMtpa = FP_FROMFLT(iq);
    idMtpa = FP_FROMFLT(id);
 }
 
@@ -161,6 +159,8 @@ void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp, int fwki, int f
 void PwmGeneration::PwmInit()
 {
    int32_t maxVd = FOC::GetMaximumModulationIndex() - 1000;
+   iMaxSquared = 100 * Param::Get(Param::throtcur);
+   iMaxSquared = FP_MUL(iMaxSquared, iMaxSquared);
    pwmfrq = TimerSetup(Param::GetInt(Param::deadtime), Param::GetInt(Param::pwmpol));
    slipIncr = FRQ_TO_ANGLE(fslip);
    Encoder::SetPwmFrequency(pwmfrq);
@@ -173,10 +173,7 @@ void PwmGeneration::PwmInit()
    dController.SetMinMaxY(-maxVd, maxVd);
    fwController.ResetIntegrator();
    fwController.SetCallingFrequency(pwmfrq);
-   fwController.SetMinMaxY(-50 * Param::Get(Param::throtcur), 0); //allow 50% of max current for extra field weakening
-   throttleLimitController.SetMinMaxY(0, 100);
-   throttleLimitController.SetRef(maxVd);
-   throttleLimitController.SetProportionalGain(4);
+   fwController.SetMinMaxY(Param::Get(Param::fwcurmax), 0);
 
    if ((Param::GetInt(Param::pinswap) & SWAP_PWM13) > 0)
    {
