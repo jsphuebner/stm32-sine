@@ -51,7 +51,7 @@ class PwmGeneration
       static void AcHeatTimerSetup();
       static s32fp ProcessCurrents();
       static s32fp ProcessCurrents(s32fp& id, s32fp& iq);
-      static void CalcNextAngleSync(int dir);
+      static void CalcNextAngleSync();
       static void CalcNextAngleAsync(int dir);
       static void CalcNextAngleConstant(int dir);
       static void Charge();

@@ -36,7 +36,7 @@
 
 static int initwait = 0;
 static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(2/3)*1.05 (inverter losses)
-static s32fp idMtpa = 0, iqMtpa = 0, iMaxSquared = 0;
+static s32fp idMtpa = 0, iqMtpa = 0;
 static tim_oc_id ocChannels[3];
 static PiController qController;
 static PiController dController;
@@ -50,33 +50,28 @@ void PwmGeneration::Run()
       int dir = Param::GetInt(Param::dir);
       s32fp id, iq;
 
+      Encoder::UpdateRotorAngle(0);
+      CalcNextAngleSync();
+      FOC::SetAngle(angle);
+
       ProcessCurrents(id, iq);
-      Encoder::UpdateRotorAngle(dir);
 
       if (frq > FP_FROMINT(5))
       {
          dir = Encoder::GetRotorDirection();
       }
 
-      CalcNextAngleSync(dir);
-      FOC::SetAngle(angle);
-
       frqFiltered = IIRFILTER(frqFiltered, frq, 4);
 
       if (opmode == MOD_RUN && initwait == 0)
       {
-         s32fp ffwstart = Param::Get(Param::ffwstart);
-         s32fp fwMax = FP_DIV(FP_MUL(Param::Get(Param::fwcurmax), (ffwstart - frq)), (Param::Get(Param::fmax) - ffwstart));
-         fwMax = MIN(0, fwMax);
-         fwController.SetMinMaxY(fwMax,0);
-         s32fp ifw = Param::Get(Param::manualifw) + fwController.Run(Param::GetInt(Param::amp));
+         int fwPermille = fwController.Run(Param::GetInt(Param::amp));
+         s32fp ifw = Param::Get(Param::manualifw) + ((1000 - fwPermille) * Param::Get(Param::fwcurmax)) / 1000;
          Param::SetFixed(Param::ifw, ifw);
-         s32fp idRefTotal = idMtpa + ifw;
-         dController.SetRef(idRefTotal);
+         s32fp idRefMin = MIN(idMtpa, ifw);
+         dController.SetRef(idRefMin);
 
-         s32fp limitedIq = fp_sqrt(iMaxSquared - idRefTotal * idRefTotal);
-         s32fp iqMtpaAbs = ABS(iqMtpa);
-         limitedIq = SIGN(iqMtpa) * MIN(limitedIq, iqMtpaAbs);
+         s32fp limitedIq = (fwPermille * iqMtpa) / 1000;
          qController.SetRef(limitedIq);
       }
       if (opmode == MOD_MANUAL)
@@ -87,7 +82,12 @@ void PwmGeneration::Run()
 
       int32_t ud = dController.Run(id);
       int32_t qlimit = FOC::GetQLimit(ud);
-      qController.SetMinMaxY(dir < 0 ? -qlimit : 0, dir > 0 ? qlimit : 0);
+
+      if (frqFiltered < FP_FROMINT(30))
+         qController.SetMinMaxY(dir < 0 ? -qlimit : 0, dir > 0 ? qlimit : 0);
+      else
+         qController.SetMinMaxY(-qlimit, qlimit);
+
       int32_t uq = qController.Run(iq);
       uint16_t advancedAngle = angle + dir * FP_TOINT(FP_MUL(Param::Get(Param::syncadv), frqFiltered));
       FOC::SetAngle(advancedAngle);
@@ -159,8 +159,6 @@ void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp, int fwki, int f
 void PwmGeneration::PwmInit()
 {
    int32_t maxVd = FOC::GetMaximumModulationIndex() - 1000;
-   iMaxSquared = 100 * Param::Get(Param::throtcur);
-   iMaxSquared = FP_MUL(iMaxSquared, iMaxSquared);
    pwmfrq = TimerSetup(Param::GetInt(Param::deadtime), Param::GetInt(Param::pwmpol));
    Encoder::SetPwmFrequency(pwmfrq);
    initwait = pwmfrq / 2; //0.5s
@@ -172,7 +170,7 @@ void PwmGeneration::PwmInit()
    dController.SetMinMaxY(-maxVd, maxVd);
    fwController.ResetIntegrator();
    fwController.SetCallingFrequency(pwmfrq);
-   fwController.SetMinMaxY(Param::Get(Param::fwcurmax), 0);
+   fwController.SetMinMaxY(0, 1000); //outputs permille of FW current/torque reduction
 
    if ((Param::GetInt(Param::pinswap) & SWAP_PWM13) > 0)
    {
@@ -222,7 +220,7 @@ s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
    return 0;
 }
 
-void PwmGeneration::CalcNextAngleSync(int dir)
+void PwmGeneration::CalcNextAngleSync()
 {
    if (Encoder::SeenNorthSignal())
    {
@@ -235,7 +233,7 @@ void PwmGeneration::CalcNextAngleSync(int dir)
    else
    {
       frq = fslip;
-      angle += dir * FRQ_TO_ANGLE(fslip);
+      angle += FRQ_TO_ANGLE(fslip);
    }
 }
 
