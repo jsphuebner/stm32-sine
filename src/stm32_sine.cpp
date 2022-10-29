@@ -25,6 +25,7 @@
 #include <libopencm3/stm32/can.h>
 #include <libopencm3/stm32/spi.h>
 #include <libopencm3/stm32/iwdg.h>
+#include <libopencm3/stm32/adc.h>
 #include "terminal.h"
 #include "sine_core.h"
 #include "fu.h"
@@ -203,6 +204,7 @@ static void Ms10Task(void)
       VehicleControl::SetContactorsOffState();
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
+      adc_start_conversion_injected(ADC2);
    }
    else if (0 == initWait)
    {
@@ -217,7 +219,7 @@ static void Ms10Task(void)
    }
    else if (initWait == 10)
    {
-      PwmGeneration::SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
+      PwmGeneration::SetCurrentOffset(adc_read_injected(ADC2, 1), adc_read_injected(ADC2, 2));
       initWait--;
    }
    else if (initWait > 0)
@@ -363,6 +365,7 @@ extern "C" int main(void)
    clock_setup();
    rtc_setup();
    hwRev = io_setup();
+   adc2_setup();
    tim_setup();
    nvic_setup();
    parm_load();

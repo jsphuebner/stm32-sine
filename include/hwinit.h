@@ -38,6 +38,7 @@ HWREV detect_hw(void);
 void write_bootloader_pininit(bool bootprec, bool pwmActiveLow);
 HWREV io_setup();
 uint16_t pwmio_setup(bool activeLow);
+void adc2_setup();
 
 #ifdef __cplusplus
 }

@@ -18,6 +18,7 @@
  */
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/adc.h>
 #include "pwmgeneration.h"
 #include "hwdefs.h"
 #include "params.h"
@@ -176,6 +177,8 @@ extern "C" void pwm_timer_isr(void)
    int start = timer_get_counter(PWM_TIMER);
    /* Clear interrupt pending flag */
    timer_clear_flag(PWM_TIMER, TIM_SR_UIF);
+   /* start conversion of il1 and il2 */
+   adc_start_conversion_injected(ADC2);
 
    PwmGeneration::Run();
 
@@ -298,8 +301,8 @@ void PwmGeneration::Charge()
    int pwmin = FP_TOINT((Param::Get(Param::chargepwmin) * (1 << pwmdigits)) / 100);
    int pwmax = FP_TOINT((Param::Get(Param::chargepwmax) * (1 << pwmdigits)) / 100);
 
-   s32fp il1 = GetCurrent(AnaIn::il1, ilofs[0], Param::Get(Param::il1gain));
-   s32fp il2 = GetCurrent(AnaIn::il2, ilofs[1], Param::Get(Param::il2gain));
+   s32fp il1 = GetCurrent(1, ilofs[0], Param::Get(Param::il1gain));
+   s32fp il2 = GetCurrent(2, ilofs[1], Param::Get(Param::il2gain));
 
    il1 = ABS(il1);
    il2 = ABS(il2);
@@ -342,9 +345,9 @@ void PwmGeneration::AcHeat()
    }
 }
 
-s32fp PwmGeneration::GetCurrent(AnaIn& input, s32fp offset, s32fp gain)
+s32fp PwmGeneration::GetCurrent(int input, s32fp offset, s32fp gain)
 {
-   s32fp il = FP_FROMINT(input.Get());
+   s32fp il = FP_FROMINT(adc_read_injected(ADC2, input));
    il -= offset;
    return FP_DIV(il, gain);
 }

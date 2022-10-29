@@ -18,6 +18,7 @@
  */
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/adc.h>
 #include "pwmgeneration.h"
 #include "hwdefs.h"
 #include "params.h"
@@ -141,7 +142,7 @@ void PwmGeneration::SetTorquePercent(float torque)
 
 void PwmGeneration::PwmInit()
 {
-   PwmGeneration::SetCurrentOffset(AnaIn::il1.Get(), AnaIn::il2.Get());
+   PwmGeneration::SetCurrentOffset(adc_read_injected(ADC2, 1), adc_read_injected(ADC2, 2));
    pwmfrq = TimerSetup(Param::GetInt(Param::deadtime), Param::GetInt(Param::pwmpol));
    slipIncr = FRQ_TO_ANGLE(fslip);
    Encoder::SetPwmFrequency(pwmfrq);
@@ -234,8 +235,8 @@ s32fp PwmGeneration::ProcessCurrents()
    static int sign = 1;
    static EdgeType lastEdge[2] = { PosEdge, PosEdge };
 
-   s32fp il1 = GetCurrent(AnaIn::il1, ilofs[0], Param::Get(Param::il1gain));
-   s32fp il2 = GetCurrent(AnaIn::il2, ilofs[1], Param::Get(Param::il2gain));
+   s32fp il1 = GetCurrent(1, ilofs[0], Param::Get(Param::il1gain));
+   s32fp il2 = GetCurrent(2, ilofs[1], Param::Get(Param::il2gain));
    s32fp rms;
    s32fp il1PrevRms = Param::Get(Param::il1rms);
    s32fp il2PrevRms = Param::Get(Param::il2rms);

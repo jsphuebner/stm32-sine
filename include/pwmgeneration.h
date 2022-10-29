@@ -57,7 +57,7 @@ class PwmGeneration
       static void Charge();
       static void AcHeat();
       static s32fp GetIlMax(s32fp il1, s32fp il2);
-      static s32fp GetCurrent(AnaIn& input, s32fp offset, s32fp gain);
+      static s32fp GetCurrent(int input, s32fp offset, s32fp gain);
       static s32fp LimitCurrent();
       static EdgeType CalcRms(s32fp il, EdgeType& lastEdge, s32fp& max, s32fp& rms, int& samples, s32fp prevRms);
       static void RunOffsetCalibration();

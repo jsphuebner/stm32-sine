@@ -64,6 +64,7 @@ void clock_setup(void)
    rcc_periph_clock_enable(RCC_TIM4); //Overcurrent / AUX PWM, scheduler on blue pill
    rcc_periph_clock_enable(RCC_DMA1);  //ADC, Encoder and UART3
    rcc_periph_clock_enable(RCC_ADC1);
+   rcc_periph_clock_enable(RCC_ADC2);
    rcc_periph_clock_enable(RCC_CRC);
    rcc_periph_clock_enable(RCC_AFIO); //CAN
    rcc_periph_clock_enable(RCC_CAN1); //CAN
@@ -82,6 +83,31 @@ void spi_setup()
    gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO5 | GPIO3);
    gpio_set_mode(GPIOB, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO4);
    spi_enable(SPI1);
+}
+
+void adc2_setup()
+{
+   uint8_t channels[] = { 5, 8 };
+   adc_enable_scan_mode(ADC2);
+   adc_set_continuous_conversion_mode(ADC2);
+   adc_power_on(ADC2);
+
+   if (hwRev == HW_REV1)
+   {
+      channels[1] = 6;
+   }
+
+   /* wait for adc starting up*/
+   for (int i = 0; i < 80000; i++);
+
+   adc_reset_calibration(ADC2);
+   adc_calibrate(ADC2);
+
+   adc_set_injected_sequence(ADC2, sizeof(channels), channels);
+   adc_enable_external_trigger_injected(ADC2, ADC_CR2_JEXTSEL_JSWSTART);
+
+   adc_set_sample_time(ADC2, 5, ADC_SMPR_SMP_1DOT5CYC);
+   adc_set_sample_time(ADC2, 8, ADC_SMPR_SMP_1DOT5CYC);
 }
 
 static bool is_floating(uint32_t port, uint16_t pin)
@@ -143,8 +169,6 @@ HWREV io_setup()
    switch (hwRev)
    {
       case HW_REV1:
-         AnaIn::il2.Configure(GPIOA, 6);
-         break;
       case HW_REV2:
       case HW_REV3:
          break;
