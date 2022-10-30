@@ -48,87 +48,79 @@ void PwmGeneration::Run()
    if (opmode == MOD_MANUAL || opmode == MOD_RUN)
    {
       static s32fp idcFiltered = 0;
-      int dir = Param::GetInt(Param::dir);
+      int dir = Encoder::GetRotorDirection();//Param::GetInt(Param::dir);
       s32fp id, iq;
 
       Encoder::UpdateRotorAngle(dir);
 
-      //At 4.4 kHz only run control loop when upcounting
-      if ((TIM_CR1(PWM_TIMER) & TIM_CR1_DIR_DOWN) == 0)
+      CalcNextAngleSync();
+      FOC::SetAngle(angle);
+
+      ProcessCurrents(id, iq);
+
+      frqFiltered = IIRFILTER(frqFiltered, frq, 4);
+
+      if (opmode == MOD_RUN && initwait == 0)
       {
-         CalcNextAngleSync();
-         FOC::SetAngle(angle);
+         int fwPermille = fwController.Run(Param::GetInt(Param::amp));
+         s32fp ifw = Param::Get(Param::manualifw) + ((1000 - fwPermille) * Param::Get(Param::fwcurmax)) / 1000;
+         Param::SetFixed(Param::ifw, ifw);
+         idMtpa = (fwPermille * idMtpa) / 1000;
+         s32fp idRefMin = MIN(idMtpa, ifw);
+         dController.SetRef(idRefMin);
 
-         ProcessCurrents(id, iq);
+         s32fp limitedIq = (fwPermille * iqMtpa) / 1000;
+         qController.SetRef(limitedIq);
+      }
+      if (opmode == MOD_MANUAL)
+      {
+         dController.SetRef(Param::Get(Param::manualid));
+         qController.SetRef(Param::Get(Param::manualiq));
+      }
 
-         if (frq > FP_FROMINT(5))
-         {
-            dir = Encoder::GetRotorDirection();
-         }
+      int32_t ud = dController.Run(id);
+      int32_t qlimit = FOC::GetQLimit(ud);
 
-         frqFiltered = IIRFILTER(frqFiltered, frq, 4);
+      if (frqFiltered < FP_FROMINT(30))
+         qController.SetMinMaxY(dir < 0 ? -qlimit : 0, dir > 0 ? qlimit : 0);
+      else
+         qController.SetMinMaxY(-qlimit, qlimit);
 
-         if (opmode == MOD_RUN && initwait == 0)
-         {
-            int fwPermille = fwController.Run(Param::GetInt(Param::amp));
-            s32fp ifw = Param::Get(Param::manualifw) + ((1000 - fwPermille) * Param::Get(Param::fwcurmax)) / 1000;
-            Param::SetFixed(Param::ifw, ifw);
-            s32fp idRefMin = MIN(idMtpa, ifw);
-            dController.SetRef(idRefMin);
+      int32_t uq = qController.Run(iq);
+      uint16_t advancedAngle = angle + dir * FP_TOINT(FP_MUL(Param::Get(Param::syncadv), frqFiltered));
+      FOC::SetAngle(advancedAngle);
+      FOC::InvParkClarke(ud, uq);
 
-            s32fp limitedIq = (fwPermille * iqMtpa) / 1000;
-            qController.SetRef(limitedIq);
-         }
-         if (opmode == MOD_MANUAL)
-         {
-            dController.SetRef(Param::Get(Param::manualid));
-            qController.SetRef(Param::Get(Param::manualiq));
-         }
+      s32fp idc = (iq * uq + id * ud) / FOC::GetMaximumModulationIndex();
+      idc = FP_MUL(idc, dcCurFac);
+      idcFiltered = IIRFILTER(idcFiltered, idc, Param::GetInt(Param::idcflt));
 
-         int32_t ud = dController.Run(id);
-         int32_t qlimit = FOC::GetQLimit(ud);
+      uint32_t amp = FOC::GetTotalVoltage(ud, uq);
 
-         if (frqFiltered < FP_FROMINT(30))
-            qController.SetMinMaxY(dir < 0 ? -qlimit : 0, dir > 0 ? qlimit : 0);
-         else
-            qController.SetMinMaxY(-qlimit, qlimit);
+      Param::SetFixed(Param::fstat, frq);
+      Param::SetFixed(Param::angle, DIGIT_TO_DEGREE(angle));
+      Param::SetFixed(Param::idc, idcFiltered);
+      Param::SetInt(Param::uq, uq);
+      Param::SetInt(Param::ud, ud);
+      Param::SetInt(Param::amp, amp);
 
-         int32_t uq = qController.Run(iq);
-         uint16_t advancedAngle = angle + dir * FP_TOINT(FP_MUL(Param::Get(Param::syncadv), frqFiltered));
-         FOC::SetAngle(advancedAngle);
-         FOC::InvParkClarke(ud, uq);
+      /* Shut down PWM on stopped motor or init phase */
+      if ((0 == frq && 0 == dController.GetRef() && 0 == qController.GetRef()) || initwait > 0)
+      {
+         timer_disable_break_main_output(PWM_TIMER);
+         dController.ResetIntegrator();
+         qController.ResetIntegrator();
+         fwController.ResetIntegrator();
+         RunOffsetCalibration();
+      }
+      else
+      {
+         timer_enable_break_main_output(PWM_TIMER);
+      }
 
-         s32fp idc = (iq * uq + id * ud) / FOC::GetMaximumModulationIndex();
-         idc = FP_MUL(idc, dcCurFac);
-         idcFiltered = IIRFILTER(idcFiltered, idc, Param::GetInt(Param::idcflt));
-
-         uint32_t amp = FOC::GetTotalVoltage(ud, uq);
-
-         Param::SetFixed(Param::fstat, frq);
-         Param::SetFixed(Param::angle, DIGIT_TO_DEGREE(angle));
-         Param::SetFixed(Param::idc, idcFiltered);
-         Param::SetInt(Param::uq, uq);
-         Param::SetInt(Param::ud, ud);
-         Param::SetInt(Param::amp, amp);
-
-         /* Shut down PWM on stopped motor or init phase */
-         if ((0 == frq && 0 == dController.GetRef() && 0 == qController.GetRef()) || initwait > 0)
-         {
-            timer_disable_break_main_output(PWM_TIMER);
-            dController.ResetIntegrator();
-            qController.ResetIntegrator();
-            fwController.ResetIntegrator();
-            RunOffsetCalibration();
-         }
-         else
-         {
-            timer_enable_break_main_output(PWM_TIMER);
-         }
-
-         for (int i = 0; i < 3; i++)
-         {
-            timer_set_oc_value(PWM_TIMER, ocChannels[i], FOC::DutyCycles[i] >> shiftForTimer);
-         }
+      for (int i = 0; i < 3; i++)
+      {
+         timer_set_oc_value(PWM_TIMER, ocChannels[i], FOC::DutyCycles[i] >> shiftForTimer);
       }
    }
    else if (opmode == MOD_BOOST || opmode == MOD_BUCK)

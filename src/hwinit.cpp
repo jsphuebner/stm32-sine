@@ -106,8 +106,8 @@ void adc2_setup()
    adc_set_injected_sequence(ADC2, sizeof(channels), channels);
    adc_enable_external_trigger_injected(ADC2, ADC_CR2_JEXTSEL_JSWSTART);
 
-   adc_set_sample_time(ADC2, 5, ADC_SMPR_SMP_1DOT5CYC);
-   adc_set_sample_time(ADC2, 8, ADC_SMPR_SMP_1DOT5CYC);
+   adc_set_sample_time(ADC2, channels[0], ADC_SMPR_SMP_1DOT5CYC);
+   adc_set_sample_time(ADC2, channels[1], ADC_SMPR_SMP_1DOT5CYC);
 }
 
 static bool is_floating(uint32_t port, uint16_t pin)
