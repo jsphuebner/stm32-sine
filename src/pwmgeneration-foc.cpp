@@ -41,27 +41,30 @@ static s32fp idMtpa = 0, iqMtpa = 0;
 static tim_oc_id ocChannels[3];
 static PiController qController;
 static PiController dController;
-static PiController fwController;
 
 void PwmGeneration::Run()
 {
    if (opmode == MOD_MANUAL || opmode == MOD_RUN)
    {
       static s32fp idcFiltered = 0;
-      int dir = Encoder::GetRotorDirection(); //Param::GetInt(Param::dir);
+      static int amplitudeErrFiltered;
+      int dir = Param::GetInt(Param::dir);
       s32fp id, iq;
 
       Encoder::UpdateRotorAngle(0);
       CalcNextAngleSync();
       FOC::SetAngle(angle);
-
       ProcessCurrents(id, iq);
 
       frqFiltered = IIRFILTER(frqFiltered, frq, 4);
 
       if (opmode == MOD_RUN && initwait == 0)
       {
-         int fwPermille = fwController.Run(Param::GetInt(Param::amp));
+         int amplitudeErr = (FOC::GetMaximumModulationIndex() - Param::GetInt(Param::vlimmargin)) - Param::GetInt(Param::amp);
+         amplitudeErr = MIN(fwOutMax, amplitudeErr);
+         amplitudeErr = MAX(fwOutMax / 10, amplitudeErr);
+         amplitudeErrFiltered = IIRFILTER(amplitudeErrFiltered, amplitudeErr << 8, Param::GetInt(Param::vlimflt));
+         int fwPermille = amplitudeErrFiltered >> 8;
          s32fp ifw = Param::Get(Param::manualifw) + ((fwOutMax - fwPermille) * Param::Get(Param::fwcurmax)) / fwOutMax;
          Param::SetFixed(Param::ifw, ifw);
          idMtpa = (fwPermille * idMtpa) / fwOutMax;
@@ -80,7 +83,7 @@ void PwmGeneration::Run()
       int32_t qlimit = FOC::GetQLimit(ud);
 
       if (frqFiltered < FP_FROMINT(30))
-         qController.SetMinMaxY(dir < 0 ? -qlimit : 0, dir > 0 ? qlimit : 0);
+         qController.SetMinMaxY(dir <= 0 ? -qlimit : 0, dir => 0 ? qlimit : 0);
       else
          qController.SetMinMaxY(-qlimit, qlimit);
 
@@ -108,8 +111,8 @@ void PwmGeneration::Run()
          timer_disable_break_main_output(PWM_TIMER);
          dController.ResetIntegrator();
          qController.ResetIntegrator();
-         fwController.PreloadIntegrator(fwOutMax);
          RunOffsetCalibration();
+         amplitudeErrFiltered = fwOutMax;
       }
       else
       {
@@ -144,12 +147,10 @@ void PwmGeneration::SetTorquePercent(float torquePercent)
    idMtpa = FP_FROMFLT(id);
 }
 
-void PwmGeneration::SetControllerGains(int kp, int ki, int fwkp, int fwki, int fwmargin)
+void PwmGeneration::SetControllerGains(int kp, int ki)
 {
    qController.SetGains(kp, ki);
    dController.SetGains(kp, ki);
-   fwController.SetGains(fwkp, fwki);
-   fwController.SetRef(FOC::GetMaximumModulationIndex() - fwmargin);
 }
 
 void PwmGeneration::PwmInit()
@@ -164,9 +165,6 @@ void PwmGeneration::PwmInit()
    dController.ResetIntegrator();
    dController.SetCallingFrequency(pwmfrq);
    dController.SetMinMaxY(-maxVd, maxVd);
-   fwController.ResetIntegrator();
-   fwController.SetCallingFrequency(pwmfrq);
-   fwController.SetMinMaxY(0, fwOutMax); //outputs permille of FW current/torque reduction
 
    if ((Param::GetInt(Param::pinswap) & SWAP_PWM13) > 0)
    {

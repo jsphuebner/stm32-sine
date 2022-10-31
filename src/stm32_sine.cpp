@@ -285,9 +285,7 @@ void Param::Change(Param::PARAM_NUM paramNum)
          PwmGeneration::SetPolePairRatio(Param::GetInt(Param::polepairs) / Param::GetInt(Param::respolepairs));
 
          #if CONTROL == CTRL_FOC
-         PwmGeneration::SetControllerGains(Param::GetInt(Param::curkp), Param::GetInt(Param::curki),
-                                           Param::GetInt(Param::fwkp), Param::GetInt(Param::fwki),
-                                           Param::GetInt(Param::fwmargin));
+         PwmGeneration::SetControllerGains(Param::GetInt(Param::curkp), Param::GetInt(Param::curki));
          Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
          FOC::SetMotorParameters(Param::GetFloat(Param::lqminusld) / 1000.0f, Param::GetFloat(Param::fluxlinkage) / 1000.0f);
          #endif // CONTROL

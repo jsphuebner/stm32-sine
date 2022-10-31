@@ -35,7 +35,7 @@ class PwmGeneration
       static void SetTorquePercent(float torque);
       static void SetCurrentOffset(int offset1, int offset2);
       static void SetCurrentLimitThreshold(s32fp ocurlim);
-      static void SetControllerGains(int kp, int ki, int fwkp, int fwki, int fwmargin);
+      static void SetControllerGains(int kp, int ki);
       static int GetCpuLoad();
       static void SetChargeCurrent(float cur);
       static void SetPolePairRatio(int ratio) { polePairRatio = ratio; }
