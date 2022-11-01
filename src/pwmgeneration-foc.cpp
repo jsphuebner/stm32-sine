@@ -83,7 +83,7 @@ void PwmGeneration::Run()
       int32_t qlimit = FOC::GetQLimit(ud);
 
       if (frqFiltered < FP_FROMINT(30))
-         qController.SetMinMaxY(dir <= 0 ? -qlimit : 0, dir => 0 ? qlimit : 0);
+         qController.SetMinMaxY(dir <= 0 ? -qlimit : 0, dir >= 0 ? qlimit : 0);
       else
          qController.SetMinMaxY(-qlimit, qlimit);
 
@@ -112,7 +112,7 @@ void PwmGeneration::Run()
          dController.ResetIntegrator();
          qController.ResetIntegrator();
          RunOffsetCalibration();
-         amplitudeErrFiltered = fwOutMax;
+         amplitudeErrFiltered = fwOutMax << 8;
       }
       else
       {
