@@ -62,18 +62,21 @@ void PwmGeneration::Run()
       {
          int amplitudeErr = (FOC::GetMaximumModulationIndex() - Param::GetInt(Param::vlimmargin)) - Param::GetInt(Param::amp);
          amplitudeErr = MIN(fwOutMax, amplitudeErr);
-         amplitudeErr = MAX(fwOutMax / 10, amplitudeErr);
+         amplitudeErr = MAX(fwOutMax / 20, amplitudeErr);
          amplitudeErrFiltered = IIRFILTER(amplitudeErrFiltered, amplitudeErr << 8, Param::GetInt(Param::vlimflt));
          int fwPermille = amplitudeErrFiltered >> 8;
          s32fp ifw = Param::Get(Param::manualifw) + ((fwOutMax - fwPermille) * Param::Get(Param::fwcurmax)) / fwOutMax;
          Param::SetFixed(Param::ifw, ifw);
-         idMtpa = (fwPermille * idMtpa) / fwOutMax;
-         dController.SetRef(idMtpa + ifw);
 
          s32fp limitedIq = (fwPermille * iqMtpa) / fwOutMax;
          qController.SetRef(limitedIq);
+
+         s32fp limitedId = -2 * ABS(limitedIq); //ratio between id and iq never > 2
+         limitedId = MAX(idMtpa, limitedId);
+         limitedId = MIN(ifw, limitedId);
+         dController.SetRef(limitedId);
       }
-      if (opmode == MOD_MANUAL)
+      else if (opmode == MOD_MANUAL)
       {
          dController.SetRef(Param::Get(Param::manualid));
          qController.SetRef(Param::Get(Param::manualiq));
