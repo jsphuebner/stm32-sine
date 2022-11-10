@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.23.R
+#define VER 5.24.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -234,7 +234,6 @@
     AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
     PARAM_ENTRY(CAT_TEST,    manualiq,    "A",       -400,   400,    0,      0  ) \
     PARAM_ENTRY(CAT_TEST,    manualid,    "A",       -400,   400,    0,      0  ) \
-    PARAM_ENTRY(CAT_TEST,    manualifw,   "A",       -400,   400,    0,      0  ) \
     VALUE_BLOCK1 \
     VALUES_FOC \
     VALUE_BLOCK2 \

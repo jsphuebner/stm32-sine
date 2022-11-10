@@ -35,8 +35,9 @@
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
 
 static int initwait = 0;
+static bool isIdle = false;
 static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(2/3)*1.05 (inverter losses)
-static const int32_t fwOutMax = 1000;
+static const int32_t fwOutMax = 1024;
 static s32fp idMtpa = 0, iqMtpa = 0;
 static tim_oc_id ocChannels[3];
 static PiController qController;
@@ -64,14 +65,17 @@ void PwmGeneration::Run()
          amplitudeErr = MIN(fwOutMax, amplitudeErr);
          amplitudeErr = MAX(fwOutMax / 20, amplitudeErr);
          amplitudeErrFiltered = IIRFILTER(amplitudeErrFiltered, amplitudeErr << 8, Param::GetInt(Param::vlimflt));
-         int fwPermille = amplitudeErrFiltered >> 8;
-         s32fp ifw = Param::Get(Param::manualifw) + ((fwOutMax - fwPermille) * Param::Get(Param::fwcurmax)) / fwOutMax;
+
+         if (0 == frq) amplitudeErrFiltered = fwOutMax << 8;
+
+         int vlim = amplitudeErrFiltered >> 8;
+         s32fp ifw = ((fwOutMax - vlim) * Param::Get(Param::fwcurmax)) / fwOutMax;
          Param::SetFixed(Param::ifw, ifw);
 
-         s32fp limitedIq = (fwPermille * iqMtpa) / fwOutMax;
+         s32fp limitedIq = (vlim * iqMtpa) / fwOutMax;
          qController.SetRef(limitedIq);
 
-         s32fp limitedId = -2 * ABS(limitedIq); //ratio between id and iq never > 2
+         s32fp limitedId = -2 * ABS(limitedIq); //ratio between idMtpa and iqMtpa never > 2
          limitedId = MAX(idMtpa, limitedId);
          limitedId = MIN(ifw, limitedId);
          dController.SetRef(limitedId);
@@ -80,6 +84,7 @@ void PwmGeneration::Run()
       {
          dController.SetRef(Param::Get(Param::manualid));
          qController.SetRef(Param::Get(Param::manualiq));
+         isIdle = false;
       }
 
       int32_t ud = dController.Run(id);
@@ -109,7 +114,7 @@ void PwmGeneration::Run()
       Param::SetInt(Param::amp, amp);
 
       /* Shut down PWM on stopped motor or init phase */
-      if ((0 == frq && 0 == dController.GetRef() && 0 == qController.GetRef()) || initwait > 0)
+      if (isIdle || initwait > 0)
       {
          timer_disable_break_main_output(PWM_TIMER);
          dController.ResetIntegrator();
@@ -145,6 +150,11 @@ void PwmGeneration::SetTorquePercent(float torquePercent)
    float id, iq;
 
    FOC::Mtpa(is, id, iq);
+
+   //This is used to disable PWM and do offset calibration at standstill
+   isIdle = 0 == frq &&
+            0 == torquePercent &&
+            hwRev != HW_PRIUS; //Don't do it for Prius Gen2 inverters
 
    iqMtpa = FP_FROMFLT(iq);
    idMtpa = FP_FROMFLT(id);
