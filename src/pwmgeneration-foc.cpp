@@ -74,11 +74,13 @@ void PwmGeneration::Run()
 
          s32fp limitedIq = (vlim * iqMtpa) / fwOutMax;
          qController.SetRef(limitedIq);
+         Param::SetFixed(Param::iqref, limitedIq);
 
          s32fp limitedId = -2 * ABS(limitedIq); //ratio between idMtpa and iqMtpa never > 2
          limitedId = MAX(idMtpa, limitedId);
          limitedId = MIN(ifw, limitedId);
          dController.SetRef(limitedId);
+         Param::SetFixed(Param::idref, limitedId);
       }
       else if (opmode == MOD_MANUAL)
       {
@@ -142,6 +144,7 @@ void PwmGeneration::Run()
       initwait = 0;
       AcHeat();
    }
+   isrDone = true;
 }
 
 void PwmGeneration::SetTorquePercent(float torquePercent)

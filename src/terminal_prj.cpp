@@ -30,6 +30,8 @@
 #include "pwmgeneration.h"
 #include "stm32_can.h"
 #include "terminalcommands.h"
+#include "foc.h"
+#include "binlog_list.h"
 
 static void LoadDefaults(Terminal* term, char *arg);
 static void GetAll(Terminal* term, char *arg);
@@ -41,6 +43,9 @@ static void Help(Terminal* term, char *arg);
 static void PrintSerial(Terminal* term, char *arg);
 static void PrintErrors(Terminal* term, char *arg);
 static void SaveParameters(Terminal* term, char *arg);
+static void BinLog(Terminal* term, char *arg);
+
+static const char binlogJson[] = BINLOG_JSON;
 
 extern "C" const TERM_CMD TermCmds[] =
 {
@@ -63,6 +68,7 @@ extern "C" const TERM_CMD TermCmds[] =
   { "help", Help },
   { "serial", PrintSerial },
   { "errors", PrintErrors },
+  { "binarylogging", BinLog },
   { NULL, NULL }
 };
 
@@ -188,3 +194,44 @@ static void Help(Terminal* term, char *arg)
    term = term;
 }
 
+static void BinLog(Terminal* term, char *arg)
+{
+   char dummy[] = "";
+   LogStruct l;
+   uint8_t *pBuff = (uint8_t *)&l;
+   l.counter = 0;
+   arg = arg;
+   uint32_t ctr = 0;
+
+   TerminalCommands::PrintParamsJson(term, dummy);
+   printf(binlogJson);
+
+   while (!term->KeyPressed())
+   {
+      PwmGeneration::WaitISR();
+
+      /*l.counter++;
+      l.angle = Param::GetInt(Param::angle) >> 2;
+      l.idc = Param::Get(Param::idc) >> 3; //0.25A resolution, +-2000A
+      l.il1 = Param::Get(Param::il1) >> 3;  //0.25A resolution, +-2000A
+      l.il2 = Param::Get(Param::il2) >> 3;  //0.25A resolution, +-2000A
+      l.pwm1 = FOC::DutyCycles[0] >> 2;
+      l.opmode = Param::GetInt(Param::opmode);
+      l.pwm2 = FOC::DutyCycles[1] >> 2;
+      l.desat = PwmGeneration::Tripped();
+      l.pwm3 = FOC::DutyCycles[2] >> 2;
+      l.iqref = Param::Get(Param::iqref) >> 3;  //0.25A resolution, +-2000A
+      l.idref = Param::Get(Param::idref) >> 3;  //0.25A resolution, +-2000A
+      l.ifw = Param::Get(Param::ifw) >> 3;  //0.25A resolution, +-2000A
+      l.uq = Param::GetInt(Param::uq) >> 1;
+      l.ud = Param::GetInt(Param::ud) >> 1;
+
+      uint8_t csum = 0;
+      for(uint32_t j=0; j < sizeof(l); j++) csum += *pBuff++;
+      l.csum = csum;
+
+      term->SendBinary(pBuff, sizeof(l));*/
+      term->SendBinary(&ctr, 4);
+      ctr++;
+   }
+}

@@ -25,7 +25,7 @@
    3. Display values
  */
 //Next param id (increase when adding new parameter!): 146
-//Next value Id: 2049
+//Next value Id: 2051
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -198,6 +198,8 @@
     VALUE_ENTRY(id,      "A",     2003 ) \
     VALUE_ENTRY(iq,      "A",     2004 ) \
     VALUE_ENTRY(ifw,     "A",     2048 ) \
+    VALUE_ENTRY(idref,   "A",     2049 ) \
+    VALUE_ENTRY(iqref,   "A",     2050 ) \
     VALUE_ENTRY(ud,      "dig",   2046 ) \
     VALUE_ENTRY(uq,      "dig",   2047 ) \
 

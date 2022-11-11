@@ -39,6 +39,7 @@ class PwmGeneration
       static int GetCpuLoad();
       static void SetChargeCurrent(float cur);
       static void SetPolePairRatio(int ratio) { polePairRatio = ratio; }
+      static void WaitISR();
 
    private:
       enum EdgeType { NoEdge, PosEdge, NegEdge };
@@ -73,6 +74,7 @@ class PwmGeneration
       static int opmode;
       static s32fp ilofs[2];
       static int polePairRatio;
+      static volatile bool isrDone;
 };
 
 #endif // PWMGENERATION_H

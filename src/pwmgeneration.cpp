@@ -46,11 +46,19 @@ uint8_t  PwmGeneration::shiftForTimer;
 int      PwmGeneration::opmode;
 s32fp    PwmGeneration::ilofs[2];
 int      PwmGeneration::polePairRatio;
+volatile bool PwmGeneration::isrDone;
 
 static int      execTicks;
 static bool     tripped;
 static uint8_t  pwmdigits;
 static PiController chargeController;
+
+void PwmGeneration::WaitISR()
+{
+   if (MOD_OFF == opmode) return;
+   isrDone = false;
+   while (!isrDone);
+}
 
 uint16_t PwmGeneration::GetAngle()
 {

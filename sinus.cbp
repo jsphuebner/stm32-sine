@@ -64,6 +64,7 @@
 			<Option target="FOC" />
 		</Unit>
 		<Unit filename="include/anain_prj.h" />
+		<Unit filename="include/binlog_list.h" />
 		<Unit filename="include/digio_prj.h" />
 		<Unit filename="include/errormessage_prj.h" />
 		<Unit filename="include/hwdefs.h" />
