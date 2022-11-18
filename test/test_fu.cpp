@@ -29,7 +29,7 @@ static void Setup(u32fp fweak, int boost, u32fp fmin)
 {
    MotorVoltage::SetBoost(boost);
    MotorVoltage::SetWeakeningFrq(fweak);
-   MotorVoltage::SetMinFrq(fmin);
+   //MotorVoltage::SetMinFrq(fmin);
    MotorVoltage::SetMaxAmp(10000);
 }
 

@@ -2,12 +2,12 @@ CC		= gcc
 CPP	= g++
 LD		= g++
 CP		= cp
-CFLAGS    = -std=c99 -g -I../include/generic -I../include/project
-CPPFLAGS    = -g -I../include/generic -I../include/project
+CFLAGS    = -std=c99 -g -I../include -I../libopeninv/include
+CPPFLAGS    = -g -I../include -I../libopeninv/include
 LDFLAGS     = -g
 BINARY		= test_sine
 OBJS		= test_main.o fu.o test_fu.o test_fp.o my_fp.o my_string.o test_throttle.o throttle.o sine_core.o
-VPATH = ../src/project ../src/generic
+VPATH = ../src ../libopeninv/src
 
 all: $(BINARY)
 

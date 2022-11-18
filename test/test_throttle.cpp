@@ -60,7 +60,7 @@ static void TestRegen()
    int percent = Throttle::CalcThrottle(1000, 3000, false);
    ASSERT(percent == -25)
 }
-
+#if 0
 static void TestDualThrottle()
 {
    //0% on both channels
@@ -127,11 +127,11 @@ static void TestDualThrottle()
    Throttle::potmin[1] = 3000;
    Throttle::potmax[1] = 4000;
 }
-
+#endif
 void ThrottleTest::RunTest()
 {
    TestSetup();
    TestBrkPedal();
    TestRegen();
-   TestDualThrottle();
+   //TestDualThrottle();
 }

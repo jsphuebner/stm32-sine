@@ -45,8 +45,8 @@ static void TestItoa()
 
 static void TestAtoi()
 {
-   ASSERT(fp_atoi("-2.5") == FP_FROMFLT(-2.5));
-   ASSERT(fp_atoi("2.155") == FP_FROMFLT(2.15));
+   ASSERT(fp_atoi("-2.5", 5) == FP_FROMFLT(-2.5));
+   ASSERT(fp_atoi("2.155", 5) == FP_FROMFLT(2.15));
 }
 
 static void TestMedian3()

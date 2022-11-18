@@ -17,7 +17,7 @@ extern int _failedAssertions;
       cout << "Test " << __FILE__ << "::" << __func__ << " passed." << endl; \
    else \
    {  \
-      cout << "Assertion failed: " << STRING(c) << " in "__FILE__":" << __LINE__ << endl;    \
+      cout << "Assertion failed: " << STRING(c) << " in " __FILE__ " : " << __LINE__ << endl;    \
       _failedAssertions++; \
    }
 
