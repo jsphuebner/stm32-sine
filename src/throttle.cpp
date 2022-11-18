@@ -74,7 +74,7 @@ bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
 
 float Throttle::DigitsToPercent(int potval, int potidx)
 {
-   if (potidx > 1) return 0;
+   if (potidx < 0 || potidx > 1) return 0;
    if (potmax[potidx] == potmin[potidx]) return 100.0f;
 
    return (100 * (potval - potmin[potidx])) / (potmax[potidx] - potmin[potidx]);
