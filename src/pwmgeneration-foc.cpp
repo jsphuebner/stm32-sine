@@ -34,6 +34,10 @@
 #define FRQ_TO_ANGLE(frq) FP_TOINT((frq << SineCore::BITS) / pwmfrq)
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
 
+#ifndef QLIMIT_FREQUENCY
+#define QLIMIT_FREQUENCY FP_FROMINT(30)
+#endif // QLIMIT_FREQUENCY
+
 static int initwait = 0;
 static bool isIdle = false;
 static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(2/3)*1.05 (inverter losses)
@@ -85,7 +89,7 @@ void PwmGeneration::Run()
       int32_t ud = dController.Run(id);
       int32_t qlimit = FOC::GetQLimit(ud);
 
-      if (frqFiltered < FP_FROMINT(30))
+      if (frqFiltered < QLIMIT_FREQUENCY)
          qController.SetMinMaxY(dir <= 0 ? -qlimit : 0, dir >= 0 ? qlimit : 0);
       else
          qController.SetMinMaxY(-qlimit, qlimit);
