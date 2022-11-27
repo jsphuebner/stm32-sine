@@ -155,6 +155,7 @@ static void StartInverter(Terminal* term, char *arg)
 {
    term = term;
    arg = my_trim(arg);
+   #if CONTROL == CTRL_SINE
    int val = my_atoi(arg);
    if (val < MOD_LAST)
    {
@@ -166,6 +167,9 @@ static void StartInverter(Terminal* term, char *arg)
    {
       printf("Invalid inverter mode");
    }
+   #else
+   printf("Not implemented in FOC variant\r\n");
+   #endif
 }
 
 static void PrintErrors(Terminal* term, char *arg)

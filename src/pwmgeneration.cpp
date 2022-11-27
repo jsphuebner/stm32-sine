@@ -46,6 +46,7 @@ uint8_t  PwmGeneration::shiftForTimer;
 int      PwmGeneration::opmode;
 s32fp    PwmGeneration::ilofs[2];
 int      PwmGeneration::polePairRatio;
+uint16_t PwmGeneration::slipIncr;
 
 static int      execTicks;
 static bool     tripped;

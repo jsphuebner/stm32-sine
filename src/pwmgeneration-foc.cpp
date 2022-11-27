@@ -38,6 +38,7 @@ static int initwait = 0;
 static bool isIdle = false;
 static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(2/3)*1.05 (inverter losses)
 static const int32_t fwOutMax = 1024;
+static const uint32_t shiftForFilter = 8;
 static s32fp idMtpa = 0, iqMtpa = 0;
 static tim_oc_id ocChannels[3];
 static PiController qController;
@@ -45,7 +46,7 @@ static PiController dController;
 
 void PwmGeneration::Run()
 {
-   if (opmode == MOD_MANUAL || opmode == MOD_RUN)
+   if (opmode == MOD_RUN)
    {
       static s32fp idcFiltered = 0;
       static int amplitudeErrFiltered;
@@ -59,32 +60,26 @@ void PwmGeneration::Run()
 
       frqFiltered = IIRFILTER(frqFiltered, frq, 4);
 
-      if (opmode == MOD_RUN && initwait == 0)
+      if (initwait == 0)
       {
          int amplitudeErr = (FOC::GetMaximumModulationIndex() - Param::GetInt(Param::vlimmargin)) - Param::GetInt(Param::amp);
          amplitudeErr = MIN(fwOutMax, amplitudeErr);
          amplitudeErr = MAX(fwOutMax / 20, amplitudeErr);
-         amplitudeErrFiltered = IIRFILTER(amplitudeErrFiltered, amplitudeErr << 8, Param::GetInt(Param::vlimflt));
+         amplitudeErrFiltered = IIRFILTER(amplitudeErrFiltered, amplitudeErr << shiftForFilter, Param::GetInt(Param::vlimflt));
 
-         if (0 == frq) amplitudeErrFiltered = fwOutMax << 8;
+         if (0 == frq) amplitudeErrFiltered = fwOutMax << shiftForFilter;
 
-         int vlim = amplitudeErrFiltered >> 8;
+         int vlim = amplitudeErrFiltered >> shiftForFilter;
          s32fp ifw = ((fwOutMax - vlim) * Param::Get(Param::fwcurmax)) / fwOutMax;
          Param::SetFixed(Param::ifw, ifw);
 
          s32fp limitedIq = (vlim * iqMtpa) / fwOutMax;
-         qController.SetRef(limitedIq);
+         qController.SetRef(limitedIq + Param::Get(Param::manualiq));
 
          s32fp limitedId = -2 * ABS(limitedIq); //ratio between idMtpa and iqMtpa never > 2
          limitedId = MAX(idMtpa, limitedId);
          limitedId = MIN(ifw, limitedId);
-         dController.SetRef(limitedId);
-      }
-      else if (opmode == MOD_MANUAL)
-      {
-         dController.SetRef(Param::Get(Param::manualid));
-         qController.SetRef(Param::Get(Param::manualiq));
-         isIdle = false;
+         dController.SetRef(limitedId + Param::Get(Param::manualid));
       }
 
       int32_t ud = dController.Run(id);
@@ -120,7 +115,7 @@ void PwmGeneration::Run()
          dController.ResetIntegrator();
          qController.ResetIntegrator();
          RunOffsetCalibration();
-         amplitudeErrFiltered = fwOutMax << 8;
+         amplitudeErrFiltered = fwOutMax << shiftForFilter;
       }
       else
       {
@@ -154,6 +149,8 @@ void PwmGeneration::SetTorquePercent(float torquePercent)
    //This is used to disable PWM and do offset calibration at standstill
    isIdle = 0 == frq &&
             0 == torquePercent &&
+            0 == Param::Get(Param::manualid) &&
+            0 == Param::Get(Param::manualiq) &&
             hwRev != HW_PRIUS; //Don't do it for Prius Gen2 inverters
 
    iqMtpa = FP_FROMFLT(iq);

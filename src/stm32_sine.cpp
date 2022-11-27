@@ -171,10 +171,11 @@ static void Ms10Task(void)
             }
          }
       }
-      else if (Param::GetBool(Param::din_start) ||
+      else if (Param::GetBool(Param::din_start) || Param::GetBool(Param::manualstart) ||
               (Param::GetInt(Param::tripmode) == TRIP_AUTORESUME && PwmGeneration::Tripped()))
       {
          newMode = MOD_RUN;
+         Param::SetInt(Param::manualstart, 0);
       }
       stt |= opmode != MOD_OFF ? STAT_NONE : STAT_WAITSTART;
    }
@@ -312,8 +313,8 @@ void Param::Change(Param::PARAM_NUM paramNum)
          Throttle::idleThrotLim = Param::GetFloat(Param::idlethrotlim);
          Throttle::bmslimlow = Param::GetInt(Param::bmslimlow);
          Throttle::bmslimhigh = Param::GetInt(Param::bmslimhigh);
-         Throttle::udcmin = Param::GetFloat(Param::udcmin) * 0.99; //Leave some room for the notification light
-         Throttle::udcmax = Param::GetFloat(Param::udcmax) * 1.01;
+         Throttle::udcmin = Param::GetFloat(Param::udcmin) * 0.99f; //Leave some room for the notification light
+         Throttle::udcmax = Param::GetFloat(Param::udcmax) * 1.01f;
          Throttle::idcmin = Param::GetFloat(Param::idcmin);
          Throttle::idcmax = Param::GetFloat(Param::idcmax);
          Throttle::idckp = Param::GetFloat(Param::idckp);
