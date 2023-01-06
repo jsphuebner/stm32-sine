@@ -277,7 +277,7 @@ void PwmGeneration::CalcNextAngleAsync(int dir)
    static uint16_t slipAngle = 0;
    uint16_t rotorAngle = Encoder::GetRotorAngle();
 
-   frq = polePairRatio * Encoder::GetRotorFrequency() + fslip;
+   frq = ABS(dir * polePairRatio * Encoder::GetRotorFrequency() + fslip);
    slipAngle += dir * slipIncr;
 
    if (frq < 0) frq = 0;

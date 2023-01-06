@@ -69,7 +69,7 @@ static uint32_t lastPulseTimespan = 0;
 static uint32_t anglePerPulse = 0;
 static uint32_t fullTurns = 0;
 static uint32_t pwmFrq = 1;
-static u32fp lastFrequency = 0;
+static s32fp lastFrequency = 0;
 static bool ignore = true;
 static enum Encoder::mode encMode = Encoder::INVALID;
 static bool seenNorthSignal = false;
@@ -177,7 +177,7 @@ void Encoder::UpdateRotorAngle(int dir)
    int16_t numPulses;
    uint32_t timeSinceLastPulse;
    uint16_t interpolatedAngle;
-   uint16_t angleDiff;
+   int16_t angleDiff;
 
    switch (encMode)
    {
@@ -188,8 +188,7 @@ void Encoder::UpdateRotorAngle(int dir)
          cntVal /= pulsesPerTurn * 4;
          angle = (uint16_t)cntVal;
          detectedDirection = (TIM_CR1(REV_CNT_TIMER) & TIM_CR1_DIR_DOWN) ? -1 : 1;
-         angleDiff = (detectedDirection < 0 ?
-                     (lastAngle - angle) : (angle - lastAngle)) & 0xFFFF;
+         angleDiff = angle - lastAngle;
          turnsSinceLastSample += angleDiff;
          break;
       case SINGLE:
@@ -273,7 +272,7 @@ uint16_t Encoder::GetRotorAngle()
 
 /** Return rotor frequency in Hz
  * @pre in AB/ABZ encoder mode UpdateRotorFrequency must be called at a regular interval */
-u32fp Encoder::GetRotorFrequency()
+s32fp Encoder::GetRotorFrequency()
 {
    return lastFrequency;
 }
@@ -298,11 +297,11 @@ uint32_t Encoder::GetSpeed()
 {
    if (encMode == RESOLVER || encMode == SINCOS)
    {
-      return FP_TOINT(60 * lastFrequency) / Param::GetInt(Param::respolepairs);
+      return FP_TOINT(60 * ABS(lastFrequency)) / Param::GetInt(Param::respolepairs);
    }
    else
    {
-      return FP_TOINT(60 * lastFrequency);
+      return FP_TOINT(60 * ABS(lastFrequency));
    }
 }
 

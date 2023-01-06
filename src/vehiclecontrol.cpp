@@ -206,7 +206,7 @@ float VehicleControl::ProcessThrottle()
 
    if (determineDirection)
    {
-      float rotorfreq = FP_TOFLOAT(Encoder::GetRotorFrequency());
+      float rotorfreq = FP_TOFLOAT(ABS(Encoder::GetRotorFrequency()));
       float brkrampstr = Param::GetFloat(Param::regenrampstr);
 
       if (rotorfreq < brkrampstr && finalSpnt < 0)
