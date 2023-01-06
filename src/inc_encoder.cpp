@@ -2,7 +2,7 @@
  * This file is part of the stm32-sine project.
  *
  * Copyright (C) 2011 Johannes Huebner <dev@johanneshuebner.com>
- * Copyright (C) 2019 Nail Güzel
+ * Copyright (C) 2019 Nail Guzel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ static const ENCODER_CONFIG encoderConfigurations[] =
 static const ENCODER_CONFIG * selectedConfig = &encoderConfigurations[0];
 static uint32_t pulseMeasFrq = selectedConfig->pulseMeasFrequency;
 
-//Delay in µs between generating an edge on the exciter output and measuring the
+//Delay in us between generating an edge on the exciter output and measuring the
 //Return values via ADC - Found this by scoping
 static const uint16_t resolverSampleDelay = 40;
 static volatile uint16_t timdata[MAX_REVCNT_VALUES];
@@ -529,8 +529,8 @@ uint16_t Encoder::GetAngleResolver()
    if (gpio_get(NORTH_EXC_PORT, NORTH_EXC_PIN))
    {
       gpio_clear(NORTH_EXC_PORT, NORTH_EXC_PIN);
-      /* The phase delay of the 3-pole filter, amplifier and resolver is 305°
-         That is 125° after the falling edge of the exciting square wave */
+      /* The phase delay of the 3-pole filter, amplifier and resolver is 305 degrees
+         That is 125 degrees after the falling edge of the exciting square wave */
       timer_set_oc_value(REV_CNT_TIMER, TIM_OC4, resolverSampleDelay);
       timer_set_counter(REV_CNT_TIMER, 0);
       timer_enable_counter(REV_CNT_TIMER);
