@@ -121,6 +121,12 @@ void PwmGeneration::SetTorquePercent(float torque)
          fslipspnt = fslipmin + roundingError;
       }
    }
+   else if (Encoder::GetRotorDirection() != Param::GetInt(Param::dir))
+   {
+      // Do not apply negative torque if we are already traveling backwards.
+      fslipspnt = 0;
+      ampnomLocal = 0;
+   }
    else
    {
       ampnomLocal = -torque;
