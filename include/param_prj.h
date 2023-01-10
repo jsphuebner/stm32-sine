@@ -24,7 +24,7 @@
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 146
+//Next param id (increase when adding new parameter!): 148
 //Next value Id: 2049
 /*              category     name         unit       min     max     default id */
 
@@ -47,6 +47,7 @@
     PARAM_ENTRY(CAT_MOTOR,   udcnom,      "V",       0,      1000,   0,      78  ) \
     PARAM_ENTRY(CAT_MOTOR,   fslipmin,    "Hz",      0.3,    10,     1,      37  ) \
     PARAM_ENTRY(CAT_MOTOR,   fslipmax,    "Hz",      0.3,    10,     3,      33  ) \
+    PARAM_ENTRY(CAT_MOTOR,   sinefilter,  "dig",     0,      10,     4,      147 ) \
     PARAM_ENTRY(CAT_MOTOR,   fslipconstmax,"Hz",     0,      10,     5,      100 )
 
 #define MOTOR_PARAMETERS_FOC \
