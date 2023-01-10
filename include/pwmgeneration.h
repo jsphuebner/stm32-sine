@@ -65,7 +65,7 @@ class PwmGeneration
       static uint16_t pwmfrq;
       static uint16_t angle;
       static s32fp ampnom;
-      static uint16_t slipIncr;
+      static int16_t slipIncr;
       static s32fp fslip;
       static s32fp frq;
       static s32fp frqFiltered;
