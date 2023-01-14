@@ -24,7 +24,7 @@
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 146
+//Next param id (increase when adding new parameter!): 148
 //Next value Id: 2049
 /*              category     name         unit       min     max     default id */
 
@@ -115,6 +115,7 @@
 #define THROTTLE_PARAMETERS_SINE \
     PARAM_ENTRY(CAT_THROTTLE,ampmin,      "%",       0,      100,    10,     4   ) \
     PARAM_ENTRY(CAT_THROTTLE,slipstart,   "%",       10,     100,    50,     90  ) \
+    PARAM_ENTRY(CAT_THROTTLE,throtfilter, "dig",     0,      10,     4,      147 )
 
 #define THROTTLE_PARAMETERS_FOC \
    PARAM_ENTRY(CAT_THROTTLE,throtcur,    "A/%",       0,     10,     1,     105  )
