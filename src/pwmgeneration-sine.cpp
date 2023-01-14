@@ -83,7 +83,7 @@ void PwmGeneration::Run()
 
 void PwmGeneration::SetTorquePercent(float torque)
 {
-   int filterConst = Param::GetInt(Param::sinefilter);
+   int filterConst = Param::GetInt(Param::throtfilter);
    float roundingError = FP_TOFLOAT((float)((1 << filterConst) - 1));
    float fslipmin = Param::GetFloat(Param::fslipmin);
    float ampmin = Param::GetFloat(Param::ampmin);
