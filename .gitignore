@@ -6,3 +6,5 @@ sinus.cscope_file_list
 updater.py
 *.hex
 *.bin
+stm32_sine
+.vscode
