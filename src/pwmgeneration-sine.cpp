@@ -235,7 +235,6 @@ s32fp PwmGeneration::ProcessCurrents()
 {
    static s32fp currentMax[2];
    static int samples[2] = { 0 };
-   static int sign = 1;
    static EdgeType lastEdge[2] = { PosEdge, PosEdge };
 
    s32fp il1 = GetCurrent(AnaIn::il1, ilofs[0], Param::Get(Param::il1gain));
@@ -263,7 +262,7 @@ s32fp PwmGeneration::ProcessCurrents()
       Param::SetFixed(Param::il2rms, rms);
    }
 
-   s32fp ilMax = sign * GetIlMax(il1, il2);
+   s32fp ilMax = GetIlMax(il1, il2);
 
    Param::SetFixed(Param::il1, il1);
    Param::SetFixed(Param::il2, il2);
