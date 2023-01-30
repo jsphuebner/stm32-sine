@@ -115,6 +115,7 @@
 #define THROTTLE_PARAMETERS_SINE \
     PARAM_ENTRY(CAT_THROTTLE,ampmin,      "%",       0,      100,    10,     4   ) \
     PARAM_ENTRY(CAT_THROTTLE,slipstart,   "%",       10,     100,    50,     90  ) \
+    PARAM_ENTRY(CAT_THROTTLE,sinecurve,   SINECURVES,0,      1,      0,      146 ) \
     PARAM_ENTRY(CAT_THROTTLE,throtfilter, "dig",     0,      10,     4,      147 )
 
 #define THROTTLE_PARAMETERS_FOC \
@@ -251,6 +252,7 @@
 #define SNS_HS       "0=JCurve, 1=Semikron, 2=MBB600, 3=KTY81, 4=PT1000, 5=NTCK45_2k2, 6=Leaf, 7=BMW-i3"
 #define SNS_M        "12=KTY83-110, 13=KTY84-130, 14=Leaf, 15=KTY81-110, 16=Toyota, 21=OutlanderFront, 22=EpcosB57861-S, 23=ToyotaGen2"
 #define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=speedfrq"
+#define SINECURVES   "0=VoltageSlip, 1=Simultaneous"
 #define CRUISEMODS   "0=Button, 1=Switch, 2=CAN, 3=ThrottlePot"
 #define DIRMODES     "0=Button, 1=Switch, 2=ButtonReversed, 3=SwitchReversed, 4=DefaultForward"
 #define IDLEMODS     "0=Always, 1=NoBrake, 2=Cruise, 3=Off, 4=HillHold"

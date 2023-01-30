@@ -86,40 +86,52 @@ void PwmGeneration::SetTorquePercent(float torque)
 {
    int filterConst = Param::GetInt(Param::throtfilter);
    float roundingError = FP_TOFLOAT((float)((1 << filterConst) - 1));
+   int sinecurve = Param::GetInt(Param::sinecurve);
    float fslipmin = Param::GetFloat(Param::fslipmin);
    float ampmin = Param::GetFloat(Param::ampmin);
    float slipstart = Param::GetFloat(Param::slipstart);
+   float fstat = Param::GetFloat(Param::fstat);
+   float fweak = Param::GetFloat(Param::fweakcalc);
+   float fslipmax = Param::GetFloat(Param::fslipmax);
+   float fconst = Param::GetFloat(Param::fconst);
+   float fslipconstmax = Param::GetFloat(Param::fslipconstmax);
+
    float ampnomLocal;
    float fslipspnt = 0;
 
    if (torque >= 0)
    {
-      /* In async mode first X% throttle commands amplitude, X-100% raises slip */
-      ampnomLocal = ampmin + (100.0f - ampmin) * torque / slipstart;
-
-      if (torque >= slipstart)
+      if (fstat > fweak)
       {
-         float fstat = Param::GetFloat(Param::fstat);
-         float fweak = Param::GetFloat(Param::fweakcalc);
-         float fslipmax = Param::GetFloat(Param::fslipmax);
-
-         if (fstat > fweak)
-         {
-            float fconst = Param::GetFloat(Param::fconst);
-            float fslipconstmax = Param::GetFloat(Param::fslipconstmax);
-            //Basically, for every Hz above fweak we get a fraction of
-            //the difference between fslipconstmax and fslipmax
-            //of additional slip
-            fslipmax += (fstat - fweak) / (fconst - fweak) * (fslipconstmax - fslipmax);
-            fslipmax = MIN(fslipmax, fslipconstmax); //never exceed fslipconstmax!
-         }
-
-         float fslipdiff = fslipmax - fslipmin;
-         fslipspnt = roundingError + fslipmin + (fslipdiff * (torque - slipstart)) / (100.0f - slipstart);
+         // Fslipmax is increased up to fslipconstmax as frequency exceeds fweak
+         fslipmax += (fstat - fweak) / (fconst - fweak) * (fslipconstmax - fslipmax);
+         // Never exceed fslipconstmax!
+         fslipmax = MIN(fslipmax, fslipconstmax); //never exceed fslipconstmax!
       }
+
+      // If simultaneous curve selected. We will ramp voltage and slip simultaneously.
+      if (sinecurve)
+      {
+         // Amplitude is simply scaled from ampmin to 100%
+         ampnomLocal = ampmin + (100.0f - ampmin) * torque / 100.0f;
+
+         // Slip is scaled from fslipmin to fslipmax
+         fslipspnt = roundingError + fslipmin + (fslipmax - fslipmin) * torque / 100.0f;
+      }
+      // If sequential curve selected. first X% throttle commands amplitude, X-100% raises slip
       else
       {
-         fslipspnt = fslipmin + roundingError;
+         ampnomLocal = ampmin + (100.0f - ampmin) * torque / slipstart;
+
+         if (torque >= slipstart)
+         {
+            float fslipdiff = fslipmax - fslipmin;
+            fslipspnt = roundingError + fslipmin + (fslipdiff * (torque - slipstart)) / (100.0f - slipstart);
+         }
+         else
+         {
+            fslipspnt = fslipmin + roundingError;
+         }
       }
    }
    else if (Encoder::GetRotorDirection() != Param::GetInt(Param::dir))
