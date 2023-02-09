@@ -26,6 +26,7 @@
 #include <libopencm3/stm32/spi.h>
 #include <libopencm3/stm32/iwdg.h>
 #include "terminal.h"
+#include "terminalcommands.h"
 #include "sine_core.h"
 #include "fu.h"
 #include "foc.h"
@@ -42,11 +43,16 @@
 #include "pwmgeneration.h"
 #include "temp_meas.h"
 #include "vehiclecontrol.h"
+#include "stm32_can.h"
+#include "canmap.h"
+
+#define PRINT_JSON 0
 
 HWREV hwRev; //Hardware variant of board we are running on
 
 static Stm32Scheduler* scheduler;
-static Can* can;
+static CanHardware* can;
+static CanMap* canMap;
 static Terminal* terminal;
 
 static void Ms100Task(void)
@@ -85,7 +91,7 @@ static void Ms100Task(void)
    #endif // CONTROL
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
-      can->SendAll();
+      canMap->SendAll();
 }
 
 static void RunCharger(float udc)
@@ -227,7 +233,7 @@ static void Ms10Task(void)
    }
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_10MS)
-      can->SendAll();
+      canMap->SendAll();
 }
 
 static void Ms1Task(void)
@@ -263,7 +269,7 @@ void Param::Change(Param::PARAM_NUM paramNum)
          break;
    #endif
       case Param::canspeed:
-         can->SetBaudrate((Can::baudrates)Param::GetInt(Param::canspeed));
+         can->SetBaudrate((CanHardware::baudrates)Param::GetInt(Param::canspeed));
          break;
       case Param::throtmax:
       case Param::throtmin:
@@ -278,8 +284,8 @@ void Param::Change(Param::PARAM_NUM paramNum)
          Throttle::brkmax = Param::GetFloat(Param::offthrotregen);
          break;
       case Param::nodeid:
-         can->SetNodeId(Param::GetInt(Param::nodeid));
-         terminal->SetNodeId(Param::GetInt(Param::nodeid));
+         canMap->SetNodeId(Param::GetInt(Param::nodeid));
+         //terminal->SetNodeId(Param::GetInt(Param::nodeid));
          break;
       default:
          PwmGeneration::SetCurrentLimitThreshold(Param::Get(Param::ocurlim));
@@ -373,9 +379,12 @@ extern "C" int main(void)
 
    Stm32Scheduler s(hwRev == HW_BLUEPILL ? TIM4 : TIM2); //We never exit main so it's ok to put it on stack
    scheduler = &s;
-   Can c(CAN1, (Can::baudrates)Param::GetInt(Param::canspeed));
+   Stm32Can c(CAN1, (CanHardware::baudrates)Param::GetInt(Param::canspeed));
+   CanMap cm(&c);
    can = &c;
+   canMap = &cm;
    VehicleControl::SetCan(can);
+   TerminalCommands::SetCanMap(canMap);
 
    s.AddTask(Ms1Task, 1);
    s.AddTask(Ms10Task, 10);
@@ -395,7 +404,15 @@ extern "C" int main(void)
    write_bootloader_pininit(Param::GetBool(Param::bootprec), Param::GetBool(Param::pwmpol));
 
    while(1)
+   {
+      char c = 0;
       t.Run();
+      if (canMap->GetPrintRequest() == PRINT_JSON)
+      {
+         TerminalCommands::PrintParamsJson(canMap, &c);
+         canMap->SignalPrintComplete();
+      }
+   }
 
    return 0;
 }

@@ -18,7 +18,7 @@
  */
 #ifndef VCU_H
 #define VCU_H
-#include "stm32_can.h"
+#include "canhardware.h"
 #include "errormessage.h"
 
 class VehicleControl
@@ -27,7 +27,7 @@ class VehicleControl
       /** Set CAN interface for VCU
        * \param val Pointer to CAN interface
        */
-      static void SetCan(Can* val) { can = val; }
+      static void SetCan(CanHardware* val) { can = val; }
       static void PostErrorIfRunning(ERROR_MESSAGE_NUM err);
       static void CruiseControl();
       static void SelectDirection();
@@ -38,7 +38,7 @@ class VehicleControl
       static void SetContactorsOffState();
 
    private:
-      static Can* can; //!< Member variable "can"
+      static CanHardware* can; //!< Member variable "can"
       static bool lastCruiseSwitchState;
       static bool canIoActive;
       static bool spiEnabled;
