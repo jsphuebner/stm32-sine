@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.25.R
+#define VER 5.26.J
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -37,7 +37,8 @@
     PARAM_ENTRY(CAT_MOTOR,   numimp,      "ppr",     8,      8192,   60,     15  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirchrpm,    "rpm",     0,      20000,  100,    87  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirmode,     DIRMODES,  0,      4,      1,      95  ) \
-    PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     23,     12,     46  )
+    PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     23,     12,     46  ) \
+    PARAM_ENTRY(CAT_MOTOR,   roadspeedgain,"1000r/mile", 0,  20,     8.2,    111 ) \
 
 #define MOTOR_PARAMETERS_SINE \
     PARAM_ENTRY(CAT_MOTOR,   boost,       "dig",     0,      37813,  1700,   1   ) \
@@ -142,6 +143,8 @@
     PARAM_ENTRY(CAT_CONTACT, udcswbuck,   "V",       0,      1000,   540,    80  ) \
     PARAM_ENTRY(CAT_CONTACT, tripmode,    TRIPMODES, 0,      3,      0,      86  ) \
     PARAM_ENTRY(CAT_CONTACT, bootprec,    ONOFF,     0,      1,      0,      135 ) \
+    PARAM_ENTRY(CAT_CONTACT, outmode,     OUTMODES,  0,      2,      0,      121 ) \
+    PARAM_ENTRY(CAT_CONTACT, fanthresh,   "°C",      20,     300,    50,     122 ) \
     PARAM_ENTRY(CAT_PWM,     pwmfunc,     PWMFUNCS,  0,      3,      0,      58  ) \
     PARAM_ENTRY(CAT_PWM,     pwmgain,     "",        -100000,100000, 100,    40  ) \
     PARAM_ENTRY(CAT_PWM,     pwmofs,      "dig",     -65535, 65535,  0,      41  ) \
@@ -164,6 +167,7 @@
 #define VALUE_BLOCK2 \
     VALUE_ENTRY(fstat,       "Hz",    2011 ) \
     VALUE_ENTRY(speed,       "rpm",   2012 ) \
+    VALUE_ENTRY(roadspeed,   "kmh/mph",2043 ) \
     VALUE_ENTRY(cruisespeed, "rpm",   2041 ) \
     VALUE_ENTRY(turns,       "",      2037 ) \
     VALUE_ENTRY(amp,         "dig",   2013 ) \
@@ -267,6 +271,7 @@
 #define HWREVS       "0=Rev1, 1=Rev2, 2=Rev3, 3=Tesla, 4=BluePill, 5=Prius"
 #define SWAPS        "0=None, 1=Currents12, 2=SinCos, 4=PWMOutput13, 8=PWMOutput23"
 #define STATUS       "0=None, 1=UdcLow, 2=UdcHigh, 4=UdcBelowUdcSw, 8=UdcLim, 16=EmcyStop, 32=MProt, 64=PotPressed, 128=TmpHs, 256=WaitStart"
+#define OUTMODES     "0=DcSw, 1=TmpmThresh, 2=TmphsThresh"
 #define CAT_MOTOR    "Motor"
 #define CAT_INVERTER "Inverter"
 #define CAT_THROTTLE "Throttle"
@@ -289,6 +294,13 @@
 #elif CONTROL == CTRL_FOC
 #define VERSTR STRINGIFY(4=VER-foc)
 #endif // CONTROL
+
+enum _outmodes
+{
+   PRECHARGE_DCSW = 0,
+   ERR_TMPM_THRESH = 1,
+   ERR_TMPHS_THRESH = 2
+};
 
 enum cruisemodes
 {

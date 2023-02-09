@@ -117,13 +117,17 @@ static void Ms10Task(void)
    int newMode = MOD_OFF;
    int stt = STAT_NONE;
    float udc = VehicleControl::ProcessUdc();
+   uint32_t speed = Encoder::GetSpeed();
 
    ErrorMessage::SetTime(rtc_get_counter_val());
    Encoder::UpdateRotorFrequency(100);
    VehicleControl::CalcAndOutputTemp();
    VehicleControl::GetDigInputs();
    float torquePercent = VehicleControl::ProcessThrottle();
-   Param::SetInt(Param::speed, Encoder::GetSpeed());
+   float roadSpeed = (speed * Param::GetFloat(Param::roadspeedgain)) / 1000.0f;
+
+   Param::SetInt(Param::speed, speed);
+   Param::SetFloat(Param::roadspeed, roadSpeed);
 
    if (MOD_RUN == opmode && initWait == -1)
    {
@@ -264,6 +268,24 @@ void Param::Change(Param::PARAM_NUM paramNum)
    #endif
       case Param::canspeed:
          can->SetBaudrate((Can::baudrates)Param::GetInt(Param::canspeed));
+         break;
+      case Param::outmode:
+         if (hwRev == HW_BLUEPILL) return; //disable for blue pill
+         switch (Param::GetInt(Param::outmode))
+         {
+            default:
+            case PRECHARGE_DCSW:
+               /* Map dcsw to actual output pins, fan to dummy pin */
+               DigIo::dcsw_out.Configure(GPIOC, GPIO13, PinMode::OUTPUT);
+               DigIo::fan_out.Configure(GPIOA, GPIO0, PinMode::OUTPUT);
+               break;
+            case ERR_TMPM_THRESH:
+            case ERR_TMPHS_THRESH:
+               /* Map dcsw to dummy pin, fan to actual output pins */
+               DigIo::fan_out.Configure(GPIOC, GPIO13, PinMode::OUTPUT);
+               DigIo::dcsw_out.Configure(GPIOA, GPIO0, PinMode::OUTPUT);
+               break;
+         }
          break;
       case Param::throtmax:
       case Param::throtmin:

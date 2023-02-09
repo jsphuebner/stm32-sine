@@ -286,12 +286,23 @@ void VehicleControl::CalcAndOutputTemp()
    int pwmofs = Param::GetInt(Param::pwmofs);
    int pwmfunc = Param::GetInt(Param::pwmfunc);
    int tmpout = 0;
+   int outMode = Param::GetInt(Param::outmode);
    float tmphs = 0, tmpm = 0;
 
    GetTemps(tmphs, tmpm);
 
    temphsFiltered = IIRFILTERF(tmphs, temphsFiltered, 15);
    tempmFiltered = IIRFILTERF(tmpm, tempmFiltered, 18);
+
+   float fanTmp = outMode == ERR_TMPM_THRESH ? tempmFiltered : temphsFiltered;
+
+   if (outMode == ERR_TMPHS_THRESH || outMode == ERR_TMPM_THRESH)
+   {
+      if (fanTmp > Param::GetFloat(Param::fanthresh))
+         DigIo::fan_out.Set();
+      else if (fanTmp < (Param::GetFloat(Param::fanthresh) - 5))
+         DigIo::fan_out.Clear();
+   }
 
    switch (pwmfunc)
    {

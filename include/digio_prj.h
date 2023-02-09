@@ -16,6 +16,7 @@
     DIG_IO_ENTRY(ocur_in,     GPIOA, GPIO1,  PinMode::INPUT_FLT)   \
     DIG_IO_ENTRY(desat_in,    GPIOC, GPIO9,  PinMode::INPUT_FLT)   \
     DIG_IO_ENTRY(dcsw_out,    GPIOC, GPIO13, PinMode::OUTPUT)      \
+    DIG_IO_ENTRY(fan_out,     GPIOA, GPIO0,  PinMode::OUTPUT)  /* map to unused pin by default */    \
     DIG_IO_ENTRY(vtg_out,     GPIOC, GPIO11, PinMode::OUTPUT)      \
     DIG_IO_ENTRY(prec_out,    GPIOB, GPIO1,  PinMode::OUTPUT)      \
     DIG_IO_ENTRY(led_out,     GPIOC, GPIO12, PinMode::OUTPUT)      \
