@@ -24,7 +24,7 @@
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 148
+//Next param id (increase when adding new parameter!): 149
 //Next value Id: 2049
 /*              category     name         unit       min     max     default id */
 
@@ -73,7 +73,8 @@
     PARAM_ENTRY(CAT_INVERTER,snshs,       SNS_HS,    0,      7,      0,      45  )
 
 #define INVERTER_PARAMETERS_FOC \
-    PARAM_ENTRY(CAT_INVERTER,pinswap,     SWAPS,     0,      15,     0,      109 )
+    PARAM_ENTRY(CAT_INVERTER,pinswap,     SWAPS,     0,      15,     0,      109 ) \
+    PARAM_ENTRY(CAT_INVERTER,modmax,      "dig",     37000,  45000,  37836,  148 )
 
 #define DERATE_PARAMETERS_COMMON \
     PARAM_ENTRY(CAT_DERATE,  bmslimhigh,  "%",       0,      100,    50,     55  ) \

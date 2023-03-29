@@ -289,6 +289,7 @@ void Param::Change(Param::PARAM_NUM paramNum)
          PwmGeneration::SetControllerGains(Param::GetInt(Param::curkp), Param::GetInt(Param::curki));
          Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
          FOC::SetMotorParameters(Param::GetFloat(Param::lqminusld) / 1000.0f, Param::GetFloat(Param::fluxlinkage) / 1000.0f);
+         FOC::SetMaximumModulationIndex(Param::GetInt(Param::modmax));
          #endif // CONTROL
 
          Encoder::SetMode((enum Encoder::mode)Param::GetInt(Param::encmode));
