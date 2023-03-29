@@ -290,17 +290,17 @@ void VehicleControl::CalcAndOutputTemp()
 
    GetTemps(tmphs, tmpm);
 
-   temphsFiltered = IIRFILTERF(tmphs, temphsFiltered, 15);
-   tempmFiltered = IIRFILTERF(tmpm, tempmFiltered, 18);
+   temphsFiltered = IIRFILTERF(tmphs, temphsFiltered, 5);
+   tempmFiltered = IIRFILTERF(tmpm, tempmFiltered, 5);
 
    switch (pwmfunc)
    {
       default:
       case PWM_FUNC_TMPM:
-         tmpout = tmpm * pwmgain + pwmofs;
+         tmpout = tempmFiltered * pwmgain + pwmofs;
          break;
       case PWM_FUNC_TMPHS:
-         tmpout = tmphs * pwmgain + pwmofs;
+         tmpout = temphsFiltered * pwmgain + pwmofs;
          break;
       case PWM_FUNC_SPEED:
          tmpout = Param::GetInt(Param::speed) * pwmgain + pwmofs;
@@ -314,8 +314,8 @@ void VehicleControl::CalcAndOutputTemp()
 
    timer_set_oc_value(OVER_CUR_TIMER, TIM_OC4, tmpout);
 
-   Param::SetFloat(Param::tmphs, tmphs);
-   Param::SetFloat(Param::tmpm, tmpm);
+   Param::SetFloat(Param::tmphs, temphsFiltered);
+   Param::SetFloat(Param::tmpm, tempmFiltered);
 }
 
 float VehicleControl::ProcessUdc()
