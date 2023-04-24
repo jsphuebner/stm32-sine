@@ -42,8 +42,8 @@ class VehicleControl
       static bool lastCruiseSwitchState;
       static bool canIoActive;
       static bool spiEnabled;
-      static int temphsFiltered;
-      static int tempmFiltered;
+      static float temphsFiltered;
+      static float tempmFiltered;
       static int udcFiltered;
       static uint16_t bmwAdcNextChan;
       static uint16_t bmwAdcValues[4];
