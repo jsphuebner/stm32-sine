@@ -97,6 +97,7 @@ void PwmGeneration::Run()
       int32_t uq = qController.Run(iq);
       uint16_t advancedAngle = angle + dir * FP_TOINT(FP_MUL(Param::Get(Param::syncadv), frqFiltered));
       FOC::SetAngle(advancedAngle);
+      ud
       FOC::InvParkClarke(ud, uq);
 
       s32fp idc = (iq * uq + id * ud) / FOC::GetMaximumModulationIndex();
@@ -161,10 +162,10 @@ void PwmGeneration::SetTorquePercent(float torquePercent)
    idMtpa = FP_FROMFLT(id);
 }
 
-void PwmGeneration::SetControllerGains(int kp, int ki)
+void PwmGeneration::SetControllerGains(int iqkp, int idkp, int ki)
 {
-   qController.SetGains(kp, ki);
-   dController.SetGains(kp, ki);
+   qController.SetGains(iqkp, ki);
+   dController.SetGains(idkp, ki);
 }
 
 void PwmGeneration::PwmInit()
