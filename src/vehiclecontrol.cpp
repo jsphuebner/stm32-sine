@@ -42,8 +42,8 @@ Can* VehicleControl::can;
 bool VehicleControl::lastCruiseSwitchState = false;
 bool VehicleControl::canIoActive = false;
 bool VehicleControl::spiEnabled = false;
-int VehicleControl::temphsFiltered = 0;
-int VehicleControl::tempmFiltered = 0;
+float VehicleControl::temphsFiltered = 0;
+float VehicleControl::tempmFiltered = 0;
 int VehicleControl::udcFiltered = 0;
 uint16_t VehicleControl::bmwAdcNextChan = 0;
 uint16_t VehicleControl::bmwAdcValues[4];
@@ -291,8 +291,8 @@ void VehicleControl::CalcAndOutputTemp()
 
    GetTemps(tmphs, tmpm);
 
-   temphsFiltered = IIRFILTERF(tmphs, temphsFiltered, 15);
-   tempmFiltered = IIRFILTERF(tmpm, tempmFiltered, 18);
+   temphsFiltered = IIRFILTERF(tmphs, temphsFiltered, 5);
+   tempmFiltered = IIRFILTERF(tmpm, tempmFiltered, 5);
 
    float fanTmp = outMode == ERR_TMPM_THRESH ? tempmFiltered : temphsFiltered;
 
@@ -308,10 +308,10 @@ void VehicleControl::CalcAndOutputTemp()
    {
       default:
       case PWM_FUNC_TMPM:
-         tmpout = tmpm * pwmgain + pwmofs;
+         tmpout = tempmFiltered * pwmgain + pwmofs;
          break;
       case PWM_FUNC_TMPHS:
-         tmpout = tmphs * pwmgain + pwmofs;
+         tmpout = temphsFiltered * pwmgain + pwmofs;
          break;
       case PWM_FUNC_SPEED:
          tmpout = Param::GetInt(Param::speed) * pwmgain + pwmofs;
@@ -325,8 +325,8 @@ void VehicleControl::CalcAndOutputTemp()
 
    timer_set_oc_value(OVER_CUR_TIMER, TIM_OC4, tmpout);
 
-   Param::SetFloat(Param::tmphs, tmphs);
-   Param::SetFloat(Param::tmpm, tmpm);
+   Param::SetFloat(Param::tmphs, temphsFiltered);
+   Param::SetFloat(Param::tmpm, tempmFiltered);
 }
 
 float VehicleControl::ProcessUdc()
