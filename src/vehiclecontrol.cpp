@@ -42,8 +42,8 @@ CanHardware* VehicleControl::can;
 bool VehicleControl::lastCruiseSwitchState = false;
 bool VehicleControl::canIoActive = false;
 bool VehicleControl::spiEnabled = false;
-int VehicleControl::temphsFiltered = 0;
-int VehicleControl::tempmFiltered = 0;
+float VehicleControl::temphsFiltered = 0;
+float VehicleControl::tempmFiltered = 0;
 int VehicleControl::udcFiltered = 0;
 uint16_t VehicleControl::bmwAdcNextChan = 0;
 uint16_t VehicleControl::bmwAdcValues[4];
@@ -290,17 +290,17 @@ void VehicleControl::CalcAndOutputTemp()
 
    GetTemps(tmphs, tmpm);
 
-   temphsFiltered = IIRFILTERF(tmphs, temphsFiltered, 15);
-   tempmFiltered = IIRFILTERF(tmpm, tempmFiltered, 18);
+   temphsFiltered = IIRFILTERF(tmphs, temphsFiltered, 5);
+   tempmFiltered = IIRFILTERF(tmpm, tempmFiltered, 5);
 
    switch (pwmfunc)
    {
       default:
       case PWM_FUNC_TMPM:
-         tmpout = tmpm * pwmgain + pwmofs;
+         tmpout = tempmFiltered * pwmgain + pwmofs;
          break;
       case PWM_FUNC_TMPHS:
-         tmpout = tmphs * pwmgain + pwmofs;
+         tmpout = temphsFiltered * pwmgain + pwmofs;
          break;
       case PWM_FUNC_SPEED:
          tmpout = Param::GetInt(Param::speed) * pwmgain + pwmofs;
@@ -314,8 +314,8 @@ void VehicleControl::CalcAndOutputTemp()
 
    timer_set_oc_value(OVER_CUR_TIMER, TIM_OC4, tmpout);
 
-   Param::SetFloat(Param::tmphs, tmphs);
-   Param::SetFloat(Param::tmpm, tmpm);
+   Param::SetFloat(Param::tmphs, temphsFiltered);
+   Param::SetFloat(Param::tmpm, tempmFiltered);
 }
 
 float VehicleControl::ProcessUdc()
@@ -626,10 +626,19 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
    bool autoDertermineDirection = true;
    bool brake = Param::GetBool(Param::din_brake);
    int idlemode = Param::GetInt(Param::idlemode);
+   int potmode = Param::GetInt(Param::potmode);
    uint32_t speed = Encoder::GetSpeed();
    float cruiseSpnt = Throttle::CalcCruiseSpeed(speed);
 
    finalSpnt = throtSpnt; //assume no regulation
+
+   //When using second pot channel for brake transducer, increase idlethrotlim as we come off the brake
+   if (idlemode == IDLE_MODE_ALWAYS && potmode == POTMODE_REGENADJ)
+   {
+      float idleThrotLim = Param::GetFloat(Param::idlethrotlim);
+      float brakePressure = Throttle::DigitsToPercent(Param::GetInt(Param::pot2), 1);
+      Throttle::idleThrotLim = idleThrotLim * (100.0f - brakePressure) / 100.0f;
+   }
 
    if (Param::GetInt(Param::opmode) == MOD_OFF)
    {

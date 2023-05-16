@@ -161,10 +161,10 @@ void PwmGeneration::SetTorquePercent(float torquePercent)
    idMtpa = FP_FROMFLT(id);
 }
 
-void PwmGeneration::SetControllerGains(int kp, int ki)
+void PwmGeneration::SetControllerGains(int iqkp, int idkp, int ki)
 {
-   qController.SetGains(kp, ki);
-   dController.SetGains(kp, ki);
+   qController.SetGains(iqkp, ki);
+   dController.SetGains(idkp, ki);
 }
 
 void PwmGeneration::PwmInit()
