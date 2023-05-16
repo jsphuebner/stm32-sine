@@ -415,6 +415,7 @@ extern "C" int main(void)
    UpgradeParameters();
    Param::Change(Param::PARAM_LAST);
    Param::Change(Param::nodeid);
+   Param::Change(Param::outmode);
    write_bootloader_pininit(Param::GetBool(Param::bootprec), Param::GetBool(Param::pwmpol));
 
    while(1)
