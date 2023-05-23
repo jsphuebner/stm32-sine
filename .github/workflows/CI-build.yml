@@ -1,0 +1,41 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: build-linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install build package dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-arm-none-eabi
+
+      - name: Build dependencies
+        run: |
+          echo "Number of processors:" `nproc`
+          make get-deps -j `nproc`
+
+      - name: Build SINE firmware
+        run: |
+          make CONTROL=SINE clean all
+
+      - name: Build FOC firmware
+        run: |
+          make CONTROL=FOC clean all
+
+      - name: Build unit tests on host
+        run: |
+          make -C test
+
+      - name: Run unit tests on host
+        run: |
+          test/test_sine
