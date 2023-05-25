@@ -19,13 +19,13 @@
 
 #define VER 5.26.R
 
-/* Entries must be ordered as follows:
-   1. Saveable parameters (id != 0)
-   2. Temporary parameters (id = 0)
+/* Entries should be ordered as follows:
+   1. Saveable parameters
+   2. Temporary parameters
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 150
-//Next value Id: 2049
+//Next param id (increase when adding new parameter!): 153
+//Next value Id: 2051
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -150,7 +150,7 @@
     PARAM_ENTRY(CAT_COMM,    canspeed,    CANSPEEDS, 0,      4,      2,      83  ) \
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      88  ) \
     PARAM_ENTRY(CAT_COMM,    nodeid,      "",        1,      63,     1,      129 ) \
-    PARAM_ENTRY(CAT_TEST,    manualstart, ONOFF,     0,      1,      0,      0   ) \
+    TESTP_ENTRY(CAT_TEST,    manualstart, ONOFF,     0,      1,      0,      150 ) \
 
 #define VALUE_BLOCK1 \
     VALUE_ENTRY(version,     VERSTR,  2039 ) \
@@ -200,8 +200,8 @@
     VALUE_ENTRY(fweakcalc,   "Hz",    2010 ) \
 
 #define VALUES_FOC \
-    VALUE_ENTRY(id,      "A",     2003 ) \
-    VALUE_ENTRY(iq,      "A",     2004 ) \
+    VALUE_ENTRY(id,      "A",     2049 ) \
+    VALUE_ENTRY(iq,      "A",     2050 ) \
     VALUE_ENTRY(ifw,     "A",     2048 ) \
     VALUE_ENTRY(ud,      "dig",   2046 ) \
     VALUE_ENTRY(uq,      "dig",   2047 ) \
@@ -218,8 +218,8 @@
     DERATE_PARAMETERS_SINE \
     CHARGER_PARAMETERS \
     AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
-    PARAM_ENTRY(CAT_TEST,    fslipspnt,   "Hz",      -100,   1000,   0,      0   ) \
-    PARAM_ENTRY(CAT_TEST,    ampnom,      "%",       0,      100,    0,      0   ) \
+    TESTP_ENTRY(CAT_TEST,    fslipspnt,   "Hz",      -100,   1000,   0,      151 ) \
+    TESTP_ENTRY(CAT_TEST,    ampnom,      "%",       0,      100,    0,      152 ) \
     VALUE_BLOCK1 \
     VALUES_SINE \
     VALUE_BLOCK2
@@ -237,8 +237,8 @@
     DERATE_PARAMETERS_COMMON \
     CHARGER_PARAMETERS \
     AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
-    PARAM_ENTRY(CAT_TEST,    manualiq,    "A",       -400,   400,    0,      0  ) \
-    PARAM_ENTRY(CAT_TEST,    manualid,    "A",       -400,   400,    0,      0  ) \
+    TESTP_ENTRY(CAT_TEST,    manualiq,    "A",       -400,   400,    0,      151 ) \
+    TESTP_ENTRY(CAT_TEST,    manualid,    "A",       -400,   400,    0,      152 ) \
     VALUE_BLOCK1 \
     VALUES_FOC \
     VALUE_BLOCK2 \

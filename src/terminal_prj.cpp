@@ -111,7 +111,9 @@ static void PrintAtr(Terminal* term, char *arg)
    {
       pAtr = Param::GetAttrib((Param::PARAM_NUM)idx);
       /* Only display for params */
-      if (Param::IsParam((Param::PARAM_NUM)idx) && (Param::GetFlag((Param::PARAM_NUM)idx) & Param::FLAG_HIDDEN) == 0)
+      if ((Param::GetType((Param::PARAM_NUM)idx) == Param::TYPE_PARAM ||
+           Param::GetType((Param::PARAM_NUM)idx) == Param::TYPE_TESTPARAM) &&
+          (Param::GetFlag((Param::PARAM_NUM)idx) & Param::FLAG_HIDDEN) == 0)
       {
          printf("%s\t\t%f - %f [%f]\r\n", pAtr->name,pAtr->min,pAtr->max,pAtr->def);
       }
