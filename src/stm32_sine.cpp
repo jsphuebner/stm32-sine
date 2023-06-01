@@ -342,6 +342,7 @@ static void UpgradeParameters()
 {
    Param::SetInt(Param::version, 4); //backward compatibility
    Param::SetInt(Param::hwver, hwRev);
+   Param::SetInt(Param::regenpreset, 100); //default to 100% regen if not CAN mapped
 
    if (Param::GetInt(Param::snsm) < 12)
       Param::SetInt(Param::snsm, Param::GetInt(Param::snsm) + 10); //upgrade parameter

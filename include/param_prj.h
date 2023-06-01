@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.26.R
+#define VER 5.27.R
 
 /* Entries should be ordered as follows:
    1. Saveable parameters
@@ -25,7 +25,7 @@
    3. Display values
  */
 //Next param id (increase when adding new parameter!): 153
-//Next value Id: 2051
+//Next value Id: 2052
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -172,6 +172,7 @@
     VALUE_ENTRY(angle,       "°",     2014 ) \
     VALUE_ENTRY(pot,         "dig",   2015 ) \
     VALUE_ENTRY(pot2,        "dig",   2016 ) \
+    VALUE_ENTRY(regenpreset, "%",     2051 ) \
     VALUE_ENTRY(potnom,      "%",     2017 ) \
     VALUE_ENTRY(dir,         DIRS,    2018 ) \
     VALUE_ENTRY(tmphs,       "°C",    2019 ) \

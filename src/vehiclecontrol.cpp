@@ -114,6 +114,7 @@ void VehicleControl::SelectDirection()
    int selectedDir = Param::GetInt(Param::dir);
    int userDirSelection = 0;
    int dirSign = (Param::GetInt(Param::dirmode) & DIR_REVERSED) ? -1 : 1;
+   bool potPressed = Param::GetInt(Param::potnom) > 0;
 
    //When in bidirection throttle mode, direction is determined by that
    if (Param::GetInt(Param::potmode) & POTMODE_BIDIR) return;
@@ -150,13 +151,9 @@ void VehicleControl::SelectDirection()
          userDirSelection = -1 * dirSign;
    }
 
-   /* Only change direction when below certain motor speed */
-   if ((int)Encoder::GetSpeed() < Param::GetInt(Param::dirchrpm))
+   /* Only change direction when below certain motor speed and throttle is not pressed */
+   if ((int)Encoder::GetSpeed() < Param::GetInt(Param::dirchrpm) && !potPressed)
       selectedDir = userDirSelection;
-
-   /* Current direction doesn't match selected direction -> neutral */
-   //if (selectedDir != userDirSelection)
-     // selectedDir = 0;
 
    Param::SetInt(Param::dir, selectedDir);
 }
@@ -517,7 +514,7 @@ void VehicleControl::GetTemps(float& tmphs, float &tmpm)
 
 float VehicleControl::GetUserThrottleCommand()
 {
-   float potnom1, potnom2;
+   float potnom1, potnom2, regenPreset;
    int potval, pot2val;
    bool brake = Param::GetBool(Param::din_brake);
    int potmode = Param::GetInt(Param::potmode);
@@ -556,6 +553,16 @@ float VehicleControl::GetUserThrottleCommand()
 
    potnom1 = Throttle::DigitsToPercent(potval, 0);
    potnom2 = Throttle::DigitsToPercent(pot2val, 1);
+
+   if (potmode == POTMODE_REGENADJ)
+   {
+      regenPreset = potnom2;
+      Param::SetFloat(Param::regenpreset, regenPreset);
+   }
+   else
+   {
+      regenPreset = Param::GetFloat(Param::regenpreset);
+   }
 
    if ((potmode & POTMODE_BIDIR) > 0)
    {
@@ -614,10 +621,10 @@ float VehicleControl::GetUserThrottleCommand()
       return 0;
    }
 
-   if (Param::GetInt(Param::dir) == 0)
-      return 0;
+   //if (Param::GetInt(Param::dir) == 0)
+   //   return 0;
 
-   return Throttle::CalcThrottle(potnom1, potnom2, brake);
+   return Throttle::CalcThrottle(potnom1, regenPreset, brake);
 }
 
 bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
