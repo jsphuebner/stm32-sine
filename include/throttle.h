@@ -36,6 +36,7 @@ class Throttle
       static void BmsLimitCommand(float& finalSpnt, bool dinbms);
       static void UdcLimitCommand(float& finalSpnt, float udc);
       static void IdcLimitCommand(float& finalSpnt, float idc);
+      static void AccelerationLimitCommand(float& finalSpnt, int speed);
       static void FrequencyLimitCommand(float& finalSpnt, float frequency);
       static float RampThrottle(float finalSpnt);
       static int potmin[2];

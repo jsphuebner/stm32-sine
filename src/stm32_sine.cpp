@@ -326,6 +326,8 @@ void Param::Change(Param::PARAM_NUM paramNum)
          Throttle::idcmax = Param::GetFloat(Param::idcmax);
          Throttle::idckp = Param::GetFloat(Param::idckp);
          Throttle::fmax = Param::GetFloat(Param::fmax);
+         Throttle::accelflt = Param::GetInt(Param::accelflt);
+         Throttle::accelmax = Param::GetInt(Param::accelmax);
 
          if (hwRev != HW_BLUEPILL)
          {

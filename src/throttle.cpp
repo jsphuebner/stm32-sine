@@ -49,6 +49,8 @@ float Throttle::idcmin;
 float Throttle::idcmax;
 float Throttle::idckp;
 float Throttle::fmax;
+int Throttle::accelmax;
+int Throttle::accelflt;
 
 bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
 {
@@ -236,6 +238,23 @@ void Throttle::IdcLimitCommand(float& finalSpnt, float idc)
       res = MIN(0, res);
       finalSpnt = MAX(res, finalSpnt);
    }
+}
+
+void Throttle::AccelerationLimitCommand(float& finalSpnt, int speed)
+{
+   static int lastSpeed = 0, speedDiff = 0;
+
+   speedDiff = IIRFILTER(speedDiff, speed - lastSpeed, accelflt);
+
+   if (finalSpnt >= 0 && speed > 100)
+   {
+      int accelErr = accelmax - speedDiff;
+      int res = 20 * accelErr;
+
+      res = MAX(0, res);
+      finalSpnt = MIN(res, finalSpnt);
+   }
+   lastSpeed = speed;
 }
 
 void Throttle::FrequencyLimitCommand(float& finalSpnt, float frequency)
