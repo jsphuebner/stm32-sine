@@ -181,6 +181,7 @@ float VehicleControl::ProcessThrottle()
    Throttle::UdcLimitCommand(finalSpnt, Param::GetFloat(Param::udc));
    Throttle::IdcLimitCommand(finalSpnt, Param::GetFloat(Param::idc));
    Throttle::FrequencyLimitCommand(finalSpnt, Param::GetFloat(Param::fstat));
+   Throttle::AccelerationLimitCommand(finalSpnt, Encoder::GetSpeed());
 
    if (Throttle::TemperatureDerate(Param::GetFloat(Param::tmphs), Param::GetFloat(Param::tmphsmax), finalSpnt))
    {
