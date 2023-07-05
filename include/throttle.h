@@ -52,6 +52,7 @@ class Throttle
       static float holdkp;
       static int speedflt;
       static float idleThrotLim;
+      static float cruiseThrotLim;
       static float regenRamp;
       static float throttleRamp;
       static int bmslimhigh;

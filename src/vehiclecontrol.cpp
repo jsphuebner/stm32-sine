@@ -60,20 +60,16 @@ void VehicleControl::CruiseControl()
 {
    int cruisemode = Param::GetInt(Param::cruisemode) ;
 
-   //Always disable cruise control when brake pedal is pressed
-   if (Param::GetBool(Param::din_brake))
+   //Always disable cruise control when brake pedal is pressed or forward signal goes away
+   if (Param::GetBool(Param::din_brake) || !Param::GetBool(Param::din_forward))
    {
       Throttle::cruiseSpeed = -1;
    }
    else
    {
-      if (CRUISE_BUTTON == cruisemode)
+      if (CRUISE_OFF == cruisemode)
       {
-         //Enable/update cruise control when button is pressed
-         if (Param::GetBool(Param::din_cruise))
-         {
-            Throttle::cruiseSpeed = Encoder::GetSpeed();
-         }
+         Throttle::cruiseSpeed = -1;
       }
       else if (CRUISE_SWITCH == cruisemode)
       {
@@ -91,7 +87,11 @@ void VehicleControl::CruiseControl()
       }
       else if (CRUISE_CAN == cruisemode)
       {
-         Throttle::cruiseSpeed = Param::GetInt(Param::cruisespeed);
+         //Only use cruise speed if din_cruise is high. Since din_cruise has a CAN timeout we cancel on loss of comms
+         if (Param::GetBool(Param::din_cruise))
+            Throttle::cruiseSpeed = Param::GetInt(Param::cruisespeed);
+         else
+            Throttle::cruiseSpeed = -1;
       }
       else if (CRUISE_POT == cruisemode)
       {
@@ -218,6 +218,10 @@ float VehicleControl::ProcessThrottle()
          finalSpnt *= Param::GetInt(Param::dir);
 #endif // CONTROL
    }
+
+   //Make sure we never command torque in neutral
+   if (Param::GetInt(Param::dir) == 0)
+      finalSpnt = 0;
 
    return finalSpnt;
 }
@@ -612,17 +616,12 @@ float VehicleControl::GetUserThrottleCommand()
          PostErrorIfRunning(ERR_THROTTLE2);
          return 0;
       }
-
-      potnom2 = 100.0f; //No regen attenuation
    }
    else if (!inRange1)
    {
       //Only one channel and it is out of range
       return 0;
    }
-
-   //if (Param::GetInt(Param::dir) == 0)
-   //   return 0;
 
    return Throttle::CalcThrottle(potnom1, regenPreset, brake);
 }

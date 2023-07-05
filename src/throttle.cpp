@@ -35,6 +35,7 @@ float Throttle::holdkp;
 int Throttle::speedflt;
 int Throttle::speedFiltered;
 float Throttle::idleThrotLim;
+float Throttle::cruiseThrotLim;
 float Throttle::potnomFiltered;
 float Throttle::throtmax;
 float Throttle::throtmin;
@@ -156,7 +157,7 @@ float Throttle::CalcCruiseSpeed(int speed)
    int speederr = cruiseSpeed - speedFiltered;
 
    float potnom = speedkp * speederr;
-   potnom = MIN(100.0f, potnom);
+   potnom = MIN(cruiseThrotLim, potnom);
    potnom = MAX(brkcruise, potnom);
 
    return potnom;

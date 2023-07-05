@@ -54,6 +54,7 @@ static Stm32Scheduler* scheduler;
 static CanHardware* can;
 static CanMap* canMap;
 static Terminal* terminal;
+static bool seenBrakePedal = false;
 
 static void Ms100Task(void)
 {
@@ -77,6 +78,9 @@ static void Ms100Task(void)
       }
       Param::SetInt(Param::din_desat, 2);
    }
+
+   if (rtc_get_counter_val() > 50) //500ms after start check for brake pedal
+      seenBrakePedal |= (Param::GetInt(Param::cruisemode) == CRUISE_OFF) || Param::GetBool(Param::din_brake);
 
    VehicleControl::SelectDirection();
    VehicleControl::CruiseControl();
@@ -145,6 +149,7 @@ static void Ms10Task(void)
    stt |= Param::GetInt(Param::potnom) <= 0 ? STAT_NONE : STAT_POTPRESSED;
    stt |= udc >= Param::GetFloat(Param::udcsw) ? STAT_NONE : STAT_UDCBELOWUDCSW;
    stt |= udc < Param::GetFloat(Param::udclim) ? STAT_NONE : STAT_UDCLIM;
+   stt |= seenBrakePedal ? STAT_NONE : STAT_BRAKECHECK;
 
    /* switch on DC switch if
     * - throttle is not pressed
@@ -153,7 +158,7 @@ static void Ms10Task(void)
     * - udc >= udcsw
     * - udc < udclim
     */
-   if ((stt & (STAT_EMCYSTOP | STAT_MPROT | STAT_POTPRESSED | STAT_UDCBELOWUDCSW | STAT_UDCLIM)) == STAT_NONE)
+   if ((stt & (STAT_EMCYSTOP | STAT_MPROT | STAT_POTPRESSED | STAT_UDCBELOWUDCSW | STAT_UDCLIM | STAT_BRAKECHECK)) == STAT_NONE)
    {
       /* Switch to charge mode if
        * - Charge mode is enabled
@@ -318,6 +323,7 @@ void Param::Change(Param::PARAM_NUM paramNum)
          Throttle::speedkp = Param::GetFloat(Param::speedkp);
          Throttle::speedflt = Param::GetInt(Param::speedflt);
          Throttle::idleThrotLim = Param::GetFloat(Param::idlethrotlim);
+         Throttle::cruiseThrotLim = Param::GetFloat(Param::cruisethrotlim);
          Throttle::bmslimlow = Param::GetInt(Param::bmslimlow);
          Throttle::bmslimhigh = Param::GetInt(Param::bmslimhigh);
          Throttle::udcmin = Param::GetFloat(Param::udcmin) * 0.99f; //Leave some room for the notification light
@@ -388,9 +394,9 @@ extern "C" int main(void)
    VehicleControl::SetCan(can);
    TerminalCommands::SetCanMap(canMap);
 
-   s.AddTask(Ms1Task, 1);
-   s.AddTask(Ms10Task, 10);
    s.AddTask(Ms100Task, 100);
+   s.AddTask(Ms10Task, 10);
+   s.AddTask(Ms1Task, 1);
 
    DigIo::prec_out.Set();
 
