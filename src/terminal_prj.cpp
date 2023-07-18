@@ -71,10 +71,7 @@ static void SaveParameters(Terminal* term, char *arg)
    arg = arg;
    if (Param::GetInt(Param::opmode) == 0)
    {
-      Can::GetInterface(0)->Save();
-      fprintf(term, "CANMAP stored\r\n");
-      uint32_t crc = parm_save();
-      fprintf(term, "Parameters stored, CRC=%x\r\n", crc);
+      TerminalCommands::SaveParameters(term, arg);
    }
    else
    {
@@ -114,7 +111,9 @@ static void PrintAtr(Terminal* term, char *arg)
    {
       pAtr = Param::GetAttrib((Param::PARAM_NUM)idx);
       /* Only display for params */
-      if (Param::IsParam((Param::PARAM_NUM)idx) && (Param::GetFlag((Param::PARAM_NUM)idx) & Param::FLAG_HIDDEN) == 0)
+      if ((Param::GetType((Param::PARAM_NUM)idx) == Param::TYPE_PARAM ||
+           Param::GetType((Param::PARAM_NUM)idx) == Param::TYPE_TESTPARAM) &&
+          (Param::GetFlag((Param::PARAM_NUM)idx) & Param::FLAG_HIDDEN) == 0)
       {
          printf("%s\t\t%f - %f [%f]\r\n", pAtr->name,pAtr->min,pAtr->max,pAtr->def);
       }

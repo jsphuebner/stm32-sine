@@ -35,6 +35,7 @@ float Throttle::holdkp;
 int Throttle::speedflt;
 int Throttle::speedFiltered;
 float Throttle::idleThrotLim;
+float Throttle::cruiseThrotLim;
 float Throttle::potnomFiltered;
 float Throttle::throtmax;
 float Throttle::throtmin;
@@ -49,6 +50,8 @@ float Throttle::idcmin;
 float Throttle::idcmax;
 float Throttle::idckp;
 float Throttle::fmax;
+int Throttle::accelmax;
+int Throttle::accelflt;
 
 bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
 {
@@ -156,7 +159,7 @@ float Throttle::CalcCruiseSpeed(int speed)
    int speederr = cruiseSpeed - speedFiltered;
 
    float potnom = speedkp * speederr;
-   potnom = MIN(100.0f, potnom);
+   potnom = MIN(cruiseThrotLim, potnom);
    potnom = MAX(brkcruise, potnom);
 
    return potnom;
@@ -236,6 +239,23 @@ void Throttle::IdcLimitCommand(float& finalSpnt, float idc)
       res = MIN(0, res);
       finalSpnt = MAX(res, finalSpnt);
    }
+}
+
+void Throttle::AccelerationLimitCommand(float& finalSpnt, int speed)
+{
+   static int lastSpeed = 0, speedDiff = 0;
+
+   speedDiff = IIRFILTER(speedDiff, speed - lastSpeed, accelflt);
+
+   if (finalSpnt >= 0 && speed > 100)
+   {
+      int accelErr = accelmax - speedDiff;
+      int res = 20 * accelErr;
+
+      res = MAX(0, res);
+      finalSpnt = MIN(res, finalSpnt);
+   }
+   lastSpeed = speed;
 }
 
 void Throttle::FrequencyLimitCommand(float& finalSpnt, float frequency)

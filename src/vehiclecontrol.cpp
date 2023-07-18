@@ -38,7 +38,7 @@
 #define MAP(x, in_min, in_max, out_min,out_max) ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
 
 
-Can* VehicleControl::can;
+CanHardware* VehicleControl::can;
 bool VehicleControl::lastCruiseSwitchState = false;
 bool VehicleControl::canIoActive = false;
 bool VehicleControl::spiEnabled = false;
@@ -60,20 +60,16 @@ void VehicleControl::CruiseControl()
 {
    int cruisemode = Param::GetInt(Param::cruisemode) ;
 
-   //Always disable cruise control when brake pedal is pressed
-   if (Param::GetBool(Param::din_brake))
+   //Always disable cruise control when brake pedal is pressed or forward signal goes away
+   if (Param::GetBool(Param::din_brake) || !Param::GetBool(Param::din_forward))
    {
       Throttle::cruiseSpeed = -1;
    }
    else
    {
-      if (CRUISE_BUTTON == cruisemode)
+      if (CRUISE_OFF == cruisemode)
       {
-         //Enable/update cruise control when button is pressed
-         if (Param::GetBool(Param::din_cruise))
-         {
-            Throttle::cruiseSpeed = Encoder::GetSpeed();
-         }
+         Throttle::cruiseSpeed = -1;
       }
       else if (CRUISE_SWITCH == cruisemode)
       {
@@ -91,7 +87,11 @@ void VehicleControl::CruiseControl()
       }
       else if (CRUISE_CAN == cruisemode)
       {
-         Throttle::cruiseSpeed = Param::GetInt(Param::cruisespeed);
+         //Only use cruise speed if din_cruise is high. Since din_cruise has a CAN timeout we cancel on loss of comms
+         if (Param::GetBool(Param::din_cruise))
+            Throttle::cruiseSpeed = Param::GetInt(Param::cruisespeed);
+         else
+            Throttle::cruiseSpeed = -1;
       }
       else if (CRUISE_POT == cruisemode)
       {
@@ -114,6 +114,7 @@ void VehicleControl::SelectDirection()
    int selectedDir = Param::GetInt(Param::dir);
    int userDirSelection = 0;
    int dirSign = (Param::GetInt(Param::dirmode) & DIR_REVERSED) ? -1 : 1;
+   bool potPressed = Param::GetInt(Param::potnom) > 0;
 
    //When in bidirection throttle mode, direction is determined by that
    if (Param::GetInt(Param::potmode) & POTMODE_BIDIR) return;
@@ -150,13 +151,9 @@ void VehicleControl::SelectDirection()
          userDirSelection = -1 * dirSign;
    }
 
-   /* Only change direction when below certain motor speed */
-   if ((int)Encoder::GetSpeed() < Param::GetInt(Param::dirchrpm))
+   /* Only change direction when below certain motor speed and throttle is not pressed */
+   if ((int)Encoder::GetSpeed() < Param::GetInt(Param::dirchrpm) && !potPressed)
       selectedDir = userDirSelection;
-
-   /* Current direction doesn't match selected direction -> neutral */
-   //if (selectedDir != userDirSelection)
-     // selectedDir = 0;
 
    Param::SetInt(Param::dir, selectedDir);
 }
@@ -184,6 +181,7 @@ float VehicleControl::ProcessThrottle()
    Throttle::UdcLimitCommand(finalSpnt, Param::GetFloat(Param::udc));
    Throttle::IdcLimitCommand(finalSpnt, Param::GetFloat(Param::idc));
    Throttle::FrequencyLimitCommand(finalSpnt, Param::GetFloat(Param::fstat));
+   Throttle::AccelerationLimitCommand(finalSpnt, Encoder::GetSpeed());
 
    if (Throttle::TemperatureDerate(Param::GetFloat(Param::tmphs), Param::GetFloat(Param::tmphsmax), finalSpnt))
    {
@@ -221,6 +219,10 @@ float VehicleControl::ProcessThrottle()
          finalSpnt *= Param::GetInt(Param::dir);
 #endif // CONTROL
    }
+
+   //Make sure we never command torque in neutral
+   if (Param::GetInt(Param::dir) == 0)
+      finalSpnt = 0;
 
    return finalSpnt;
 }
@@ -528,7 +530,7 @@ void VehicleControl::GetTemps(float& tmphs, float &tmpm)
 
 float VehicleControl::GetUserThrottleCommand()
 {
-   float potnom1, potnom2;
+   float potnom1, potnom2, regenPreset;
    int potval, pot2val;
    bool brake = Param::GetBool(Param::din_brake);
    int potmode = Param::GetInt(Param::potmode);
@@ -567,6 +569,16 @@ float VehicleControl::GetUserThrottleCommand()
 
    potnom1 = Throttle::DigitsToPercent(potval, 0);
    potnom2 = Throttle::DigitsToPercent(pot2val, 1);
+
+   if (potmode == POTMODE_REGENADJ)
+   {
+      regenPreset = potnom2;
+      Param::SetFloat(Param::regenpreset, regenPreset);
+   }
+   else
+   {
+      regenPreset = Param::GetFloat(Param::regenpreset);
+   }
 
    if ((potmode & POTMODE_BIDIR) > 0)
    {
@@ -616,8 +628,6 @@ float VehicleControl::GetUserThrottleCommand()
          PostErrorIfRunning(ERR_THROTTLE2);
          return 0;
       }
-
-      potnom2 = 100.0f; //No regen attenuation
    }
    else if (!inRange1)
    {
@@ -625,10 +635,7 @@ float VehicleControl::GetUserThrottleCommand()
       return 0;
    }
 
-   if (Param::GetInt(Param::dir) == 0)
-      return 0;
-
-   return Throttle::CalcThrottle(potnom1, potnom2, brake);
+   return Throttle::CalcThrottle(potnom1, regenPreset, brake);
 }
 
 bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
