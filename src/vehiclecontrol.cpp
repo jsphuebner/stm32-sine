@@ -19,6 +19,7 @@
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/stm32/rtc.h>
 #include <libopencm3/stm32/spi.h>
+#include <libopencm3/stm32/crc.h>
 #include "vehiclecontrol.h"
 #include "temp_meas.h"
 #include "fu.h"
@@ -39,6 +40,8 @@
 
 
 CanHardware* VehicleControl::can;
+FunctionPointerCallback VehicleControl::callback(VehicleControl::CanReceive, VehicleControl::CanClear);
+uint32_t VehicleControl::lastCanRxTime = 0;
 bool VehicleControl::lastCruiseSwitchState = false;
 bool VehicleControl::canIoActive = false;
 bool VehicleControl::spiEnabled = false;
@@ -47,6 +50,95 @@ float VehicleControl::tempmFiltered = 0;
 int VehicleControl::udcFiltered = 0;
 uint16_t VehicleControl::bmwAdcNextChan = 0;
 uint16_t VehicleControl::bmwAdcValues[4];
+
+void VehicleControl::SetCan(CanHardware* canHw)
+{
+   can = canHw;
+   can->AddReceiveCallback(&callback);
+   CanClear();
+}
+
+void VehicleControl::CanClear()
+{
+   can->RegisterUserMessage(Param::GetInt(Param::controlid));
+}
+
+bool VehicleControl::CanReceive(uint32_t canId, uint32_t data[2])
+{
+   const int maxErrors = 5;
+   static uint8_t errors = 0, lastCounter = 0;
+
+   if (canId != (uint32_t)Param::GetInt(Param::controlid)) return false;
+
+   uint16_t pot = data[0] & 0xFFF;
+   uint16_t pot2 = (data[0] >> 12) & 0xFFF;
+   uint8_t canio = (data[0] >> 24) & 0x3F;
+   uint8_t ctr1 = (data[0] >> 30) & 0x3;
+   uint16_t cruisespeed = data[1] & 0x3FFF;
+   uint8_t ctr2 = (data[1] >> 14) & 0x3;
+   uint8_t regenpreset = (data[1] >> 16) & 0xFF;
+   uint8_t crc = (data[1] >> 24) & 0xFF;
+
+   //Zero out CRC byte
+   data[1] &= 0x00FFFFFF;
+   crc_reset();
+   uint32_t calcCrc = crc_calculate_block(data, 2) & 0xFF;
+
+   //We check for CRC and sequence counter errors. As long as we stay below maxErrors
+   //we can heal bad frames with good frames. Once we've surpassed maxErrors we do
+   //not recover and require a restart
+   if (calcCrc != crc)
+   {
+      ErrorMessage::Post(ERR_CANCRC);
+      if (errors < maxErrors) errors++;
+   }
+   else if (ctr1 != ctr2 || //The two counters within the message don't match up
+            ctr1 == lastCounter) //The counters match but haven't moved since the last message
+   {
+      ErrorMessage::Post(ERR_CANCOUNTER);
+      if (errors < maxErrors) errors++;
+   }
+   else if (errors > 0 && errors < maxErrors)
+   {
+      //As long as we haven't reached maxErrors, good frames decrease the error counter
+      errors--;
+   }
+
+   lastCounter = ctr1;
+
+   //once we've reached maxerrors we cannot recover, inverter needs restarting.
+   if (errors < maxErrors)
+   {
+      //This lets consuming functions check the age of the last valid frame
+      lastCanRxTime = rtc_get_counter_val();
+
+      Param::SetInt(Param::canio, canio);
+      Param::SetInt(Param::regenpreset, regenpreset);
+
+      if ((Param::GetInt(Param::potmode) & POTMODE_CAN) > 0)
+      {
+         Param::SetInt(Param::pot, pot);
+         Param::SetInt(Param::pot2, pot2);
+      }
+
+      if (Param::GetInt(Param::cruisemode) == CRUISE_CAN)
+      {
+         Param::SetInt(Param::cruisespeed, cruisespeed);
+      }
+   }
+   else
+   {
+      Param::SetInt(Param::regenpreset, 0);
+
+      if (Param::GetInt(Param::cruisemode) == CRUISE_CAN)
+      {
+         Param::SetInt(Param::cruisespeed, 0);
+      }
+      //pot and canio handled in respective functions
+   }
+
+   return true;
+}
 
 void VehicleControl::PostErrorIfRunning(ERROR_MESSAGE_NUM err)
 {
@@ -58,7 +150,7 @@ void VehicleControl::PostErrorIfRunning(ERROR_MESSAGE_NUM err)
 
 void VehicleControl::CruiseControl()
 {
-   int cruisemode = Param::GetInt(Param::cruisemode) ;
+   int cruisemode = Param::GetInt(Param::cruisemode);
 
    //Always disable cruise control when brake pedal is pressed or forward signal goes away
    if (Param::GetBool(Param::din_brake) || !Param::GetBool(Param::din_forward))
@@ -259,7 +351,7 @@ void VehicleControl::GetDigInputs()
 
    canIoActive |= canio != 0;
 
-   if ((rtc_get_counter_val() - can->GetLastRxTimestamp()) >= CAN_TIMEOUT && canIoActive)
+   if ((rtc_get_counter_val() - lastCanRxTime) >= CAN_TIMEOUT && canIoActive)
    {
       canio = 0;
       Param::SetInt(Param::canio, 0);
@@ -527,7 +619,7 @@ float VehicleControl::GetUserThrottleCommand()
    if ((potmode & POTMODE_CAN) > 0)
    {
       //500ms timeout
-      if ((rtc_get_counter_val() - can->GetLastRxTimestamp()) < CAN_TIMEOUT)
+      if ((rtc_get_counter_val() - lastCanRxTime) < CAN_TIMEOUT)
       {
          potval = Param::GetInt(Param::pot);
          pot2val = Param::GetInt(Param::pot2);

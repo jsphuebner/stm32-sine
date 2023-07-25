@@ -24,7 +24,7 @@
    2. Temporary parameters
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 155
+//Next param id (increase when adding new parameter!): 157
 //Next value Id: 2052
 /*              category     name         unit       min     max     default id */
 
@@ -153,6 +153,7 @@
     PARAM_ENTRY(CAT_COMM,    canspeed,    CANSPEEDS, 0,      4,      2,      83  ) \
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      88  ) \
     PARAM_ENTRY(CAT_COMM,    nodeid,      "",        1,      63,     1,      129 ) \
+    PARAM_ENTRY(CAT_COMM,    controlid,   "",        1,      2047,   63,     156 ) \
     TESTP_ENTRY(CAT_TEST,    manualstart, ONOFF,     0,      1,      0,      150 ) \
 
 #define VALUE_BLOCK1 \

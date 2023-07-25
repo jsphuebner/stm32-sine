@@ -356,6 +356,13 @@ static void UpgradeParameters()
       Param::SetInt(Param::snsm, Param::GetInt(Param::snsm) + 10); //upgrade parameter
    if (Param::Get(Param::offthrotregen) > 0)
       Param::Set(Param::offthrotregen, -Param::Get(Param::offthrotregen));
+
+   //Remove CAN mapping for safety critical values
+   canMap->Remove(Param::pot);
+   canMap->Remove(Param::pot2);
+   canMap->Remove(Param::canio);
+   canMap->Remove(Param::cruisespeed);
+   canMap->Remove(Param::regenpreset);
 }
 
 extern "C" void tim2_isr(void)
