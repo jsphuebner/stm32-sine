@@ -19,25 +19,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <iostream>
+#include <list>
 #include "test.h"
-#define EXPORT_TESTLIST
-#include "test_list.h"
 
 using namespace std;
 
 int _failedAssertions = 0;
+int testIdx = 0;
+list<UnitTest*> testList;
 
 int main()
 {
-   int dummy;
-   IUnitTest** currentTest = testList;
-
    cout << "Starting unit Tests" << endl;
 
-   while (*currentTest)
+   for (UnitTest* currentTest: testList)
    {
-      (*currentTest)->RunTest();
-      currentTest++;
+      bool allTestsRun = false;
+
+      for (VoidFunction testCase: currentTest->GetCases())
+      {
+         currentTest->TestCaseSetup();
+         testCase();
+      }
    }
 
    if (_failedAssertions > 0)
@@ -49,4 +52,10 @@ int main()
    cout << "All tests passed" << endl;
 
    return 0;
+}
+
+UnitTest::UnitTest(const std::list<VoidFunction>* cases)
+: _cases(cases)
+{
+   testList.push_back(this);
 }

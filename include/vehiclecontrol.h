@@ -49,6 +49,8 @@ class VehicleControl
       static uint16_t bmwAdcValues[4];
       static FunctionPointerCallback callback;
       static uint32_t lastCanRxTime;
+      static uint8_t canErrors;
+      static uint8_t seqCounter;
 
       static void GetTemps(float& tmphs, float &tmpm);
       static float GetUserThrottleCommand();

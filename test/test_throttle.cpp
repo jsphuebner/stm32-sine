@@ -21,10 +21,14 @@
 
 #include "my_fp.h"
 #include "my_math.h"
-#include "test_list.h"
+#include "test.h"
 #include "throttle.h"
 
-using namespace std;
+class ThrottleTest: public UnitTest
+{
+   public:
+      ThrottleTest(const std::list<VoidFunction>* cases): UnitTest(cases) {}
+};
 
 static void TestSetup()
 {
@@ -128,10 +132,6 @@ static void TestDualThrottle()
    Throttle::potmax[1] = 4000;
 }
 #endif
-void ThrottleTest::RunTest()
-{
-   TestSetup();
-   TestBrkPedal();
-   TestRegen();
-   //TestDualThrottle();
-}
+
+//This line registers the test
+REGISTER_TEST(ThrottleTest, TestSetup);

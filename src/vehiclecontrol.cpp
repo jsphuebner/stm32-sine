@@ -50,9 +50,13 @@ float VehicleControl::tempmFiltered = 0;
 int VehicleControl::udcFiltered = 0;
 uint16_t VehicleControl::bmwAdcNextChan = 0;
 uint16_t VehicleControl::bmwAdcValues[4];
+uint8_t VehicleControl::canErrors;
+uint8_t VehicleControl::seqCounter;
 
 void VehicleControl::SetCan(CanHardware* canHw)
 {
+   seqCounter = 0; //Mainly useful for unit tests
+   canErrors = 0;
    can = canHw;
    can->AddReceiveCallback(&callback);
    CanClear();
@@ -66,7 +70,6 @@ void VehicleControl::CanClear()
 bool VehicleControl::CanReceive(uint32_t canId, uint32_t data[2])
 {
    const int maxErrors = 5;
-   static uint8_t errors = 0, lastCounter = 0;
 
    if (canId != (uint32_t)Param::GetInt(Param::controlid)) return false;
 
@@ -90,24 +93,24 @@ bool VehicleControl::CanReceive(uint32_t canId, uint32_t data[2])
    if (calcCrc != crc)
    {
       ErrorMessage::Post(ERR_CANCRC);
-      if (errors < maxErrors) errors++;
+      if (canErrors < maxErrors) canErrors++;
    }
    else if (ctr1 != ctr2 || //The two counters within the message don't match up
-            ctr1 == lastCounter) //The counters match but haven't moved since the last message
+            ctr1 == seqCounter) //The counters match but haven't moved since the last message
    {
       ErrorMessage::Post(ERR_CANCOUNTER);
-      if (errors < maxErrors) errors++;
+      if (canErrors < maxErrors) canErrors++;
    }
-   else if (errors > 0 && errors < maxErrors)
+   else if (canErrors > 0 && canErrors < maxErrors)
    {
       //As long as we haven't reached maxErrors, good frames decrease the error counter
-      errors--;
+      canErrors--;
    }
 
-   lastCounter = ctr1;
+   seqCounter = ctr1;
 
    //once we've reached maxerrors we cannot recover, inverter needs restarting.
-   if (errors < maxErrors)
+   if (canErrors < maxErrors)
    {
       //This lets consuming functions check the age of the last valid frame
       lastCanRxTime = rtc_get_counter_val();
