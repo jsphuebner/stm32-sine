@@ -25,8 +25,8 @@
 using namespace std;
 
 int _failedAssertions = 0;
-int testIdx = 0;
-list<UnitTest*> testList;
+static int testIdx = 0;
+static list<UnitTest*> testList;
 
 int main()
 {
@@ -34,7 +34,7 @@ int main()
 
    for (UnitTest* currentTest: testList)
    {
-      bool allTestsRun = false;
+      currentTest->TestSetup();
 
       for (VoidFunction testCase: currentTest->GetCases())
       {
@@ -54,7 +54,7 @@ int main()
    return 0;
 }
 
-UnitTest::UnitTest(const std::list<VoidFunction>* cases)
+UnitTest::UnitTest(const list<VoidFunction>* cases)
 : _cases(cases)
 {
    testList.push_back(this);
