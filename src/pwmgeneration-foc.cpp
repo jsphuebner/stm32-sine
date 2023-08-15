@@ -47,6 +47,7 @@ static s32fp idMtpa = 0, iqMtpa = 0;
 static tim_oc_id ocChannels[3];
 static PiController qController;
 static PiController dController;
+static s32fp fwCurMax = 0;
 
 void PwmGeneration::Run()
 {
@@ -74,7 +75,7 @@ void PwmGeneration::Run()
          if (0 == frq) amplitudeErrFiltered = fwOutMax << shiftForFilter;
 
          int vlim = amplitudeErrFiltered >> shiftForFilter;
-         s32fp ifw = ((fwOutMax - vlim) * Param::Get(Param::fwcurmax)) / fwOutMax;
+         s32fp ifw = ((fwOutMax - vlim) * fwCurMax) / fwOutMax;
          Param::SetFixed(Param::ifw, ifw);
 
          s32fp limitedIq = (vlim * iqMtpa) / fwOutMax;
@@ -141,6 +142,11 @@ void PwmGeneration::Run()
       initwait = 0;
       AcHeat();
    }
+}
+
+void PwmGeneration::SetFwCurMax(float cur)
+{
+   fwCurMax = FP_FROMFLT(cur);
 }
 
 void PwmGeneration::SetTorquePercent(float torquePercent)

@@ -161,6 +161,7 @@ void VehicleControl::SelectDirection()
 float VehicleControl::ProcessThrottle()
 {
    float throtSpnt = 0, finalSpnt;
+   const float fstat = Param::GetFloat(Param::fstat);
 
    if ((int)Encoder::GetSpeed() < Param::GetInt(Param::throtramprpm))
       Throttle::throttleRamp = Param::GetFloat(Param::throtramp);
@@ -178,9 +179,10 @@ float VehicleControl::ProcessThrottle()
    if (hwRev != HW_TESLA)
       Throttle::BmsLimitCommand(finalSpnt, Param::GetBool(Param::din_bms));
 
+   Throttle::fmax = Param::GetFloat(Param::fmax);
    Throttle::UdcLimitCommand(finalSpnt, Param::GetFloat(Param::udc));
    Throttle::IdcLimitCommand(finalSpnt, Param::GetFloat(Param::idc));
-   Throttle::FrequencyLimitCommand(finalSpnt, Param::GetFloat(Param::fstat));
+   Throttle::FrequencyLimitCommand(finalSpnt, fstat);
    Throttle::AccelerationLimitCommand(finalSpnt, Encoder::GetSpeed());
 
    if (Throttle::TemperatureDerate(Param::GetFloat(Param::tmphs), Param::GetFloat(Param::tmphsmax), finalSpnt))
@@ -217,6 +219,12 @@ float VehicleControl::ProcessThrottle()
          finalSpnt *= Encoder::GetRotorDirection();
       else //inconsistency here: in slip control negative always means regen
          finalSpnt *= Param::GetInt(Param::dir);
+
+      //At 110% fmax start derating field weakening current just in case it has a torque producing current
+      Throttle::fmax = Param::GetFloat(Param::fmax) * 1.1f;
+      float fwPercent = 100;
+      Throttle::FrequencyLimitCommand(fwPercent, fstat);
+      PwmGeneration::SetFwCurMax(fwPercent * Param::GetFloat(Param::fwcurmax));
 #endif // CONTROL
    }
 
