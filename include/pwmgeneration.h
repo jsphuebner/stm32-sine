@@ -39,6 +39,7 @@ class PwmGeneration
       static int GetCpuLoad();
       static void SetChargeCurrent(float cur);
       static void SetPolePairRatio(int ratio) { polePairRatio = ratio; }
+      static void SetFwCurMax(float c);
 
    private:
       enum EdgeType { NoEdge, PosEdge, NegEdge };
