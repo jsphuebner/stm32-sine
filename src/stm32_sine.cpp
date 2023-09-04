@@ -45,6 +45,7 @@
 #include "vehiclecontrol.h"
 #include "stm32_can.h"
 #include "canmap.h"
+#include "cansdo.h"
 
 #define PRINT_JSON 0
 
@@ -53,6 +54,7 @@ HWREV hwRev; //Hardware variant of board we are running on
 static Stm32Scheduler* scheduler;
 static CanHardware* can;
 static CanMap* canMap;
+static CanSdo* canSdo;
 static Terminal* terminal;
 static bool seenBrakePedal = false;
 
@@ -289,7 +291,7 @@ void Param::Change(Param::PARAM_NUM paramNum)
          Throttle::brkmax = Param::GetFloat(Param::offthrotregen);
          break;
       case Param::nodeid:
-         canMap->SetNodeId(Param::GetInt(Param::nodeid));
+         canSdo->SetNodeId(Param::GetInt(Param::nodeid));
          //terminal->SetNodeId(Param::GetInt(Param::nodeid));
          break;
       default:
@@ -397,8 +399,10 @@ extern "C" int main(void)
    scheduler = &s;
    Stm32Can c(CAN1, (CanHardware::baudrates)Param::GetInt(Param::canspeed));
    CanMap cm(&c);
+   CanSdo sdo(&c, &cm);
    can = &c;
    canMap = &cm;
+   canSdo = &sdo;
    VehicleControl::SetCan(can);
    TerminalCommands::SetCanMap(canMap);
 
@@ -423,10 +427,10 @@ extern "C" int main(void)
    {
       char c = 0;
       t.Run();
-      if (canMap->GetPrintRequest() == PRINT_JSON)
+      if (canSdo->GetPrintRequest() == PRINT_JSON)
       {
-         TerminalCommands::PrintParamsJson(canMap, &c);
-         canMap->SignalPrintComplete();
+         TerminalCommands::PrintParamsJson(canSdo, &c);
+         canSdo->SignalPrintComplete();
       }
    }
 

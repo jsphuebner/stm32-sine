@@ -58,7 +58,7 @@ void VehicleControl::SetCan(CanHardware* canHw)
    seqCounter = 0; //Mainly useful for unit tests
    canErrors = 0;
    can = canHw;
-   can->AddReceiveCallback(&callback);
+   can->AddCallback(&callback);
    CanClear();
 }
 
@@ -116,7 +116,7 @@ bool VehicleControl::CanReceive(uint32_t canId, uint32_t data[2])
       lastCanRxTime = rtc_get_counter_val();
 
       Param::SetInt(Param::canio, canio);
-      Param::SetInt(Param::regenpreset, regenpreset);
+      Param::SetInt(Param::regenpreset, MIN(100, regenpreset));
 
       if ((Param::GetInt(Param::potmode) & POTMODE_CAN) > 0)
       {
@@ -315,11 +315,11 @@ float VehicleControl::ProcessThrottle()
       else //inconsistency here: in slip control negative always means regen
          finalSpnt *= Param::GetInt(Param::dir);
 
-      //At 110% fmax start derating field weakening current just in case it has a torque producing current
+      //At 110% fmax start derating field weakening current just in case it has a torque producing component
       Throttle::fmax = Param::GetFloat(Param::fmax) * 1.1f;
       float fwPercent = 100;
       Throttle::FrequencyLimitCommand(fwPercent, fstat);
-      PwmGeneration::SetFwCurMax(fwPercent * Param::GetFloat(Param::fwcurmax));
+      PwmGeneration::SetFwCurMax(fwPercent * Param::GetFloat(Param::fwcurmax) / 100.0f);
 #endif // CONTROL
    }
 

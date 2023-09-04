@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.29.R
+#define VER 5.32.R
 
 /* Entries should be ordered as follows:
    1. Saveable parameters
