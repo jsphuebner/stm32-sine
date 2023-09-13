@@ -32,15 +32,10 @@
 #include "terminalcommands.h"
 
 static void LoadDefaults(Terminal* term, char *arg);
-static void GetAll(Terminal* term, char *arg);
-static void PrintList(Terminal* term, char *arg);
-static void PrintAtr(Terminal* term, char *arg);
 static void StopInverter(Terminal* term, char *arg);
 static void StartInverter(Terminal* term, char *arg);
-static void Help(Terminal* term, char *arg);
 static void PrintSerial(Terminal* term, char *arg);
 static void PrintErrors(Terminal* term, char *arg);
-static void SaveParameters(Terminal* term, char *arg);
 
 extern "C" const TERM_CMD TermCmds[] =
 {
@@ -51,74 +46,16 @@ extern "C" const TERM_CMD TermCmds[] =
   { "binstream", TerminalCommands::ParamStreamBinary },
   { "json", TerminalCommands::PrintParamsJson },
   { "can", TerminalCommands::MapCan },
-  { "save", SaveParameters },
+  { "save", TerminalCommands::SaveParameters },
   { "load", TerminalCommands::LoadParameters },
   { "reset", TerminalCommands::Reset },
   { "defaults", LoadDefaults },
-  { "all", GetAll },
-  { "list", PrintList },
-  { "atr",  PrintAtr },
   { "stop", StopInverter },
   { "start", StartInverter },
-  { "help", Help },
   { "serial", PrintSerial },
   { "errors", PrintErrors },
   { NULL, NULL }
 };
-
-static void SaveParameters(Terminal* term, char *arg)
-{
-   arg = arg;
-   if (Param::GetInt(Param::opmode) == 0)
-   {
-      TerminalCommands::SaveParameters(term, arg);
-   }
-   else
-   {
-      fprintf(term, "Will not write to flash in run modes, please stop inverter before saving!\r\n");
-   }
-}
-
-static void PrintList(Terminal* term, char *arg)
-{
-   const Param::Attributes *pAtr;
-
-   arg = arg;
-   term = term;
-
-   printf("Available parameters and values\r\n");
-
-   for (uint32_t idx = 0; idx < Param::PARAM_LAST; idx++)
-   {
-      pAtr = Param::GetAttrib((Param::PARAM_NUM)idx);
-
-      if ((Param::GetFlag((Param::PARAM_NUM)idx) & Param::FLAG_HIDDEN) == 0)
-         printf("%s [%s]\r\n", pAtr->name, pAtr->unit);
-   }
-}
-
-static void PrintAtr(Terminal* term, char *arg)
-{
-   const Param::Attributes *pAtr;
-
-   arg = arg;
-   term = term;
-
-   printf("Parameter attributes\r\n");
-   printf("Name\t\tmin - max [default]\r\n");
-
-   for (uint32_t idx = 0; idx < Param::PARAM_LAST; idx++)
-   {
-      pAtr = Param::GetAttrib((Param::PARAM_NUM)idx);
-      /* Only display for params */
-      if ((Param::GetType((Param::PARAM_NUM)idx) == Param::TYPE_PARAM ||
-           Param::GetType((Param::PARAM_NUM)idx) == Param::TYPE_TESTPARAM) &&
-          (Param::GetFlag((Param::PARAM_NUM)idx) & Param::FLAG_HIDDEN) == 0)
-      {
-         printf("%s\t\t%f - %f [%f]\r\n", pAtr->name,pAtr->min,pAtr->max,pAtr->def);
-      }
-   }
-}
 
 static void LoadDefaults(Terminal* term, char *arg)
 {
@@ -126,20 +63,6 @@ static void LoadDefaults(Terminal* term, char *arg)
    term = term;
    Param::LoadDefaults();
    printf("Defaults loaded\r\n");
-}
-
-static void GetAll(Terminal* term, char *arg)
-{
-   const Param::Attributes *pAtr;
-
-   arg = arg;
-   term = term;
-
-   for (uint32_t  idx = 0; idx < Param::PARAM_LAST; idx++)
-   {
-      pAtr = Param::GetAttrib((Param::PARAM_NUM)idx);
-      printf("%s\t\t%f\r\n", pAtr->name, Param::Get((Param::PARAM_NUM)idx));
-   }
 }
 
 static void StopInverter(Terminal* term, char *arg)
@@ -167,7 +90,7 @@ static void StartInverter(Terminal* term, char *arg)
       printf("Invalid inverter mode");
    }
    #else
-   printf("Not implemented in FOC variant\r\n");
+   printf("Not implemented in FOC variant: openinverter.org/forum/viewtopic.php?t=2809\r\n");
    #endif
 }
 
@@ -182,12 +105,6 @@ static void PrintSerial(Terminal* term, char *arg)
 {
    arg = arg;
    term = term;
-   printf("%X%X%X\r\n", DESIG_UNIQUE_ID2, DESIG_UNIQUE_ID1, DESIG_UNIQUE_ID0);
-}
-
-static void Help(Terminal* term, char *arg)
-{
-   arg = arg;
-   term = term;
+   printf("%X:%X:%X\r\n", DESIG_UNIQUE_ID2, DESIG_UNIQUE_ID1, DESIG_UNIQUE_ID0);
 }
 

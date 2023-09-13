@@ -24,7 +24,7 @@
    2. Temporary parameters
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 157
+//Next param id (increase when adding new parameter!): 158
 //Next value Id: 2052
 /*              category     name         unit       min     max     default id */
 
@@ -154,6 +154,7 @@
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      88  ) \
     PARAM_ENTRY(CAT_COMM,    nodeid,      "",        1,      63,     1,      129 ) \
     PARAM_ENTRY(CAT_COMM,    controlid,   "",        1,      2047,   63,     156 ) \
+    PARAM_ENTRY(CAT_COMM,    controlcheck,CHECKS,    0,      1,      1,      157 ) \
     TESTP_ENTRY(CAT_TEST,    manualstart, ONOFF,     0,      1,      0,      150 ) \
 
 #define VALUE_BLOCK1 \
@@ -274,6 +275,7 @@
 #define HWREVS       "0=Rev1, 1=Rev2, 2=Rev3, 3=Tesla, 4=BluePill, 5=Prius"
 #define SWAPS        "0=None, 1=Currents12, 2=SinCos, 4=PWMOutput13, 8=PWMOutput23"
 #define STATUS       "0=None, 1=UdcLow, 2=UdcHigh, 4=UdcBelowUdcSw, 8=UdcLim, 16=EmcyStop, 32=MProt, 64=PotPressed, 128=TmpHs, 256=WaitStart, 512=BrakeCheck"
+#define CHECKS       "0=CounterOnly, 1=StmCrc8"
 #define CAT_MOTOR    "Motor"
 #define CAT_INVERTER "Inverter"
 #define CAT_THROTTLE "Throttle"

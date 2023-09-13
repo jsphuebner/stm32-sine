@@ -217,9 +217,14 @@ static void Ms10Task(void)
       VehicleControl::SetContactorsOffState();
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
+      TerminalCommands::EnableSaving();
+      canSdo->EnableSaving();
    }
    else if (0 == initWait)
    {
+      //Disable saving in Run mode
+      TerminalCommands::DisableSaving();
+      canSdo->DisableSaving();
       PwmGeneration::SetTorquePercent(0);
       Throttle::RampThrottle(0); //Restart ramp
       Encoder::Reset();
@@ -430,7 +435,6 @@ extern "C" int main(void)
       if (canSdo->GetPrintRequest() == PRINT_JSON)
       {
          TerminalCommands::PrintParamsJson(canSdo, &c);
-         canSdo->SignalPrintComplete();
       }
    }
 
