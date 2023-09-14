@@ -136,6 +136,7 @@ static void Ms10Task(void)
    VehicleControl::GetDigInputs();
    float torquePercent = VehicleControl::ProcessThrottle();
    Param::SetInt(Param::speed, Encoder::GetSpeed());
+   Param::SetInt(Param::rotordir, Encoder::GetRotorDirection());
 
    if (MOD_RUN == opmode && initWait == -1)
    {
@@ -246,25 +247,6 @@ static void Ms10Task(void)
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_10MS)
       canMap->SendAll();
-}
-
-static void Ms1Task(void)
-{
-   static int speedCnt = 0;
-
-   if (Param::GetInt(Param::pwmfunc) == PWM_FUNC_SPEEDFRQ)
-   {
-      int speed = Param::GetInt(Param::speed);
-      if (speedCnt == 0 && speed != 0)
-      {
-         DigIo::speed_out.Toggle();
-         speedCnt = Param::GetInt(Param::pwmgain) / (2 * speed);
-      }
-      else if (speedCnt > 0)
-      {
-         speedCnt--;
-      }
-   }
 }
 
 /** This function is called when the user changes a parameter */
@@ -413,7 +395,6 @@ extern "C" int main(void)
 
    s.AddTask(Ms100Task, 100);
    s.AddTask(Ms10Task, 10);
-   s.AddTask(Ms1Task, 1);
 
    DigIo::prec_out.Set();
 

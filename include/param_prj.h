@@ -25,7 +25,7 @@
    3. Display values
  */
 //Next param id (increase when adding new parameter!): 158
-//Next value Id: 2052
+//Next value Id: 2053
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -179,7 +179,8 @@
     VALUE_ENTRY(pot2,        "dig",   2016 ) \
     VALUE_ENTRY(regenpreset, "%",     2051 ) \
     VALUE_ENTRY(potnom,      "%",     2017 ) \
-    VALUE_ENTRY(dir,         DIRS,    2018 ) \
+    VALUE_ENTRY(seldir,      DIRS,    2018 ) \
+    VALUE_ENTRY(rotordir,    DIRS,    2053 ) \
     VALUE_ENTRY(tmphs,       "°C",    2019 ) \
     VALUE_ENTRY(tmpm,        "°C",    2020 ) \
     VALUE_ENTRY(uaux,        "V",     2021 ) \

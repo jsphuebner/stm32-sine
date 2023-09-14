@@ -81,11 +81,16 @@ bool VehicleControl::CanReceive(uint32_t canId, uint32_t data[2])
    uint8_t ctr2 = (data[1] >> 14) & 0x3;
    uint8_t regenpreset = (data[1] >> 16) & 0xFF;
    uint8_t crc = (data[1] >> 24) & 0xFF;
+   uint8_t calcCrc = crc;
 
-   //Zero out CRC byte
-   data[1] &= 0x00FFFFFF;
-   crc_reset();
-   uint32_t calcCrc = crc_calculate_block(data, 2) & 0xFF;
+   //Optional CRC check
+   if (Param::GetBool(Param::controlcheck))
+   {
+      //Zero out CRC byte
+      data[1] &= 0x00FFFFFF;
+      crc_reset();
+      calcCrc = crc_calculate_block(data, 2) & 0xFF;
+   }
 
    //We check for CRC and sequence counter errors. As long as we stay below maxErrors
    //we can heal bad frames with good frames. Once we've surpassed maxErrors we do
@@ -206,7 +211,8 @@ void VehicleControl::CruiseControl()
 
 void VehicleControl::SelectDirection()
 {
-   int selectedDir = Param::GetInt(Param::dir);
+   int selectedDir = Param::GetInt(Param::seldir);
+   int rotorDir = Param::GetInt(Param::rotordir);
    int userDirSelection = 0;
    int dirSign = (Param::GetInt(Param::dirmode) & DIR_REVERSED) ? -1 : 1;
    bool potPressed = Param::GetInt(Param::potnom) > 0;
@@ -247,10 +253,10 @@ void VehicleControl::SelectDirection()
    }
 
    /* Only change direction when below certain motor speed and throttle is not pressed */
-   if ((int)Encoder::GetSpeed() < Param::GetInt(Param::dirchrpm) && !potPressed)
+   if (((int)Encoder::GetSpeed() < Param::GetInt(Param::dirchrpm) || userDirSelection == rotorDir) && !potPressed)
       selectedDir = userDirSelection;
 
-   Param::SetInt(Param::dir, selectedDir);
+   Param::SetInt(Param::seldir, selectedDir);
 }
 
 float VehicleControl::ProcessThrottle()
@@ -313,7 +319,7 @@ float VehicleControl::ProcessThrottle()
       if (finalSpnt < 0)
          finalSpnt *= Encoder::GetRotorDirection();
       else //inconsistency here: in slip control negative always means regen
-         finalSpnt *= Param::GetInt(Param::dir);
+         finalSpnt *= Param::GetInt(Param::seldir);
 
       //At 110% fmax start derating field weakening current just in case it has a torque producing component
       Throttle::fmax = Param::GetFloat(Param::fmax) * 1.1f;
@@ -324,7 +330,7 @@ float VehicleControl::ProcessThrottle()
    }
 
    //Make sure we never command torque in neutral
-   if (Param::GetInt(Param::dir) == 0)
+   if (Param::GetInt(Param::seldir) == 0)
       finalSpnt = 0;
 
    return finalSpnt;
@@ -683,16 +689,16 @@ float VehicleControl::GetUserThrottleCommand()
       if (bidirThrot == 0 || (requestedDirection != rotorDirection && speed > 30))
       {
          bidirThrot = Throttle::brkmax;
-         Param::SetInt(Param::dir, rotorDirection);
+         Param::SetInt(Param::seldir, rotorDirection);
       }
       else if (bidirThrot < 0)
       {
          bidirThrot = -bidirThrot;
-         Param::SetInt(Param::dir, -1);
+         Param::SetInt(Param::seldir, -1);
       }
       else //bidirThrot > 0
       {
-         Param::SetInt(Param::dir, 1);
+         Param::SetInt(Param::seldir, 1);
       }
       return bidirThrot;
    }
