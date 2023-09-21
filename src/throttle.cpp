@@ -82,26 +82,43 @@ float Throttle::DigitsToPercent(int potval, int potidx)
 
 float Throttle::CalcThrottle(float potnom, float pot2nom, bool brkpedal)
 {
+   static bool useRegenTravel = false;
+   static int prevPotnom = 0;
+
    float scaledBrkMax = brkpedal ? brknompedal : brkmax;
 
    //Never reach 0, because that can spin up the motor
    scaledBrkMax = -0.1 + (scaledBrkMax * pot2nom) / 100.0f;
 
-   if (brkpedal)
+   if (potnom < 0.5f || brkpedal)
    {
       potnom = scaledBrkMax;
+      useRegenTravel = false; //accelerator has been lifted
    }
-   else if (potnom < brknom)
+   else if (potnom < brknom && prevPotnom >= brknom)
    {
-      potnom -= brknom;
-      potnom = -(potnom * scaledBrkMax / brknom);
+      useRegenTravel = true;
    }
-   else
+   else if (potnom > brknom && prevPotnom > potnom)  //coming down after initial acceleration
    {
-      potnom -= brknom;
-      potnom = 100.0f * potnom / (100.0f - brknom);
+      useRegenTravel = true;
    }
 
+   if (useRegenTravel)
+   {
+      if (potnom < brknom)
+      {
+         potnom -= brknom;
+         potnom = -(potnom * scaledBrkMax / brknom);
+      }
+      else
+      {
+         potnom -= brknom;
+         potnom = 100.0f * potnom / (100.0f - brknom);
+      }
+   }
+
+   prevPotnom = potnom;
    return potnom;
 }
 
