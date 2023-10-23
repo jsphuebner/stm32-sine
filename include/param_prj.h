@@ -154,6 +154,11 @@
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      88  ) \
     PARAM_ENTRY(CAT_COMM,    nodeid,      "",        1,      63,     1,      129 ) \
     TESTP_ENTRY(CAT_TEST,    manualstart, ONOFF,     0,      1,      0,      150 ) \
+    TESTP_ENTRY(CAT_TEST,    testmode,    TESTMODES, 0,      4,      0,      0   ) \
+    TESTP_ENTRY(CAT_TEST,    maxtestud,   "V",       1,      100,    10,     149 ) \
+    TESTP_ENTRY(CAT_TEST,    mintesti,    "A",       1,      50,     15,     150 ) \
+    TESTP_ENTRY(CAT_TEST,    maxtesti,    "A",       1,      100,    40,     151 ) \
+    TESTP_ENTRY(CAT_TEST,    testdetlev,   "",       10,     1000,   200,    152 ) \
 
 #define VALUE_BLOCK1 \
     VALUE_ENTRY(version,     VERSTR,  2039 ) \
@@ -209,6 +214,9 @@
     VALUE_ENTRY(ifw,     "A",     2048 ) \
     VALUE_ENTRY(ud,      "dig",   2046 ) \
     VALUE_ENTRY(uq,      "dig",   2047 ) \
+    VALUE_ENTRY(testangle,"°",    2049 ) \
+    VALUE_ENTRY(syncoferr,"",     2053 ) \
+    VALUE_ENTRY(syncoferrav,"",   2054 ) \
 
 #if CONTROL == CTRL_SINE
 #define PARAM_LIST \
@@ -251,6 +259,7 @@
 
 /***** Enum String definitions *****/
 #define OPMODES      "0=Off, 1=Run, 2=ManualRun, 3=Boost, 4=Buck, 5=Sine, 6=AcHeat"
+#define TESTMODES    "0=Off, 1=Resolver, 2=PhaseCheck, 3=ForwardTestSpin, 4=BidirTestSpin"
 #define PWMFRQS      "0=17.6kHz, 1=8.8kHz, 2=4.4KHz"
 #define PWMPOLS      "0=ActHigh, 1=ActLow"
 #define DIRS         "-1=Reverse, 0=Neutral, 1=Forward"
@@ -339,6 +348,16 @@ enum _modes
    MOD_SINE,
    MOD_ACHEAT,
    MOD_LAST
+};
+
+enum _testmodes
+{
+   TEST_OFF=0,
+   TEST_RESLV,
+   TEST_PHASE,
+   TEST_SPINF,
+   TEST_SPINBIDIR,
+   TEST_LAST
 };
 
 enum _tripmodes

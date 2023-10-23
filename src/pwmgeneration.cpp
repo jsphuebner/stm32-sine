@@ -148,6 +148,9 @@ void PwmGeneration::SetOpmode(int _opmode)
          ConfigureChargeController();
          break;
       case MOD_MANUAL:
+         InitTestMode();
+         EnableOutput();
+         break;
       case MOD_RUN:
       case MOD_SINE:
          EnableOutput();
@@ -178,7 +181,10 @@ extern "C" void pwm_timer_isr(void)
    /* Clear interrupt pending flag */
    timer_clear_flag(PWM_TIMER, TIM_SR_UIF);
 
-   PwmGeneration::Run();
+   if(MOD_MANUAL == PwmGeneration::GetOpmode())
+      PwmGeneration::TestModeRun();
+   else
+      PwmGeneration::Run();
 
    int time = timer_get_counter(PWM_TIMER) - start;
 
@@ -416,6 +422,8 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, bool activeLow)
    timer_set_repetition_counter(PWM_TIMER, repCounters[pwmdigits - MIN_PWM_DIGITS]);
 
    timer_generate_event(PWM_TIMER, TIM_EGR_UG);
+
+   timer_disable_break_main_output(PWM_TIMER);//no PWM until enabled in ISR
 
    timer_enable_counter(PWM_TIMER);
 

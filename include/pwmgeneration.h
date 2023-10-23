@@ -27,6 +27,10 @@ class PwmGeneration
 {
    public:
       static void Run();
+      static void TestModeRun();
+      static void InitTestMode();
+      static int GetOpmode();
+      static const char* GetTestResult();
       static uint16_t GetAngle();
       static bool Tripped();
       static void SetOpmode(int opmode);
