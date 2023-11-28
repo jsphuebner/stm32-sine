@@ -87,6 +87,8 @@ float Throttle::DigitsToPercent(int potval, int potidx)
 float Throttle::CalcThrottle(float potnom, float pot2nom, bool brkpedal, float rotorfreq)
 {
    static float brknomDynamic = 0.01;
+   static float pedalPressPercentage = 0.0f;
+   pedalPressPercentage = potnom;
 
    float scaledBrkMax = brkpedal ? brknompedal : brkmax;
 
@@ -123,7 +125,7 @@ float Throttle::CalcThrottle(float potnom, float pot2nom, bool brkpedal, float r
       potnom = 100.0f * potnom / (100.0f - brknomDynamic);
    }
 
-   return potnom;
+   return potnom > pedalPressPercentage ? pedalPressPercentage : potnom;
 }
 
 float Throttle::CalcThrottleBiDir(float potval, bool brkpedal)
