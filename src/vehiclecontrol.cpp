@@ -733,7 +733,7 @@ float VehicleControl::GetUserThrottleCommand()
       return 0;
    }
 
-   return Throttle::CalcThrottle(potnom1, regenPreset, brake);
+   return Throttle::CalcThrottle(potnom1, regenPreset, brake, FP_TOFLOAT(Encoder::GetRotorFrequency()));
 }
 
 bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)

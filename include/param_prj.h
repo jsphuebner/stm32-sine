@@ -132,6 +132,7 @@
     PARAM_ENTRY(CAT_REGEN,   offthrotregen,"%",      -100,   0,      -30,    49  ) \
     PARAM_ENTRY(CAT_REGEN,   cruiseregen, "%",       -100,   0,      -30,    124 ) \
     PARAM_ENTRY(CAT_REGEN,   regenrampstr,"Hz",      0,      400,    10,     39  ) \
+    PARAM_ENTRY(CAT_REGEN,   maxregentravelhz,"Hz",  0,      1000,   90,     156 ) \
     PARAM_ENTRY(CAT_REGEN,   brklightout, "%",       -100,   -1,     -50,    67  )
 
 #define AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \

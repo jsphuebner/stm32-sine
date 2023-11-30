@@ -52,6 +52,7 @@ float Throttle::idckp;
 float Throttle::fmax;
 int Throttle::accelmax;
 int Throttle::accelflt;
+float Throttle::maxregentravelhz;
 
 bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
 {
@@ -83,29 +84,48 @@ float Throttle::DigitsToPercent(int potval, int potidx)
    return (100 * (potval - potmin[potidx])) / (potmax[potidx] - potmin[potidx]);
 }
 
-float Throttle::CalcThrottle(float potnom, float pot2nom, bool brkpedal)
+float Throttle::CalcThrottle(float potnom, float pot2nom, bool brkpedal, float rotorfreq)
 {
+   static float brknomDynamic = 0.01;
+   static float pedalPressPercentage = 0.0f;
+   pedalPressPercentage = potnom;
+
    float scaledBrkMax = brkpedal ? brknompedal : brkmax;
 
    //Never reach 0, because that can spin up the motor
    scaledBrkMax = -0.1 + (scaledBrkMax * pot2nom) / 100.0f;
+   
+   //maxregentravelhz (speed) gives max brknomDynamic (brknom)
+   float speedPercentage = MIN((rotorfreq / maxregentravelhz), 1.0); 
 
-   if (brkpedal)
+   //set max regen by speed
+   if (brknomDynamic < brknom * speedPercentage)  
+   {
+      brknomDynamic = speedPercentage * brknom;
+   }
+
+   //reset to full pedal travel when stopped and pedal 0% on throttle
+   if (potnom <= 0.1 && rotorfreq < 0.1)  
+   {
+      brknomDynamic = 0.01; 
+   }
+
+   if (brkpedal) 
    {
       potnom = scaledBrkMax;
    }
-   else if (potnom < brknom)
+   else if (potnom < brknomDynamic) //calculate regen
    {
-      potnom -= brknom;
-      potnom = -(potnom * scaledBrkMax / brknom);
+      potnom -= brknomDynamic;
+      potnom = -(potnom * scaledBrkMax / brknomDynamic);
    }
-   else
+   else //calculate thorttle  
    {
-      potnom -= brknom;
-      potnom = 100.0f * potnom / (100.0f - brknom);
+      potnom -= brknomDynamic;
+      potnom = 100.0f * potnom / (100.0f - brknomDynamic);
    }
 
-   return potnom;
+   return potnom > pedalPressPercentage ? pedalPressPercentage : potnom;
 }
 
 float Throttle::CalcThrottleBiDir(float potval, bool brkpedal)
