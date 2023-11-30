@@ -27,7 +27,7 @@ class Throttle
    public:
       static bool CheckAndLimitRange(int* potval, int potIdx);
       static float DigitsToPercent(int potval, int potidx);
-      static float CalcThrottle(float potval, float pot2val, bool brkpedal);
+      static float CalcThrottle(float potval, float pot2val, bool brkpedal, float rotorHz);
       static float CalcThrottleBiDir(float potval, bool brkpedal);
       static float CalcIdleSpeed(int speed);
       static float CalcCruiseSpeed(int speed);
@@ -66,6 +66,7 @@ class Throttle
       static float idcmax;
       static float idckp;
       static float fmax;
+      static float maxregentravelhz;
 
    private:
       static int speedFiltered;
