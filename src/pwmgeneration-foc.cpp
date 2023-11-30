@@ -55,7 +55,7 @@ void PwmGeneration::Run()
    {
       static s32fp idcFiltered = 0;
       static int amplitudeErrFiltered;
-      int dir = Param::GetInt(Param::dir);
+      int dir = Param::GetInt(Param::seldir);
       s32fp id, iq;
 
       Encoder::UpdateRotorAngle(0);

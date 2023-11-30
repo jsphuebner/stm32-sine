@@ -45,6 +45,7 @@
 #include "vehiclecontrol.h"
 #include "stm32_can.h"
 #include "canmap.h"
+#include "cansdo.h"
 
 #define PRINT_JSON 0
 
@@ -53,6 +54,7 @@ HWREV hwRev; //Hardware variant of board we are running on
 static Stm32Scheduler* scheduler;
 static CanHardware* can;
 static CanMap* canMap;
+static CanSdo* canSdo;
 static Terminal* terminal;
 static bool seenBrakePedal = false;
 
@@ -134,6 +136,7 @@ static void Ms10Task(void)
    VehicleControl::GetDigInputs();
    float torquePercent = VehicleControl::ProcessThrottle();
    Param::SetInt(Param::speed, Encoder::GetSpeed());
+   Param::SetInt(Param::rotordir, Encoder::GetRotorDirection());
 
    if (MOD_RUN == opmode && initWait == -1)
    {
@@ -215,9 +218,14 @@ static void Ms10Task(void)
       VehicleControl::SetContactorsOffState();
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
+      TerminalCommands::EnableSaving();
+      canSdo->EnableSaving();
    }
    else if (0 == initWait)
    {
+      //Disable saving in Run mode
+      TerminalCommands::DisableSaving();
+      canSdo->DisableSaving();
       PwmGeneration::SetTorquePercent(0);
       Throttle::RampThrottle(0); //Restart ramp
       Encoder::Reset();
@@ -239,25 +247,6 @@ static void Ms10Task(void)
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_10MS)
       canMap->SendAll();
-}
-
-static void Ms1Task(void)
-{
-   static int speedCnt = 0;
-
-   if (Param::GetInt(Param::pwmfunc) == PWM_FUNC_SPEEDFRQ)
-   {
-      int speed = Param::GetInt(Param::speed);
-      if (speedCnt == 0 && speed != 0)
-      {
-         DigIo::speed_out.Toggle();
-         speedCnt = Param::GetInt(Param::pwmgain) / (2 * speed);
-      }
-      else if (speedCnt > 0)
-      {
-         speedCnt--;
-      }
-   }
 }
 
 /** This function is called when the user changes a parameter */
@@ -289,7 +278,7 @@ void Param::Change(Param::PARAM_NUM paramNum)
          Throttle::brkmax = Param::GetFloat(Param::offthrotregen);
          break;
       case Param::nodeid:
-         canMap->SetNodeId(Param::GetInt(Param::nodeid));
+         canSdo->SetNodeId(Param::GetInt(Param::nodeid));
          //terminal->SetNodeId(Param::GetInt(Param::nodeid));
          break;
       default:
@@ -355,6 +344,13 @@ static void UpgradeParameters()
       Param::SetInt(Param::snsm, Param::GetInt(Param::snsm) + 10); //upgrade parameter
    if (Param::Get(Param::offthrotregen) > 0)
       Param::Set(Param::offthrotregen, -Param::Get(Param::offthrotregen));
+
+   //Remove CAN mapping for safety critical values
+   canMap->Remove(Param::pot);
+   canMap->Remove(Param::pot2);
+   canMap->Remove(Param::canio);
+   canMap->Remove(Param::cruisespeed);
+   canMap->Remove(Param::regenpreset);
 }
 
 extern "C" void tim2_isr(void)
@@ -390,14 +386,15 @@ extern "C" int main(void)
    scheduler = &s;
    Stm32Can c(CAN1, (CanHardware::baudrates)Param::GetInt(Param::canspeed));
    CanMap cm(&c);
+   CanSdo sdo(&c, &cm);
    can = &c;
    canMap = &cm;
+   canSdo = &sdo;
    VehicleControl::SetCan(can);
    TerminalCommands::SetCanMap(canMap);
 
    s.AddTask(Ms100Task, 100);
    s.AddTask(Ms10Task, 10);
-   s.AddTask(Ms1Task, 1);
 
    DigIo::prec_out.Set();
 
@@ -416,10 +413,9 @@ extern "C" int main(void)
    {
       char c = 0;
       t.Run();
-      if (canMap->GetPrintRequest() == PRINT_JSON)
+      if (canSdo->GetPrintRequest() == PRINT_JSON)
       {
-         TerminalCommands::PrintParamsJson(canMap, &c);
-         canMap->SignalPrintComplete();
+         TerminalCommands::PrintParamsJson(canSdo, &c);
       }
    }
 

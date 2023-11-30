@@ -39,7 +39,7 @@ void PwmGeneration::Run()
 {
    if (opmode == MOD_MANUAL || opmode == MOD_RUN || opmode == MOD_SINE)
    {
-      int dir = Param::GetInt(Param::dir);
+      int dir = Param::GetInt(Param::seldir);
 
       Encoder::UpdateRotorAngle(dir);
       s32fp ampNomLimited = LimitCurrent();
@@ -134,7 +134,7 @@ void PwmGeneration::SetTorquePercent(float torque)
          }
       }
    }
-   else if (Encoder::GetRotorDirection() != Param::GetInt(Param::dir))
+   else if (Encoder::GetRotorDirection() != Param::GetInt(Param::seldir))
    {
       // Do not apply negative torque if we are already traveling backwards.
       fslipspnt = 0;

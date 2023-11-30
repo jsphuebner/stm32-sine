@@ -21,39 +21,42 @@
 
 #include "fu.h"
 #include "my_fp.h"
-#include "test_list.h"
+#include "test.h"
 
-using namespace std;
-
-static void Setup(u32fp fweak, int boost, u32fp fmin)
+class FUTest: public UnitTest
 {
+   public:
+      FUTest(const std::list<VoidFunction>* cases): UnitTest(cases) {}
+};
+
+static void Setup(float fweak, int boost)
+{
+   MotorVoltage::SetMaxAmp(10000);
    MotorVoltage::SetBoost(boost);
    MotorVoltage::SetWeakeningFrq(fweak);
-   //MotorVoltage::SetMinFrq(fmin);
-   MotorVoltage::SetMaxAmp(10000);
 }
 
 static void TestBoost1()
 {
-   Setup(FP_FROMINT(10), 1000, FP_FROMFLT(0));
-   ASSERT(MotorVoltage::GetAmp(0)==1000);
+   Setup(10, 1000);
+   ASSERT(MotorVoltage::GetAmp(FP_FROMINT(1))==1900);
 }
 
 static void TestBoost2()
 {
-   Setup(FP_FROMINT(10), 1000, FP_FROMFLT(1));
-   ASSERT(MotorVoltage::GetAmp(0.5)==0);
+   Setup(10, 1000);
+   ASSERT(MotorVoltage::GetAmp(FP_FROMFLT(0.1))==0);
 }
 
 static void TestFU1()
 {
-   Setup(FP_FROMINT(10), 0, FP_FROMFLT(1));
+   Setup(10, 0);
    ASSERT(MotorVoltage::GetAmp(FP_FROMFLT(5))==(5.0/10.0f * 10000));
 }
 
 static void TestFU2()
 {
-   Setup(FP_FROMINT(10), 1000, FP_FROMFLT(1));
+   Setup(10, 1000);
    ASSERT(MotorVoltage::GetAmp(FP_FROMFLT(5))==(1000 + 5.0/10.0f * (10000-1000)));
    ASSERT(MotorVoltage::GetAmp(FP_FROMFLT(9.5))==(1000 + 9.5/10.0f * (10000-1000)));
    ASSERT(MotorVoltage::GetAmp(FP_FROMFLT(10))==10000);
@@ -62,16 +65,11 @@ static void TestFU2()
 
 static void TestFUPerc()
 {
-   Setup(FP_FROMINT(10), 1000, FP_FROMFLT(1));
+   Setup(10, 1000);
    ASSERT(MotorVoltage::GetAmpPerc(FP_FROMFLT(5), FP_FROMFLT(50))==((1000 + 5.0/10.0f * (10000-1000))/2));
    ASSERT(MotorVoltage::GetAmpPerc(FP_FROMFLT(22), FP_FROMFLT(50))==10000);
 }
 
-void FUTest::RunTest()
-{
-   TestBoost1();
-   TestBoost2();
-   TestFU1();
-   TestFU2();
-   TestFUPerc();
-}
+//This line registers the test
+REGISTER_TEST(FUTest, TestBoost1, TestBoost2, TestFU1, TestFU2, TestFUPerc);
+

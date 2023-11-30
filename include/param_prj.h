@@ -17,15 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.29.R
+#define VER 5.32.R
 
 /* Entries should be ordered as follows:
    1. Saveable parameters
    2. Temporary parameters
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 155
-//Next value Id: 2052
+//Next param id (increase when adding new parameter!): 158
+//Next value Id: 2053
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -153,6 +153,8 @@
     PARAM_ENTRY(CAT_COMM,    canspeed,    CANSPEEDS, 0,      4,      2,      83  ) \
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      88  ) \
     PARAM_ENTRY(CAT_COMM,    nodeid,      "",        1,      63,     1,      129 ) \
+    PARAM_ENTRY(CAT_COMM,    controlid,   "",        1,      2047,   63,     156 ) \
+    PARAM_ENTRY(CAT_COMM,    controlcheck,CHECKS,    0,      1,      1,      157 ) \
     TESTP_ENTRY(CAT_TEST,    manualstart, ONOFF,     0,      1,      0,      150 ) \
 
 #define VALUE_BLOCK1 \
@@ -177,7 +179,8 @@
     VALUE_ENTRY(pot2,        "dig",   2016 ) \
     VALUE_ENTRY(regenpreset, "%",     2051 ) \
     VALUE_ENTRY(potnom,      "%",     2017 ) \
-    VALUE_ENTRY(dir,         DIRS,    2018 ) \
+    VALUE_ENTRY(seldir,      DIRS,    2018 ) \
+    VALUE_ENTRY(rotordir,    DIRS,    2053 ) \
     VALUE_ENTRY(tmphs,       "°C",    2019 ) \
     VALUE_ENTRY(tmpm,        "°C",    2020 ) \
     VALUE_ENTRY(uaux,        "V",     2021 ) \
@@ -273,6 +276,7 @@
 #define HWREVS       "0=Rev1, 1=Rev2, 2=Rev3, 3=Tesla, 4=BluePill, 5=Prius"
 #define SWAPS        "0=None, 1=Currents12, 2=SinCos, 4=PWMOutput13, 8=PWMOutput23"
 #define STATUS       "0=None, 1=UdcLow, 2=UdcHigh, 4=UdcBelowUdcSw, 8=UdcLim, 16=EmcyStop, 32=MProt, 64=PotPressed, 128=TmpHs, 256=WaitStart, 512=BrakeCheck"
+#define CHECKS       "0=CounterOnly, 1=StmCrc8"
 #define CAT_MOTOR    "Motor"
 #define CAT_INVERTER "Inverter"
 #define CAT_THROTTLE "Throttle"
