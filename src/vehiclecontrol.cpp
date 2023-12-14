@@ -807,6 +807,8 @@ void VehicleControl::BmwAdcAcquire()
       spi_setup();
       //Brake pin is used as SPI_MISO
       DigIo::brk_out.Configure(GPIOC, GPIO5, PinMode::INPUT_FLT);
+      //Disable err_out so it doesn't pull the clock signal up or down
+      DigIo::err_out.Configure(GPIOC, GPIO10, PinMode::INPUT_FLT);
       DigIo::spi_cs_out.Set();
       spiEnabled = true;
    }
