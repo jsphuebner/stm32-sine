@@ -30,8 +30,13 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: SINE firmware
-          path: stm32_sine{.bin,.hex}
+          name: SINE firmware binary
+          path: stm32_sine.bin
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SINE firmware hex
+          path: stm32_sine.hex
 
       - name: Build FOC firmware
         run: |
@@ -39,9 +44,14 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: FOC firmware
-          path: stm32_foc{.bin,.hex}
+          name: FOC firmware binary
+          path: stm32_foc.bin
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FOC firmware hex
+          path: stm32_foc.hex
+  
 # Unit tests are currently broken so don't build and run them for now
 #- name: Build unit tests on host
 #        run: |
