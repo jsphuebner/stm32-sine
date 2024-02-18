@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/jsphuebner/stm32-sine.svg?branch=master)](https://travis-ci.com/jsphuebner/stm32-sine)
+[![Build status](../../actions/workflows/CI-build.yml/badge.svg)](../../actions/workflows/CI-build.yml)
 
 # stm32-sine
 Main firmware of the Huebner inverter project

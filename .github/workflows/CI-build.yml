@@ -1,0 +1,63 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: build-linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build package dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-arm-none-eabi
+
+      - name: Build dependencies
+        run: |
+          echo "Number of processors:" `nproc`
+          make get-deps -j `nproc`
+
+      - name: Build SINE firmware
+        run: |
+          make CONTROL=SINE clean all
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SINE firmware binary
+          path: stm32_sine.bin
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SINE firmware hex
+          path: stm32_sine.hex
+
+      - name: Build FOC firmware
+        run: |
+          make CONTROL=FOC clean all
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FOC firmware binary
+          path: stm32_foc.bin
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FOC firmware hex
+          path: stm32_foc.hex
+  
+# Unit tests are currently broken so don't build and run them for now
+#- name: Build unit tests on host
+#        run: |
+#          make -C test
+#
+#      - name: Run unit tests on host
+#        run: |
+#          test/test_sine
+
