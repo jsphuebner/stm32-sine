@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -28,9 +28,19 @@ jobs:
         run: |
           make CONTROL=SINE clean all
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SINE firmware
+          path: stm32_sine{.bin,.hex}
+
       - name: Build FOC firmware
         run: |
           make CONTROL=FOC clean all
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FOC firmware
+          path: stm32_foc{.bin,.hex}
 
 # Unit tests are currently broken so don't build and run them for now
 #- name: Build unit tests on host
