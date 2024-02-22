@@ -110,17 +110,62 @@ static bool is_existent(uint32_t port, uint16_t pin)
    return isExistent;
 }
 
+static HWREV ReadVariantResistor()
+{
+   uint8_t channels[1] = { 15 };
+   //Read the board variant resistor divider with one injected conversion
+   adc_power_on(ADC1);
+   adc_set_injected_sequence(ADC1, sizeof(channels), channels);
+   adc_set_sample_time(ADC1, 15, ADC_SMPR_SMP_239DOT5CYC);
+   adc_enable_external_trigger_injected(ADC1, ADC_CR2_JEXTSEL_JSWSTART);
+   adc_start_conversion_injected(ADC1);
+   while (!adc_eoc_injected(ADC1));
+   uint16_t result1 = adc_read_injected(ADC1, 1);
+
+   adc_clear_flag(ADC1, ADC_SR_JEOC);
+
+   //Now enable the pull-up resistor, roughly 30k
+   //If we read about 3V now it seems that no variant resistor is connected
+   //In that case we just return the generic MiniMainboard
+   gpio_set_mode(GPIOC, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, GPIO5);
+   gpio_set(GPIOC, GPIO5);
+   adc_start_conversion_injected(ADC1);
+   while (!adc_eoc_injected(ADC1));
+   uint16_t result2 = adc_read_injected(ADC1, 1);
+   gpio_set_mode(GPIOC, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO5);
+   gpio_clear(GPIOC, GPIO5);
+
+   //See here for variants: https://openinverter.org/wiki/Mini_Mainboard#Hardware_detection
+   if ((result1 + result2) < 30) return HW_BMWI3; //connected to MISO so always low
+   else if (result2 > 3700) return HW_MINI; //might have to compare this against result1 later
+   else if (result1 > 510 && result1 < 630) return HW_LEAF3;
+   else return HW_MINI;
+}
+
 HWREV detect_hw()
 {
+   //Check if PB3 and PC10 are connected (mini mainboard)
+   gpio_set_mode(GPIOC, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO10);
+   gpio_set(GPIOC, GPIO10);
+
+   if (gpio_get(GPIOB, GPIO3))
+   {
+      gpio_clear(GPIOC, GPIO10);
+      if (!gpio_get(GPIOB, GPIO3))
+      {
+         //PC10 back to input
+         gpio_set_mode(GPIOC, GPIO_MODE_INPUT, GPIO_CNF_INPUT_ANALOG, GPIO10);
+         return ReadVariantResistor();
+      }
+   }
+
+   //PC10 back to input
+   gpio_set_mode(GPIOC, GPIO_MODE_INPUT, GPIO_CNF_INPUT_ANALOG, GPIO10);
    //Pull low via 30k the precharge output to test whether it is tied to Vcc
    gpio_set_mode(GPIOB, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, GPIO1);
 
    if (!is_existent(GPIOC, GPIO12)) //Olimex LED pin does not exist
       return HW_BLUEPILL;
-   /*else if (is_floating(GPIOC, GPIO1))
-      return HW_PRIUSMG1;*/
-   //else if (gpio_get(GPIOB, GPIO1)) //On Tesla M3 board precharge output is tied to Vcc
-     // return HW_TESLAM3;
    else if (is_floating(GPIOC, GPIO9)) //Desat pin is floating
       return HW_REV1;
    else if (is_floating(GPIOB, GPIO5)) //Cruise pin is floating
@@ -135,6 +180,9 @@ HWREV detect_hw()
 
 HWREV io_setup()
 {
+   gpio_primary_remap(AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_ON, 0); //turn off JTAG or it will skew the variant reading
+   gpio_set_mode(GPIOB, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO3 | GPIO4); //PB3 and PB4 must be explicitly set to input
+
    hwRev = detect_hw();
 
    ANA_IN_CONFIGURE(ANA_IN_LIST);
@@ -144,9 +192,6 @@ HWREV io_setup()
    {
       case HW_REV1:
          AnaIn::il2.Configure(GPIOA, 6);
-         break;
-      case HW_REV2:
-      case HW_REV3:
          break;
       case HW_PRIUS:
          DigIo::emcystop_in.Configure(GPIOC, GPIO7, PinMode::INPUT_PU);
@@ -159,6 +204,8 @@ HWREV io_setup()
       case HW_BLUEPILL:
          ANA_IN_CONFIGURE(ANA_IN_LIST_BLUEPILL);
          DIG_IO_CONFIGURE(DIG_IO_BLUEPILL);
+         break;
+      default:
          break;
    }
 
