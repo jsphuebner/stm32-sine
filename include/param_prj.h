@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.32.R
+#define VER 5.33.R
 
 /* Entries should be ordered as follows:
    1. Saveable parameters
@@ -71,10 +71,10 @@
     PARAM_ENTRY(CAT_INVERTER,udcgain,     "dig/V",   0,      4095,   6.175,  29  ) \
     PARAM_ENTRY(CAT_INVERTER,udcofs,      "dig",     0,      4095,   0,      77  ) \
     PARAM_ENTRY(CAT_INVERTER,udclim,      "V",       0,      1000,   540,    48  ) \
-    PARAM_ENTRY(CAT_INVERTER,snshs,       SNS_HS,    0,      7,      0,      45  )
+    PARAM_ENTRY(CAT_INVERTER,snshs,       SNS_HS,    0,      7,      0,      45  ) \
+    PARAM_ENTRY(CAT_INVERTER,pinswap,     SWAPS,     0,      15,     0,      109 ) \
 
 #define INVERTER_PARAMETERS_FOC \
-    PARAM_ENTRY(CAT_INVERTER,pinswap,     SWAPS,     0,      15,     0,      109 ) \
     PARAM_ENTRY(CAT_INVERTER,modmax,      "dig",     37000,  45000,  37836,  148 )
 
 #define DERATE_PARAMETERS_COMMON \

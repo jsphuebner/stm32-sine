@@ -55,7 +55,7 @@ int Throttle::accelflt;
 float Throttle::maxregentravelhz;
 float Throttle::regenrampstr;
 
-bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
+bool Throttle::CheckAndLimitRange(int* potval, uint8_t potIdx)
 {
    int potMin = potmax[potIdx] > potmin[potIdx] ? potmin[potIdx] : potmax[potIdx];
    int potMax = potmax[potIdx] > potmin[potIdx] ? potmax[potIdx] : potmin[potIdx];
@@ -87,10 +87,10 @@ float Throttle::DigitsToPercent(int potval, int potidx)
 
 
 /**
- * Calculate throttle and regen. 
+ * Calculate throttle and regen.
  * - Increase regentravel when lifting accelerator using historical pedal values.
  * - Decrease regentravel when speed goes below regenrampstr.
- * 
+ *
  * Parameters:
  * potnom = accelerator pedal pressed percentage
  * pot2nom = optional potentiometer for adjusting regen braking
@@ -134,7 +134,7 @@ float Throttle::CalcThrottle(float potnom, float pot2nom, bool brkpedal, float r
    }
 
    // increase currentRegenTravel when lifting accelerator
-   if (currentRegentravel < speedBasedRegenTravel) // if currentregentravel is smaller than speedBaseRegenTravel 
+   if (currentRegentravel < speedBasedRegenTravel) // if currentregentravel is smaller than speedBaseRegenTravel
    {
       // current pedal position delta compared against average of last 200ms
       float acceleratorDelta = potnom - potnomSums / history;

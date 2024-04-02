@@ -68,9 +68,10 @@ void PwmGeneration::Run()
       }
 
       /* Match to PWM resolution */
-      timer_set_oc_value(PWM_TIMER, TIM_OC1, SineCore::DutyCycles[0] >> shiftForTimer);
-      timer_set_oc_value(PWM_TIMER, TIM_OC2, SineCore::DutyCycles[1] >> shiftForTimer);
-      timer_set_oc_value(PWM_TIMER, TIM_OC3, SineCore::DutyCycles[2] >> shiftForTimer);
+      for (int i = 0; i < 3; i++)
+      {
+         timer_set_oc_value(PWM_TIMER, ocChannels[i], SineCore::DutyCycles[i] >> shiftForTimer);
+      }
    }
    else if (opmode == MOD_BOOST || opmode == MOD_BUCK)
    {

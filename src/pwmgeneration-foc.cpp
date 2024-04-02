@@ -44,7 +44,6 @@ static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(
 static const int32_t fwOutMax = 1024;
 static const uint32_t shiftForFilter = 8;
 static s32fp idMtpa = 0, iqMtpa = 0;
-static tim_oc_id ocChannels[3];
 static PiController qController;
 static PiController dController;
 static s32fp fwCurMax = 0;
@@ -185,25 +184,6 @@ void PwmGeneration::PwmInit()
    dController.ResetIntegrator();
    dController.SetCallingFrequency(pwmfrq);
    dController.SetMinMaxY(-maxVd, maxVd);
-
-   if ((Param::GetInt(Param::pinswap) & SWAP_PWM13) > 0)
-   {
-      ocChannels[0] = TIM_OC3;
-      ocChannels[1] = TIM_OC2;
-      ocChannels[2] = TIM_OC1;
-   }
-   else if ((Param::GetInt(Param::pinswap) & SWAP_PWM23) > 0)
-   {
-      ocChannels[0] = TIM_OC1;
-      ocChannels[1] = TIM_OC3;
-      ocChannels[2] = TIM_OC2;
-   }
-   else
-   {
-      ocChannels[0] = TIM_OC1;
-      ocChannels[1] = TIM_OC2;
-      ocChannels[2] = TIM_OC3;
-   }
 
    if (opmode == MOD_ACHEAT)
       AcHeatTimerSetup();

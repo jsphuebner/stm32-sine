@@ -20,6 +20,7 @@
 #define PWMGENERATION_H
 
 #include <stdint.h>
+#include <libopencm3/stm32/timer.h>
 #include "my_fp.h"
 #include "anain.h"
 
@@ -74,6 +75,7 @@ class PwmGeneration
       static int opmode;
       static s32fp ilofs[2];
       static int polePairRatio;
+      static tim_oc_id ocChannels[3];
 };
 
 #endif // PWMGENERATION_H
