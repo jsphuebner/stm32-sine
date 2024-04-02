@@ -53,6 +53,7 @@ float Throttle::fmax;
 int Throttle::accelmax;
 int Throttle::accelflt;
 float Throttle::maxregentravelhz;
+float Throttle::regenrampstr;
 
 bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
 {
@@ -84,48 +85,88 @@ float Throttle::DigitsToPercent(int potval, int potidx)
    return (100 * (potval - potmin[potidx])) / (potmax[potidx] - potmin[potidx]);
 }
 
+
+/**
+ * Calculate throttle and regen. 
+ * - Increase regentravel when lifting accelerator using historical pedal values.
+ * - Decrease regentravel when speed goes below regenrampstr.
+ * 
+ * Parameters:
+ * potnom = accelerator pedal pressed percentage
+ * pot2nom = optional potentiometer for adjusting regen braking
+ * brkpedal = is brake pedal pressed
+ * rotorfreq = rotor rotation freqyency in hz
+ *
+ * Used variables:
+ * brkmax = regen percentage to apply, when brake is pressed
+ * brknompedal = regen percentage to apply, when accelerator is lifted
+ * brknom = percentage of how much of accelerator is assigned for adjusting regen
+ * regenrampstr = rotor hz where regen strenght start to decrease linearly
+*/
 float Throttle::CalcThrottle(float potnom, float pot2nom, bool brkpedal, float rotorfreq)
 {
-   static float brknomDynamic = 0.01;
-   static float pedalPressPercentage = 0.0f;
-   pedalPressPercentage = potnom;
+   // variables for rolling average calculation
+   static const int history = 20;         // 20 events, 10ms delta = 200ms of history to calculate
+   static int currentArrayIndex = 0;      // pointer where to pu the next value
+   static float prevPotnom[history] = {}; // array holding previous potnom value
+   static float potnomSums = 0;           // sum of values in array
+
+   // current dynamic regentravel
+   static float currentRegentravel = 0.0;
 
    float scaledBrkMax = brkpedal ? brknompedal : brkmax;
-
-   //Never reach 0, because that can spin up the motor
+   // Never reach 0, because that can spin up the motor
    scaledBrkMax = -0.1 + (scaledBrkMax * pot2nom) / 100.0f;
-   
-   //maxregentravelhz (speed) gives max brknomDynamic (brknom)
-   float speedPercentage = MIN((rotorfreq / maxregentravelhz), 1.0); 
 
-   //set max regen by speed
-   if (brknomDynamic < brknom * speedPercentage)  
+   // increase speedBasedRegenTravel linearly until rotorfreq reaches maxregentravelhz, then stay at max.
+   // Don't go over max regentravel (brknom).
+   float speedBasedRegenTravel = MIN(brknom * rotorfreq / maxregentravelhz, brknom);
+
+   // decreasing regentravel when rotor hz is goes below "regen ramp start"
+   if (rotorfreq < regenrampstr)
    {
-      brknomDynamic = speedPercentage * brknom;
+      float decreasingRegenTravel = brknom * rotorfreq / regenrampstr;
+      // decrease only if it's been higher before (don't start to increase on low speeds to keep linear curve)
+      if (currentRegentravel > decreasingRegenTravel)
+      {
+         currentRegentravel = decreasingRegenTravel;
+      }
    }
 
-   //reset to full pedal travel when stopped and pedal 0% on throttle
-   if (potnom <= 0.1 && rotorfreq < 0.1)  
+   // increase currentRegenTravel when lifting accelerator
+   if (currentRegentravel < speedBasedRegenTravel) // if currentregentravel is smaller than speedBaseRegenTravel 
    {
-      brknomDynamic = 0.01; 
+      // current pedal position delta compared against average of last 200ms
+      float acceleratorDelta = potnom - potnomSums / history;
+      if (acceleratorDelta < 0) // accelerator is being lifted (acceleratorDelta is negative)
+      {
+        currentRegentravel = RAMPUP(currentRegentravel, speedBasedRegenTravel, -acceleratorDelta);
+      }
    }
 
-   if (brkpedal) 
+   if (brkpedal) // give max brake regen
    {
       potnom = scaledBrkMax;
    }
-   else if (potnom < brknomDynamic) //calculate regen
+   else if (potnom < currentRegentravel) // calculate regen
    {
-      potnom -= brknomDynamic;
-      potnom = -(potnom * scaledBrkMax / brknomDynamic);
+      potnom -= currentRegentravel;
+      potnom = -(potnom * scaledBrkMax / currentRegentravel);
    }
-   else //calculate thorttle  
+   else // calculate thorttle
    {
-      potnom -= brknomDynamic;
-      potnom = 100.0f * potnom / (100.0f - brknomDynamic);
+      potnom -= currentRegentravel;
+      potnom = 100.0f * potnom / (100.0f - currentRegentravel);
    }
 
-   return potnom > pedalPressPercentage ? pedalPressPercentage : potnom;
+   // there next 4 lines are for calculating rolling average for historical pedal (potnom) position
+   // and saving current potnom
+   potnomSums -= prevPotnom[currentArrayIndex];           // remove old potnom value from average calculation sums
+   potnomSums += potnom;                                  // replace it with new potnom value
+   prevPotnom[currentArrayIndex] = potnom;                // put current potnom to array
+   currentArrayIndex = (currentArrayIndex + 1) % history; // loop array index from 0 - history, start again from 0
+
+   return potnom;
 }
 
 float Throttle::CalcThrottleBiDir(float potval, bool brkpedal)
