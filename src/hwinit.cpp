@@ -64,6 +64,7 @@ void clock_setup(void)
    rcc_periph_clock_enable(RCC_TIM4); //Overcurrent / AUX PWM, scheduler on blue pill
    rcc_periph_clock_enable(RCC_DMA1);  //ADC, Encoder and UART3
    rcc_periph_clock_enable(RCC_ADC1);
+   rcc_periph_clock_enable(RCC_ADC2);
    rcc_periph_clock_enable(RCC_CRC);
    rcc_periph_clock_enable(RCC_AFIO); //CAN
    rcc_periph_clock_enable(RCC_CAN1); //CAN
