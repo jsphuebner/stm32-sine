@@ -67,7 +67,7 @@ void VehicleControl::CanClear()
    can->RegisterUserMessage(Param::GetInt(Param::controlid));
 }
 
-bool VehicleControl::CanReceive(uint32_t canId, uint32_t data[2])
+bool VehicleControl::CanReceive(uint32_t canId, uint32_t data[2], uint8_t)
 {
    const int maxErrors = 5;
 
@@ -659,6 +659,8 @@ float VehicleControl::GetUserThrottleCommand()
    bool inRange1 = Throttle::CheckAndLimitRange(&potval, 0);
    bool inRange2 = Throttle::CheckAndLimitRange(&pot2val, 1);
 
+   Throttle::UpdateDynamicRegenTravel(Param::GetFloat(Param::regentravel), FP_TOFLOAT(Encoder::GetRotorFrequency()));
+
    if (!inRange1)
    {
       DigIo::err_out.Set();
@@ -733,7 +735,7 @@ float VehicleControl::GetUserThrottleCommand()
       return 0;
    }
 
-   return Throttle::CalcThrottle(potnom1, regenPreset, brake, FP_TOFLOAT(Encoder::GetRotorFrequency()));
+   return Throttle::CalcThrottle(potnom1, regenPreset, brake);
 }
 
 bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)

@@ -147,7 +147,7 @@ static void Ms10Task(void)
       RunCharger(udc);
    }
 
-   stt |= DigIo::emcystop_in.Get() ? STAT_NONE : STAT_EMCYSTOP;
+   stt |= DigIo::emcystop_in.Get() || hwRev == HW_REV3 ? STAT_NONE : STAT_EMCYSTOP;
    stt |= DigIo::mprot_in.Get() ? STAT_NONE : STAT_MPROT;
    stt |= Param::GetInt(Param::potnom) <= 0 ? STAT_NONE : STAT_POTPRESSED;
    stt |= udc >= Param::GetFloat(Param::udcsw) ? STAT_NONE : STAT_UDCBELOWUDCSW;
@@ -303,7 +303,6 @@ void Param::Change(Param::PARAM_NUM paramNum)
          Throttle::brknom = Param::GetFloat(Param::regentravel);
          Throttle::brknompedal = Param::GetFloat(Param::brakeregen);
          Throttle::regenRamp = Param::GetFloat(Param::regenramp);
-         Throttle::regenrampstr = Param::GetFloat(Param::regenrampstr);
          Throttle::maxregentravelhz = Param::GetFloat(Param::maxregentravelhz);
          Throttle::brkmax = Param::GetFloat(Param::offthrotregen);
          Throttle::brkcruise = Param::GetFloat(Param::cruiseregen);

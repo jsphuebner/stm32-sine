@@ -57,7 +57,7 @@ class VehicleControl
       static bool GetCruiseCreepCommand(float& finalSpnt, float throtSpnt);
       static void BmwAdcAcquire();
       static void CanClear();
-      static bool CanReceive(uint32_t id, uint32_t data[2]);
+      static bool CanReceive(uint32_t id, uint32_t data[2], uint8_t);
 };
 
 #endif // VCU_H
