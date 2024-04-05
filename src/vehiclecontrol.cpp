@@ -113,6 +113,7 @@ bool VehicleControl::CanReceive(uint32_t canId, uint32_t data[2], uint8_t)
    }
 
    seqCounter = ctr1;
+   int cruiseMode = Param::GetInt(Param::cruisemode);
 
    //once we've reached maxerrors we cannot recover, inverter needs restarting.
    if (canErrors < maxErrors)
@@ -129,7 +130,7 @@ bool VehicleControl::CanReceive(uint32_t canId, uint32_t data[2], uint8_t)
          Param::SetInt(Param::pot2, pot2);
       }
 
-      if (Param::GetInt(Param::cruisemode) == CRUISE_CAN)
+      if (CRUISE_CAN == cruiseMode || CRUISE_LIMITER == cruiseMode)
       {
          Param::SetInt(Param::cruisespeed, cruisespeed);
       }
@@ -138,7 +139,7 @@ bool VehicleControl::CanReceive(uint32_t canId, uint32_t data[2], uint8_t)
    {
       Param::SetInt(Param::regenpreset, 0);
 
-      if (Param::GetInt(Param::cruisemode) == CRUISE_CAN)
+      if (CRUISE_CAN == cruiseMode || CRUISE_LIMITER == cruiseMode)
       {
          Param::SetInt(Param::cruisespeed, 0);
       }
@@ -159,6 +160,19 @@ void VehicleControl::PostErrorIfRunning(ERROR_MESSAGE_NUM err)
 void VehicleControl::CruiseControl()
 {
    int cruisemode = Param::GetInt(Param::cruisemode);
+
+   //Special handling for limiter
+   if (CRUISE_LIMITER == cruisemode)
+   {
+      //Limiter never commands acceleration on its own so we can leave it running
+      //even if the brake pedal is pressed.
+      //We disable the limiter if cruise pin is low
+      if (Param::GetBool(Param::din_cruise))
+         Throttle::cruiseSpeed = Param::GetInt(Param::cruisespeed);
+      else
+         Throttle::cruiseSpeed = -1;
+      return;
+   }
 
    //Always disable cruise control when brake pedal is pressed or forward signal goes away
    if (Param::GetBool(Param::din_brake) || !Param::GetBool(Param::din_forward))
@@ -790,7 +804,9 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
 
    if (Throttle::cruiseSpeed > 0 && Throttle::cruiseSpeed > Throttle::idleSpeed)
    {
-      if (throtSpnt <= 0)
+      if (Param::GetInt(Param::cruisemode) == CRUISE_LIMITER)
+         finalSpnt = MIN(cruiseSpnt, throtSpnt);
+      else if (throtSpnt <= 0)
          finalSpnt = cruiseSpnt;
       else if (throtSpnt > 0)
          finalSpnt = MAX(cruiseSpnt, throtSpnt);

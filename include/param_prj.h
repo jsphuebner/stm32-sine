@@ -142,7 +142,7 @@
     PARAM_ENTRY(CAT_AUTOM,   holdkp,      "",        -100,   0,     -0.25,   138 ) \
     PARAM_ENTRY(CAT_AUTOM,   speedkp,     "",        0,      100,    0.25,   53  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedflt,    "",        0,      16,     5,      57  ) \
-    PARAM_ENTRY(CAT_AUTOM,   cruisemode,  CRUISEMODS,0,      3,      0,      62  ) \
+    PARAM_ENTRY(CAT_AUTOM,   cruisemode,  CRUISEMODS,0,      4,      0,      62  ) \
     PARAM_ENTRY(CAT_AUTOM,   cruisethrotlim,"%",     0,      100,    50,     155 ) \
     PARAM_ENTRY(CAT_CONTACT, udcsw,       "V",       0,      1000,   330,    20  ) \
     PARAM_ENTRY(CAT_CONTACT, udcswbuck,   "V",       0,      1000,   540,    80  ) \
@@ -263,7 +263,7 @@
 #define SNS_M        "12=KTY83-110, 13=KTY84-130, 14=Leaf, 15=KTY81-110, 16=Toyota, 21=OutlanderFront, 22=EpcosB57861-S, 23=ToyotaGen2"
 #define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=speedfrq"
 #define SINECURVES   "0=VoltageSlip, 1=Simultaneous"
-#define CRUISEMODS   "0=Off, 1=Switch, 2=CAN, 3=ThrottlePot"
+#define CRUISEMODS   "0=Off, 1=Switch, 2=CAN, 3=ThrottlePot, 4=Limiter"
 #define DIRMODES     "0=Button, 1=Switch, 2=ButtonReversed, 3=SwitchReversed, 4=DefaultForward"
 #define IDLEMODS     "0=Always, 1=NoBrake, 2=Cruise, 3=Off, 4=HillHold"
 #define ONOFF        "0=Off, 1=On, 2=na"
@@ -306,7 +306,8 @@ enum cruisemodes
    CRUISE_OFF = 0,
    CRUISE_SWITCH = 1,
    CRUISE_CAN = 2,
-   CRUISE_POT = 3
+   CRUISE_POT = 3,
+   CRUISE_LIMITER = 4
 };
 
 enum _potmodes
