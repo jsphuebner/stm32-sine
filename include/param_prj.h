@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.33.R
+#define VERSION 5.34
 
 /* Entries should be ordered as follows:
    1. Saveable parameters
@@ -295,10 +295,20 @@
 #define CAN_PERIOD_100MS    0
 #define CAN_PERIOD_10MS     1
 
+#define PARAM_ID_SUM_START_OFFSET GITHUB_RUN_NUMBER
+
+#if GITHUB_RUN_NUMBER == 0 //local build
+#define VER(G) VERSION.R
+#else //github runner build
+#define VER(G) VERSION.##G.B
+#endif
+
+#define VER2(G) VER(G)
+
 #if CONTROL == CTRL_SINE
-#define VERSTR STRINGIFY(4=VER-sine)
+#define VERSTR STRINGIFY(4=VER2(GITHUB_RUN_NUMBER)-sine)
 #elif CONTROL == CTRL_FOC
-#define VERSTR STRINGIFY(4=VER-foc)
+#define VERSTR STRINGIFY(4=VER2(GITHUB_RUN_NUMBER)-foc)
 #endif // CONTROL
 
 enum cruisemodes

@@ -424,6 +424,10 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, bool activeLow)
       timer_set_break_polarity_high(PWM_TIMER);
 
    timer_enable_break(PWM_TIMER);
+
+   if (hwRev == HW_PRIUS && Param::GetInt(Param::ocurlim) == -1)
+      timer_disable_break(PWM_TIMER);
+
    timer_set_enabled_off_state_in_run_mode(PWM_TIMER);
    timer_set_enabled_off_state_in_idle_mode(PWM_TIMER);
    timer_set_deadtime(PWM_TIMER, deadtime);
