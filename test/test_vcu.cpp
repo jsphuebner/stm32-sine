@@ -71,7 +71,7 @@ static void CanTest2()
 
    FillInCanData(data, 100, 200, CAN_IO_FWD, 1000, 50, 1);
 
-   vcuCan->HandleRx(vcuCanId, data);
+   vcuCan->HandleRx(vcuCanId, data, 8);
    VehicleControl::GetDigInputs();
    VehicleControl::ProcessThrottle();
 
@@ -89,7 +89,7 @@ static void CanTest3()
    FillInCanData(data, 100, 200, CAN_IO_START, 1000, 50, 1);
    Param::SetInt(Param::potmode, POTMODE_DUALCHANNEL | POTMODE_CAN);
 
-   vcuCan->HandleRx(vcuCanId, data);
+   vcuCan->HandleRx(vcuCanId, data, 8);
    VehicleControl::GetDigInputs();
    VehicleControl::ProcessThrottle();
 
@@ -106,10 +106,10 @@ static void TestCanSeqError1()
 
    Param::SetInt(Param::potmode, POTMODE_DUALCHANNEL | POTMODE_CAN);
    FillInCanData(data, 100, 200, CAN_IO_START, 1000, 60, 1);
-   vcuCan->HandleRx(vcuCanId, data);
+   vcuCan->HandleRx(vcuCanId, data, 8);
    //call again with same sequence counter -> triggers an error message
    FillInCanData(data, 100, 200, CAN_IO_START, 1000, 60, 1);
-   vcuCan->HandleRx(vcuCanId, data);
+   vcuCan->HandleRx(vcuCanId, data, 8);
 
    ASSERT(errorMessage == ERR_CANCOUNTER);
    ASSERT(Param::GetInt(Param::regenpreset) == 60); //Only after 5 errors will this be reset to 0
@@ -125,7 +125,7 @@ static void TestCanSeqError2()
    {
       //Call 6 times with same sequence counter -> will trigger unrecoverable error
       FillInCanData(data, 100, 200, CAN_IO_START, 1000, 60, 1);
-      vcuCan->HandleRx(vcuCanId, data);
+      vcuCan->HandleRx(vcuCanId, data, 8);
    }
 
    //Now simulate 500ms or 50 rtc ticks passed
@@ -165,7 +165,7 @@ extern "C" uint32_t rtc_get_counter_val()
    return rtc;
 }
 
-extern "C" void timer_set_oc_value(uint32_t, uint16_t, uint16_t)
+extern "C" void timer_set_oc_value(uint32_t, enum tim_oc_id, uint32_t)
 {
 
 }
@@ -268,13 +268,13 @@ void Param::Change(Param::PARAM_NUM p)
 
 CanHardware::CanHardware() {}
 
-bool CanHardware::AddReceiveCallback(CanCallback* cb)
+bool CanHardware::AddCallback(CanCallback* cb)
 {
    vcuCan = cb;
    return true;
 }
 
-bool CanHardware::RegisterUserMessage(uint32_t canId)
+bool CanHardware::RegisterUserMessage(uint32_t canId, uint32_t mask)
 {
    vcuCanId = canId;
    return true;
