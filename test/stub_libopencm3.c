@@ -1,7 +1,6 @@
 /*
  * This file is part of the stm32-sine project.
  *
- * Copyright (C) 2021 Johannes Huebner <dev@johanneshuebner.com>
  * Copyright (C) 2024 David J. Fiddes <D.J@fiddes.net>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,32 +16,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TEST_CANHARDWARE_H
-#define TEST_CANHARDWARE_H
+#include "stdint.h"
 
-#include "canhardware.h"
-#include <stdint.h>
-#include <string.h>
-#include <array>
-
-class CanStub: public CanHardware
+void flash_unlock(void)
 {
-   void SetBaudrate(enum baudrates baudrate) {}
-   void Send(uint32_t canId, uint32_t data[2], uint8_t len)
-   {
-      m_canId = canId;
-      memcpy(&m_data[0], &data[0], sizeof(m_data));
-      m_len = len;
-   }
-   virtual void ConfigureFilters() {}
+}
 
-public:
-   std::array<uint8_t, 8>  m_data;
-   uint8_t                 m_len;
-   uint32_t                m_canId;
-};
+void flash_lock(void)
+{
+}
 
-extern CanCallback* vcuCan;
-extern uint32_t vcuCanId;
+void flash_set_ws(uint32_t ws)
+{
+}
 
-#endif // TEST_CANHARDWARE_H
+void flash_program_word(uint32_t address, uint32_t data)
+{
+}
+
+void flash_erase_page(uint32_t page_address)
+{
+}
+
+uint16_t desig_get_flash_size(void)
+{
+    return 8;
+}
+
+uint32_t crc_calculate(uint32_t data)
+{
+    return 0xaa55;
+}
