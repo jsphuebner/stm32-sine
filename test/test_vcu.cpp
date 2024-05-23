@@ -24,6 +24,7 @@
 #include "hwdefs.h"
 #include "pwmgeneration.h"
 #include "vehiclecontrol.h"
+#include "stub_canhardware.h"
 #include "test.h"
 
 static uint32_t crc32_word(uint32_t Crc, uint32_t Data);
@@ -32,21 +33,12 @@ static uint32_t crc = 0;
 static uint32_t rtc = 0;
 static uint32_t speed = 0;
 static ERROR_MESSAGE_NUM errorMessage;
-static CanCallback* vcuCan = 0;
-static uint32_t vcuCanId;
 
 class VCUTest: public UnitTest
 {
    public:
       VCUTest(const std::list<VoidFunction>* cases): UnitTest(cases) {}
       virtual void TestCaseSetup();
-};
-
-class CanStub: public CanHardware
-{
-   void SetBaudrate(enum baudrates baudrate) {}
-   void Send(uint32_t canId, uint32_t data[2], uint8_t len) {}
-   virtual void ConfigureFilters() {}
 };
 
 static void FillInCanData(uint32_t* data, uint32_t pot, uint32_t pot2, uint32_t canio, uint32_t cruisespeed, uint32_t regenPreset, uint32_t seq)
@@ -264,20 +256,6 @@ int Encoder::GetRotorDirection()
 void Param::Change(Param::PARAM_NUM p)
 {
 
-}
-
-CanHardware::CanHardware() {}
-
-bool CanHardware::AddCallback(CanCallback* cb)
-{
-   vcuCan = cb;
-   return true;
-}
-
-bool CanHardware::RegisterUserMessage(uint32_t canId, uint32_t mask)
-{
-   vcuCanId = canId;
-   return true;
 }
 
 const char* errorListString = "";

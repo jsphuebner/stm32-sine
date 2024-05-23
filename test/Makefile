@@ -7,7 +7,7 @@ CPPFLAGS    = -ggdb -DSTM32F1 -DCTRL_FOC=1 -DCTRL_SINE=0 -DCTRL=CTRL_FOC -I../in
 LDFLAGS     = -g
 BINARY		= test_sine
 OBJS		= test_main.o fu.o test_fu.o test_fp.o test_vcu.o my_fp.o my_string.o params.o vehiclecontrol.o \
-			  test_throttle.o throttle.o sine_core.o temp_meas.o
+			  test_throttle.o throttle.o sine_core.o temp_meas.o stub_canhardware.o
 VPATH = ../src ../libopeninv/src
 
 # Check if the variable GITHUB_RUN_NUMBER exists. When running on the github actions running, this
