@@ -723,6 +723,69 @@ static void receive_map_little_endian_single_bit_in_second_word()
     ASSERT(!Param::GetBool(Param::ocurlim));
 }
 
+static void fail_to_map_with_invalid_can_id()
+{
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x800, 0, 16, 1.0) == CAN_ERR_INVALID_ID);
+
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x40000000, 0, 16, 1.0) ==
+        CAN_ERR_INVALID_ID);
+}
+
+static void fail_to_map_with_invalid_little_endian_offset()
+{
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x123, -1, 1, 1.0) == CAN_ERR_INVALID_OFS);
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x123, 64, 1, 1.0) == CAN_ERR_INVALID_OFS);
+}
+
+static void fail_to_map_with_invalid_little_endian_length()
+{
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x123, 0, 0, 1.0) == CAN_ERR_INVALID_LEN);
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x123, 0, 33, 1.0) == CAN_ERR_INVALID_LEN);
+}
+
+static void fail_to_map_with_invalid_little_endian_total_struct_offset()
+{
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x123, 63, 2, 1.0) == CAN_ERR_INVALID_OFS);
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x123, 49, 16, 1.0) == CAN_ERR_INVALID_OFS);
+}
+
+static void fail_to_map_with_invalid_big_endian_offset()
+{
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x123, -1, -1, 1.0) == CAN_ERR_INVALID_OFS);
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x123, 64, -1, 1.0) == CAN_ERR_INVALID_OFS);
+}
+
+static void fail_to_map_with_invalid_big_endian_length()
+{
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x123, 0, -33, 1.0) == CAN_ERR_INVALID_LEN);
+}
+
+static void fail_to_map_with_invalid_big_endian_total_struct_offset()
+{
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x123, 0, -2, 1.0) == CAN_ERR_INVALID_OFS);
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x123, 14, -16, 1.0) ==
+        CAN_ERR_INVALID_OFS);
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x123, 7, -32, 1.0) ==
+        CAN_ERR_INVALID_OFS);
+    ASSERT(
+        canMap->AddSend(Param::amp, 0x123, 30, -32, 1.0) ==
+        CAN_ERR_INVALID_OFS);
+}
+
 REGISTER_TEST(
     CanMapTest,
     send_map_little_endian_byte_in_first_word,
@@ -789,4 +852,11 @@ REGISTER_TEST(
     receive_map_little_endian_single_bit_last_bit,
     receive_map_big_endian_single_bit_last_bit,
     receive_map_little_endian_single_bit_in_first_word,
-    receive_map_little_endian_single_bit_in_second_word);
+    receive_map_little_endian_single_bit_in_second_word,
+    fail_to_map_with_invalid_can_id,
+    fail_to_map_with_invalid_little_endian_offset,
+    fail_to_map_with_invalid_little_endian_length,
+    fail_to_map_with_invalid_little_endian_total_struct_offset,
+    fail_to_map_with_invalid_big_endian_offset,
+    fail_to_map_with_invalid_big_endian_length,
+    fail_to_map_with_invalid_big_endian_total_struct_offset);
