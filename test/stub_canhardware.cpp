@@ -38,3 +38,8 @@ bool CanHardware::RegisterUserMessage(uint32_t canId, uint32_t mask)
 }
 
 void CanHardware::ClearUserMessages() {}
+
+void CanHardware::HandleRx(uint32_t canId, uint32_t data[2], uint8_t dlc)
+{
+   vcuCan->HandleRx(canId, data, dlc);
+}
