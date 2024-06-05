@@ -149,7 +149,7 @@ static void Ms10Task(void)
 
    stt |= DigIo::emcystop_in.Get() || hwRev == HW_REV3 ? STAT_NONE : STAT_EMCYSTOP;
    stt |= DigIo::mprot_in.Get() ? STAT_NONE : STAT_MPROT;
-   stt |= Param::GetInt(Param::potnom) <= 0 ? STAT_NONE : STAT_POTPRESSED;
+   stt |= Throttle::IsThrottlePressed(Param::GetInt(Param::pot)) ? STAT_POTPRESSED : STAT_NONE;
    stt |= udc >= Param::GetFloat(Param::udcsw) ? STAT_NONE : STAT_UDCBELOWUDCSW;
    stt |= udc < Param::GetFloat(Param::udclim) ? STAT_NONE : STAT_UDCLIM;
    stt |= seenBrakePedal ? STAT_NONE : STAT_BRAKECHECK;
@@ -244,6 +244,8 @@ static void Ms10Task(void)
    {
       initWait--;
    }
+
+   Param::SetInt(Param::uptime, rtc_get_counter_val());
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_10MS)
       canMap->SendAll();
@@ -345,6 +347,12 @@ static void UpgradeParameters()
       Param::SetInt(Param::snsm, Param::GetInt(Param::snsm) + 10); //upgrade parameter
    if (Param::Get(Param::offthrotregen) > 0)
       Param::Set(Param::offthrotregen, -Param::Get(Param::offthrotregen));
+
+   s32fp maxPotMax = Param::GetAttrib(Param::potmax)->max;
+   s32fp potMax = Param::Get(Param::potmax);
+
+   if (potMax > maxPotMax)
+      Param::SetFixed(Param::potmax, maxPotMax);
 
    //Remove CAN mapping for safety critical values
    canMap->Remove(Param::pot);

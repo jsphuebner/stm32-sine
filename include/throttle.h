@@ -40,6 +40,7 @@ class Throttle
       static void FrequencyLimitCommand(float& finalSpnt, float frequency);
       static float RampThrottle(float finalSpnt);
       static void UpdateDynamicRegenTravel(float regenTravelMax, float frequency);
+      static bool IsThrottlePressed(int pot1);
       static int potmin[2];
       static int potmax[2];
       static float brknom;

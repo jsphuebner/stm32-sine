@@ -76,6 +76,12 @@ bool Throttle::CheckAndLimitRange(int* potval, uint8_t potIdx)
    return true;
 }
 
+bool Throttle::IsThrottlePressed(int pot1)
+{
+   float percent = DigitsToPercent(pot1, 0);
+   return percent > brknom;
+}
+
 float Throttle::DigitsToPercent(int potval, int potidx)
 {
    if (potidx > 1) return 0;
@@ -194,12 +200,8 @@ bool Throttle::HoldPosition(int distance, float& finalSpnt)
 
 bool Throttle::TemperatureDerate(float temp, float tempMax, float& finalSpnt)
 {
-   float limit = 0;
-
-   if (temp <= tempMax)
-      limit = 100.0f;
-   else if (temp < (tempMax + 2.0f))
-      limit = 50.0f;
+   float limit = (tempMax - temp) * 10; //derate 10% per °C as we approach tempMax
+   limit = MAX(0, limit);
 
    if (finalSpnt >= 0)
       finalSpnt = MIN(finalSpnt, limit);

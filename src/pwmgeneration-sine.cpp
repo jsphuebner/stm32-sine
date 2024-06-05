@@ -243,6 +243,7 @@ PwmGeneration::EdgeType PwmGeneration::CalcRms(s32fp il, EdgeType& lastEdge, s32
 s32fp PwmGeneration::ProcessCurrents()
 {
    static s32fp currentMax[2];
+   static s32fp idcFiltered = 0;
    static int samples[2] = { 0 };
    static EdgeType lastEdge[2] = { PosEdge, PosEdge };
 
@@ -263,7 +264,8 @@ s32fp PwmGeneration::ProcessCurrents()
          s32fp idc = (SineCore::GetAmp() * rms) / SineCore::MAXAMP;
          idc = FP_MUL(idc, FP_FROMFLT(1.2247)); //multiply by sqrt(3)/sqrt(2)
          idc *= fslip < 0 ? -1 : 1;
-         Param::SetFixed(Param::idc, idc);
+         idcFiltered = IIRFILTER(idcFiltered, idc, Param::GetInt(Param::idcflt));
+         Param::SetFixed(Param::idc, idcFiltered);
       }
    }
    if (CalcRms(il2, lastEdge[1], currentMax[1], rms, samples[1], il2PrevRms))
