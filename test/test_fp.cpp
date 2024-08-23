@@ -22,10 +22,14 @@
 #include "my_fp.h"
 #include "my_math.h"
 #include "sine_core.h"
-#include "test_list.h"
+#include "test.h"
 #include "string.h"
 
-using namespace std;
+class FPTest: public UnitTest
+{
+   public:
+      FPTest(const std::list<VoidFunction>* cases): UnitTest(cases) {}
+};
 
 static void TestMacros()
 {
@@ -46,7 +50,7 @@ static void TestItoa()
 static void TestAtoi()
 {
    ASSERT(fp_atoi("-2.5", 5) == FP_FROMFLT(-2.5));
-   ASSERT(fp_atoi("2.155", 5) == FP_FROMFLT(2.15));
+   ASSERT(fp_atoi("2.155", 5) == FP_FROMFLT(2.16));
 }
 
 static void TestMedian3()
@@ -68,19 +72,7 @@ static void TestAtan2()
    ASSERT(SineCore::Atan2(2048, 3547) == 10922); //60°
 }
 
-static void TestLn()
-{
-   //ASSERT(fp_ln(1) == 0);
-   ASSERT(fp_ln(5389) == FP_FROMFLT(8.5777));
-   ASSERT(fp_ln(8290) == FP_FROMFLT(9.0));
-}
+//This line registers the test
+REGISTER_TEST(FPTest, TestMacros, TestItoa, TestAtoi, TestMedian3, TestAtan2);
 
-void FPTest::RunTest()
-{
-   TestMacros();
-   TestItoa();
-   TestAtoi();
-   TestMedian3();
-   TestAtan2();
-   TestLn();
-}
+

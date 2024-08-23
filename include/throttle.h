@@ -25,7 +25,7 @@
 class Throttle
 {
    public:
-      static bool CheckAndLimitRange(int* potval, int potIdx);
+      static bool CheckAndLimitRange(int* potval, uint8_t potIdx);
       static float DigitsToPercent(int potval, int potidx);
       static float CalcThrottle(float potval, float pot2val, bool brkpedal);
       static float CalcThrottleBiDir(float potval, bool brkpedal);
@@ -39,6 +39,8 @@ class Throttle
       static void AccelerationLimitCommand(float& finalSpnt, int speed);
       static void FrequencyLimitCommand(float& finalSpnt, float frequency);
       static float RampThrottle(float finalSpnt);
+      static void UpdateDynamicRegenTravel(float regenTravelMax, float frequency);
+      static bool IsThrottlePressed(int pot1);
       static int potmin[2];
       static int potmax[2];
       static float brknom;
@@ -66,6 +68,7 @@ class Throttle
       static float idcmax;
       static float idckp;
       static float fmax;
+      static float maxregentravelhz;
 
    private:
       static int speedFiltered;

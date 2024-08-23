@@ -19,6 +19,7 @@
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/stm32/rtc.h>
 #include <libopencm3/stm32/spi.h>
+#include <libopencm3/stm32/crc.h>
 #include "vehiclecontrol.h"
 #include "temp_meas.h"
 #include "fu.h"
@@ -39,6 +40,8 @@
 
 
 CanHardware* VehicleControl::can;
+FunctionPointerCallback VehicleControl::callback(VehicleControl::CanReceive, VehicleControl::CanClear);
+uint32_t VehicleControl::lastCanRxTime = 0;
 bool VehicleControl::lastCruiseSwitchState = false;
 bool VehicleControl::canIoActive = false;
 bool VehicleControl::spiEnabled = false;
@@ -47,6 +50,104 @@ float VehicleControl::tempmFiltered = 0;
 int VehicleControl::udcFiltered = 0;
 uint16_t VehicleControl::bmwAdcNextChan = 0;
 uint16_t VehicleControl::bmwAdcValues[4];
+uint8_t VehicleControl::canErrors;
+uint8_t VehicleControl::seqCounter;
+
+void VehicleControl::SetCan(CanHardware* canHw)
+{
+   seqCounter = 0; //Mainly useful for unit tests
+   canErrors = 0;
+   can = canHw;
+   can->AddCallback(&callback);
+   CanClear();
+}
+
+void VehicleControl::CanClear()
+{
+   can->RegisterUserMessage(Param::GetInt(Param::controlid));
+}
+
+bool VehicleControl::CanReceive(uint32_t canId, uint32_t data[2], uint8_t)
+{
+   const int maxErrors = 5;
+
+   if (canId != (uint32_t)Param::GetInt(Param::controlid)) return false;
+
+   uint16_t pot = data[0] & 0xFFF;
+   uint16_t pot2 = (data[0] >> 12) & 0xFFF;
+   uint8_t canio = (data[0] >> 24) & 0x3F;
+   uint8_t ctr1 = (data[0] >> 30) & 0x3;
+   uint16_t cruisespeed = data[1] & 0x3FFF;
+   uint8_t ctr2 = (data[1] >> 14) & 0x3;
+   uint8_t regenpreset = (data[1] >> 16) & 0xFF;
+   uint8_t crc = (data[1] >> 24) & 0xFF;
+   uint8_t calcCrc = crc;
+
+   //Optional CRC check
+   if (Param::GetBool(Param::controlcheck))
+   {
+      //Zero out CRC byte
+      data[1] &= 0x00FFFFFF;
+      crc_reset();
+      calcCrc = crc_calculate_block(data, 2) & 0xFF;
+   }
+
+   //We check for CRC and sequence counter errors. As long as we stay below maxErrors
+   //we can heal bad frames with good frames. Once we've surpassed maxErrors we do
+   //not recover and require a restart
+   if (calcCrc != crc)
+   {
+      ErrorMessage::Post(ERR_CANCRC);
+      if (canErrors < maxErrors) canErrors++;
+   }
+   else if (ctr1 != ctr2 || //The two counters within the message don't match up
+            ctr1 == seqCounter) //The counters match but haven't moved since the last message
+   {
+      ErrorMessage::Post(ERR_CANCOUNTER);
+      if (canErrors < maxErrors) canErrors++;
+   }
+   else if (canErrors > 0 && canErrors < maxErrors)
+   {
+      //As long as we haven't reached maxErrors, good frames decrease the error counter
+      canErrors--;
+   }
+
+   seqCounter = ctr1;
+   int cruiseMode = Param::GetInt(Param::cruisemode);
+
+   //once we've reached maxerrors we cannot recover, inverter needs restarting.
+   if (canErrors < maxErrors)
+   {
+      //This lets consuming functions check the age of the last valid frame
+      lastCanRxTime = rtc_get_counter_val();
+
+      Param::SetInt(Param::canio, canio);
+      Param::SetInt(Param::regenpreset, MIN(100, regenpreset));
+
+      if ((Param::GetInt(Param::potmode) & POTMODE_CAN) > 0)
+      {
+         Param::SetInt(Param::pot, pot);
+         Param::SetInt(Param::pot2, pot2);
+      }
+
+      if (CRUISE_CAN == cruiseMode || CRUISE_LIMITER == cruiseMode)
+      {
+         Param::SetInt(Param::cruisespeed, cruisespeed);
+      }
+   }
+   else
+   {
+      Param::SetInt(Param::regenpreset, 0);
+
+      if (CRUISE_CAN == cruiseMode || CRUISE_LIMITER == cruiseMode)
+      {
+         Param::SetInt(Param::cruisespeed, 0);
+      }
+      //pot and canio handled in respective functions
+   }
+
+   return true;
+}
 
 void VehicleControl::PostErrorIfRunning(ERROR_MESSAGE_NUM err)
 {
@@ -58,7 +159,20 @@ void VehicleControl::PostErrorIfRunning(ERROR_MESSAGE_NUM err)
 
 void VehicleControl::CruiseControl()
 {
-   int cruisemode = Param::GetInt(Param::cruisemode) ;
+   int cruisemode = Param::GetInt(Param::cruisemode);
+
+   //Special handling for limiter
+   if (CRUISE_LIMITER == cruisemode)
+   {
+      //Limiter never commands acceleration on its own so we can leave it running
+      //even if the brake pedal is pressed.
+      //We disable the limiter if cruise pin is low
+      if (Param::GetBool(Param::din_cruise))
+         Throttle::cruiseSpeed = Param::GetInt(Param::cruisespeed);
+      else
+         Throttle::cruiseSpeed = -1;
+      return;
+   }
 
    //Always disable cruise control when brake pedal is pressed or forward signal goes away
    if (Param::GetBool(Param::din_brake) || !Param::GetBool(Param::din_forward))
@@ -111,7 +225,8 @@ void VehicleControl::CruiseControl()
 
 void VehicleControl::SelectDirection()
 {
-   int selectedDir = Param::GetInt(Param::dir);
+   int selectedDir = Param::GetInt(Param::seldir);
+   int rotorDir = Param::GetInt(Param::rotordir);
    int userDirSelection = 0;
    int dirSign = (Param::GetInt(Param::dirmode) & DIR_REVERSED) ? -1 : 1;
    bool potPressed = Param::GetInt(Param::potnom) > 0;
@@ -152,15 +267,16 @@ void VehicleControl::SelectDirection()
    }
 
    /* Only change direction when below certain motor speed and throttle is not pressed */
-   if ((int)Encoder::GetSpeed() < Param::GetInt(Param::dirchrpm) && !potPressed)
+   if (((int)Encoder::GetSpeed() < Param::GetInt(Param::dirchrpm) || userDirSelection == rotorDir) && !potPressed)
       selectedDir = userDirSelection;
 
-   Param::SetInt(Param::dir, selectedDir);
+   Param::SetInt(Param::seldir, selectedDir);
 }
 
 float VehicleControl::ProcessThrottle()
 {
    float throtSpnt = 0, finalSpnt;
+   const float fstat = Param::GetFloat(Param::fstat);
 
    if ((int)Encoder::GetSpeed() < Param::GetInt(Param::throtramprpm))
       Throttle::throttleRamp = Param::GetFloat(Param::throtramp);
@@ -178,9 +294,10 @@ float VehicleControl::ProcessThrottle()
    if (hwRev != HW_TESLA)
       Throttle::BmsLimitCommand(finalSpnt, Param::GetBool(Param::din_bms));
 
+   Throttle::fmax = Param::GetFloat(Param::fmax);
    Throttle::UdcLimitCommand(finalSpnt, Param::GetFloat(Param::udc));
    Throttle::IdcLimitCommand(finalSpnt, Param::GetFloat(Param::idc));
-   Throttle::FrequencyLimitCommand(finalSpnt, Param::GetFloat(Param::fstat));
+   Throttle::FrequencyLimitCommand(finalSpnt, fstat);
    Throttle::AccelerationLimitCommand(finalSpnt, Encoder::GetSpeed());
 
    if (Throttle::TemperatureDerate(Param::GetFloat(Param::tmphs), Param::GetFloat(Param::tmphsmax), finalSpnt))
@@ -216,12 +333,18 @@ float VehicleControl::ProcessThrottle()
       if (finalSpnt < 0)
          finalSpnt *= Encoder::GetRotorDirection();
       else //inconsistency here: in slip control negative always means regen
-         finalSpnt *= Param::GetInt(Param::dir);
+         finalSpnt *= Param::GetInt(Param::seldir);
+
+      //At 110% fmax start derating field weakening current just in case it has a torque producing component
+      Throttle::fmax = Param::GetFloat(Param::fmax) * 1.1f;
+      float fwPercent = 100;
+      Throttle::FrequencyLimitCommand(fwPercent, fstat);
+      PwmGeneration::SetFwCurMax(fwPercent * Param::GetFloat(Param::fwcurmax) / 100.0f);
 #endif // CONTROL
    }
 
    //Make sure we never command torque in neutral
-   if (Param::GetInt(Param::dir) == 0)
+   if (Param::GetInt(Param::seldir) == 0)
       finalSpnt = 0;
 
    return finalSpnt;
@@ -259,7 +382,7 @@ void VehicleControl::GetDigInputs()
 
    canIoActive |= canio != 0;
 
-   if ((rtc_get_counter_val() - can->GetLastRxTimestamp()) >= CAN_TIMEOUT && canIoActive)
+   if ((rtc_get_counter_val() - lastCanRxTime) >= CAN_TIMEOUT && canIoActive)
    {
       canio = 0;
       Param::SetInt(Param::canio, 0);
@@ -538,7 +661,7 @@ float VehicleControl::GetUserThrottleCommand()
    if ((potmode & POTMODE_CAN) > 0)
    {
       //500ms timeout
-      if ((rtc_get_counter_val() - can->GetLastRxTimestamp()) < CAN_TIMEOUT)
+      if ((rtc_get_counter_val() - lastCanRxTime) < CAN_TIMEOUT)
       {
          potval = Param::GetInt(Param::pot);
          pot2val = Param::GetInt(Param::pot2);
@@ -560,6 +683,8 @@ float VehicleControl::GetUserThrottleCommand()
 
    bool inRange1 = Throttle::CheckAndLimitRange(&potval, 0);
    bool inRange2 = Throttle::CheckAndLimitRange(&pot2val, 1);
+
+   Throttle::UpdateDynamicRegenTravel(Param::GetFloat(Param::regentravel), FP_TOFLOAT(Encoder::GetRotorFrequency()));
 
    if (!inRange1)
    {
@@ -591,16 +716,16 @@ float VehicleControl::GetUserThrottleCommand()
       if (bidirThrot == 0 || (requestedDirection != rotorDirection && speed > 30))
       {
          bidirThrot = Throttle::brkmax;
-         Param::SetInt(Param::dir, rotorDirection);
+         Param::SetInt(Param::seldir, rotorDirection);
       }
       else if (bidirThrot < 0)
       {
          bidirThrot = -bidirThrot;
-         Param::SetInt(Param::dir, -1);
+         Param::SetInt(Param::seldir, -1);
       }
       else //bidirThrot > 0
       {
-         Param::SetInt(Param::dir, 1);
+         Param::SetInt(Param::seldir, 1);
       }
       return bidirThrot;
    }
@@ -690,7 +815,9 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
 
    if (Throttle::cruiseSpeed > 0 && Throttle::cruiseSpeed > Throttle::idleSpeed)
    {
-      if (throtSpnt <= 0)
+      if (Param::GetInt(Param::cruisemode) == CRUISE_LIMITER)
+         finalSpnt = MIN(cruiseSpnt, throtSpnt);
+      else if (throtSpnt <= 0)
          finalSpnt = cruiseSpnt;
       else if (throtSpnt > 0)
          finalSpnt = MAX(cruiseSpnt, throtSpnt);
@@ -709,6 +836,8 @@ void VehicleControl::BmwAdcAcquire()
       spi_setup();
       //Brake pin is used as SPI_MISO
       DigIo::brk_out.Configure(GPIOC, GPIO5, PinMode::INPUT_FLT);
+      //Disable err_out so it doesn't pull the clock signal up or down
+      DigIo::err_out.Configure(GPIOC, GPIO10, PinMode::INPUT_FLT);
       DigIo::spi_cs_out.Set();
       spiEnabled = true;
    }

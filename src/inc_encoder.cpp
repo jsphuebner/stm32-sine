@@ -76,7 +76,7 @@ static bool seenNorthSignal = false;
 static int32_t turnsSinceLastSample = 0;
 static int32_t distance = 0;
 static int32_t resolverMin = 0, resolverMax = 0, startupDelay;
-static int32_t sinChan = 3, cosChan = 2;
+static uint32_t sinAdc = ADC2, cosAdc = ADC1;
 static int32_t detectedDirection = 0;
 static uint16_t sincosoffs = 2048;
 
@@ -158,13 +158,13 @@ void Encoder::SwapSinCos(bool swap)
 {
    if (swap)
    {
-      sinChan = 2;
-      cosChan = 3;
+      sinAdc = ADC1;
+      cosAdc = ADC2;
    }
    else
    {
-      sinChan = 3;
-      cosChan = 2;
+      sinAdc = ADC2;
+      cosAdc = ADC1;
    }
 }
 
@@ -446,13 +446,16 @@ void Encoder::InitTimerABZMode()
 
 void Encoder::InitResolverMode()
 {
-   //The first injected channel is always noisy, so we insert one dummy channel
-   uint8_t channels[3] = { 6, 6, 7 };
+   //The first injected sample is always noisy, so we insert one dummy sample
+   uint8_t channels1[3] = { 6, 6 };
+   uint8_t channels2[3] = { 7, 7 };
 
-   adc_set_injected_sequence(ADC1, sizeof(channels), channels);
+   adc_set_injected_sequence(ADC1, sizeof(channels1), channels1);
+   adc_set_injected_sequence(ADC2, sizeof(channels2), channels2);
    adc_enable_external_trigger_injected(ADC1, ADC_CR2_JEXTSEL_JSWSTART);
+   adc_enable_external_trigger_injected(ADC2, ADC_CR2_JEXTSEL_JSWSTART);
    adc_set_sample_time(ADC1, 6, ADC_SMPR_SMP_1DOT5CYC);
-   adc_set_sample_time(ADC1, 7, ADC_SMPR_SMP_1DOT5CYC);
+   adc_set_sample_time(ADC2, 7, ADC_SMPR_SMP_1DOT5CYC);
 
    gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_ANALOG, GPIO6 | GPIO7);
    exti_disable_request(NORTH_EXC_EXTI);
@@ -470,16 +473,16 @@ void Encoder::InitResolverMode()
       timer_generate_event(REV_CNT_TIMER, TIM_EGR_UG);
       gpio_set_mode(NORTH_EXC_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, NORTH_EXC_PIN);
       adc_set_injected_offset(ADC1, 2, 0);
-      adc_set_injected_offset(ADC1, 3, 0);
+      adc_set_injected_offset(ADC2, 2, 0);
 
       adc_start_conversion_injected(ADC1); //Determine offset
 
       while (!adc_eoc_injected(ADC1));
 
       int ch1 = adc_read_injected(ADC1, 2);
-      int ch2 = adc_read_injected(ADC1, 3);
+      int ch2 = adc_read_injected(ADC2, 2);
       adc_set_injected_offset(ADC1, 2, ch1);
-      adc_set_injected_offset(ADC1, 3, ch2);
+      adc_set_injected_offset(ADC2, 2, ch2);
       adc_enable_external_trigger_injected(ADC1, ADC_CR2_JEXTSEL_TIM3_CC4);
 
       if (CHK_BIPOLAR_OFS(ch1) || CHK_BIPOLAR_OFS(ch2))
@@ -493,7 +496,7 @@ void Encoder::InitResolverMode()
       //on my hardware, min is 0.465V, max is 2.510v, so offset is 1.4875v, or 1846
       //this should be a parameter?
       adc_set_injected_offset(ADC1, 2, sincosoffs);
-      adc_set_injected_offset(ADC1, 3, sincosoffs);
+      adc_set_injected_offset(ADC2, 2, sincosoffs);
    }
 
    seenNorthSignal = true;
@@ -562,8 +565,8 @@ uint16_t Encoder::GetAngleSinCos()
 */
 uint16_t Encoder::DecodeAngle(bool invert)
 {
-   int sin = adc_read_injected(ADC1, sinChan);
-   int cos = adc_read_injected(ADC1, cosChan);
+   int sin = adc_read_injected(sinAdc, 2);
+   int cos = adc_read_injected(cosAdc, 2);
 
    //Wait for signal to reach usable amplitude
    if ((resolverMax - resolverMin) > MIN_RES_AMP)

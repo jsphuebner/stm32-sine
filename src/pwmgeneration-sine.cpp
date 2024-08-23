@@ -39,7 +39,7 @@ void PwmGeneration::Run()
 {
    if (opmode == MOD_MANUAL || opmode == MOD_RUN || opmode == MOD_SINE)
    {
-      int dir = Param::GetInt(Param::dir);
+      int dir = Param::GetInt(Param::seldir);
 
       Encoder::UpdateRotorAngle(dir);
       s32fp ampNomLimited = LimitCurrent();
@@ -68,9 +68,10 @@ void PwmGeneration::Run()
       }
 
       /* Match to PWM resolution */
-      timer_set_oc_value(PWM_TIMER, TIM_OC1, SineCore::DutyCycles[0] >> shiftForTimer);
-      timer_set_oc_value(PWM_TIMER, TIM_OC2, SineCore::DutyCycles[1] >> shiftForTimer);
-      timer_set_oc_value(PWM_TIMER, TIM_OC3, SineCore::DutyCycles[2] >> shiftForTimer);
+      for (int i = 0; i < 3; i++)
+      {
+         timer_set_oc_value(PWM_TIMER, ocChannels[i], SineCore::DutyCycles[i] >> shiftForTimer);
+      }
    }
    else if (opmode == MOD_BOOST || opmode == MOD_BUCK)
    {
@@ -134,7 +135,7 @@ void PwmGeneration::SetTorquePercent(float torque)
          }
       }
    }
-   else if (Encoder::GetRotorDirection() != Param::GetInt(Param::dir))
+   else if (Encoder::GetRotorDirection() != Param::GetInt(Param::seldir))
    {
       // Do not apply negative torque if we are already traveling backwards.
       fslipspnt = 0;
@@ -242,6 +243,7 @@ PwmGeneration::EdgeType PwmGeneration::CalcRms(s32fp il, EdgeType& lastEdge, s32
 s32fp PwmGeneration::ProcessCurrents()
 {
    static s32fp currentMax[2];
+   static s32fp idcFiltered = 0;
    static int samples[2] = { 0 };
    static EdgeType lastEdge[2] = { PosEdge, PosEdge };
 
@@ -262,7 +264,8 @@ s32fp PwmGeneration::ProcessCurrents()
          s32fp idc = (SineCore::GetAmp() * rms) / SineCore::MAXAMP;
          idc = FP_MUL(idc, FP_FROMFLT(1.2247)); //multiply by sqrt(3)/sqrt(2)
          idc *= fslip < 0 ? -1 : 1;
-         Param::SetFixed(Param::idc, idc);
+         idcFiltered = IIRFILTER(idcFiltered, idc, Param::GetInt(Param::idcflt));
+         Param::SetFixed(Param::idc, idcFiltered);
       }
    }
    if (CalcRms(il2, lastEdge[1], currentMax[1], rms, samples[1], il2PrevRms))

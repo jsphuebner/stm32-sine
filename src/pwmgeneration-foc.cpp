@@ -44,9 +44,9 @@ static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(
 static const int32_t fwOutMax = 1024;
 static const uint32_t shiftForFilter = 8;
 static s32fp idMtpa = 0, iqMtpa = 0;
-static tim_oc_id ocChannels[3];
 static PiController qController;
 static PiController dController;
+static s32fp fwCurMax = 0;
 
 void PwmGeneration::Run()
 {
@@ -54,7 +54,7 @@ void PwmGeneration::Run()
    {
       static s32fp idcFiltered = 0;
       static int amplitudeErrFiltered;
-      int dir = Param::GetInt(Param::dir);
+      int dir = Param::GetInt(Param::seldir);
       s32fp id, iq;
 
       Encoder::UpdateRotorAngle(0);
@@ -74,7 +74,7 @@ void PwmGeneration::Run()
          if (0 == frq) amplitudeErrFiltered = fwOutMax << shiftForFilter;
 
          int vlim = amplitudeErrFiltered >> shiftForFilter;
-         s32fp ifw = ((fwOutMax - vlim) * Param::Get(Param::fwcurmax)) / fwOutMax;
+         s32fp ifw = ((fwOutMax - vlim) * fwCurMax) / fwOutMax;
          Param::SetFixed(Param::ifw, ifw);
 
          s32fp limitedIq = (vlim * iqMtpa) / fwOutMax;
@@ -143,6 +143,11 @@ void PwmGeneration::Run()
    }
 }
 
+void PwmGeneration::SetFwCurMax(float cur)
+{
+   fwCurMax = FP_FROMFLT(cur);
+}
+
 void PwmGeneration::SetTorquePercent(float torquePercent)
 {
    float is = Param::GetFloat(Param::throtcur) * torquePercent;
@@ -179,25 +184,6 @@ void PwmGeneration::PwmInit()
    dController.ResetIntegrator();
    dController.SetCallingFrequency(pwmfrq);
    dController.SetMinMaxY(-maxVd, maxVd);
-
-   if ((Param::GetInt(Param::pinswap) & SWAP_PWM13) > 0)
-   {
-      ocChannels[0] = TIM_OC3;
-      ocChannels[1] = TIM_OC2;
-      ocChannels[2] = TIM_OC1;
-   }
-   else if ((Param::GetInt(Param::pinswap) & SWAP_PWM23) > 0)
-   {
-      ocChannels[0] = TIM_OC1;
-      ocChannels[1] = TIM_OC3;
-      ocChannels[2] = TIM_OC2;
-   }
-   else
-   {
-      ocChannels[0] = TIM_OC1;
-      ocChannels[1] = TIM_OC2;
-      ocChannels[2] = TIM_OC3;
-   }
 
    if (opmode == MOD_ACHEAT)
       AcHeatTimerSetup();

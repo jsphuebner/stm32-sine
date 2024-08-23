@@ -27,7 +27,7 @@ class VehicleControl
       /** Set CAN interface for VCU
        * \param val Pointer to CAN interface
        */
-      static void SetCan(CanHardware* val) { can = val; }
+      static void SetCan(CanHardware* val);
       static void PostErrorIfRunning(ERROR_MESSAGE_NUM err);
       static void CruiseControl();
       static void SelectDirection();
@@ -47,11 +47,17 @@ class VehicleControl
       static int udcFiltered;
       static uint16_t bmwAdcNextChan;
       static uint16_t bmwAdcValues[4];
+      static FunctionPointerCallback callback;
+      static uint32_t lastCanRxTime;
+      static uint8_t canErrors;
+      static uint8_t seqCounter;
 
       static void GetTemps(float& tmphs, float &tmpm);
       static float GetUserThrottleCommand();
       static bool GetCruiseCreepCommand(float& finalSpnt, float throtSpnt);
       static void BmwAdcAcquire();
+      static void CanClear();
+      static bool CanReceive(uint32_t id, uint32_t data[2], uint8_t);
 };
 
 #endif // VCU_H

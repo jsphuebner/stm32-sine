@@ -17,15 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VER 5.30.B
+#define VERSION 5.36.B
 
 /* Entries should be ordered as follows:
    1. Saveable parameters
    2. Temporary parameters
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 155
-//Next value Id: 2052
+//Next param id (increase when adding new parameter!): 159
+//Next value Id: 2055
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -72,10 +72,10 @@
     PARAM_ENTRY(CAT_INVERTER,udcgain,     "dig/V",   0,      4095,   6.175,  29  ) \
     PARAM_ENTRY(CAT_INVERTER,udcofs,      "dig",     0,      4095,   0,      77  ) \
     PARAM_ENTRY(CAT_INVERTER,udclim,      "V",       0,      1000,   540,    48  ) \
-    PARAM_ENTRY(CAT_INVERTER,snshs,       SNS_HS,    0,      7,      0,      45  )
+    PARAM_ENTRY(CAT_INVERTER,snshs,       SNS_HS,    0,      7,      0,      45  ) \
+    PARAM_ENTRY(CAT_INVERTER,pinswap,     SWAPS,     0,      15,     0,      109 ) \
 
 #define INVERTER_PARAMETERS_FOC \
-    PARAM_ENTRY(CAT_INVERTER,pinswap,     SWAPS,     0,      15,     0,      109 ) \
     PARAM_ENTRY(CAT_INVERTER,modmax,      "dig",     37000,  45000,  37836,  148 )
 
 #define DERATE_PARAMETERS_COMMON \
@@ -109,8 +109,8 @@
     PARAM_ENTRY(CAT_CHARGER, chargepwmax, "%",       0,      99,     90,     79  )
 
 #define THROTTLE_PARAMETERS_COMMON \
-    PARAM_ENTRY(CAT_THROTTLE,potmin,      "dig",     0,      4095,   0,      17  ) \
-    PARAM_ENTRY(CAT_THROTTLE,potmax,      "dig",     0,      4095,   4095,   18  ) \
+    PARAM_ENTRY(CAT_THROTTLE,potmin,      "dig",     0,      3500,   0,      17  ) \
+    PARAM_ENTRY(CAT_THROTTLE,potmax,      "dig",     0,      3500,   3500,   18  ) \
     PARAM_ENTRY(CAT_THROTTLE,pot2min,     "dig",     0,      4095,   4095,   63  ) \
     PARAM_ENTRY(CAT_THROTTLE,pot2max,     "dig",     0,      4095,   4095,   64  ) \
     PARAM_ENTRY(CAT_THROTTLE,potmode,     POTMODES,  0,      6,      0,      82  ) \
@@ -133,6 +133,7 @@
     PARAM_ENTRY(CAT_REGEN,   offthrotregen,"%",      -100,   0,      -30,    49  ) \
     PARAM_ENTRY(CAT_REGEN,   cruiseregen, "%",       -100,   0,      -30,    124 ) \
     PARAM_ENTRY(CAT_REGEN,   regenrampstr,"Hz",      0,      400,    10,     39  ) \
+    PARAM_ENTRY(CAT_REGEN,   maxregentravelhz,"Hz",  0,      1000,   0,      158 ) \
     PARAM_ENTRY(CAT_REGEN,   brklightout, "%",       -100,   -1,     -50,    67  )
 
 #define AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
@@ -142,7 +143,7 @@
     PARAM_ENTRY(CAT_AUTOM,   holdkp,      "",        -100,   0,     -0.25,   138 ) \
     PARAM_ENTRY(CAT_AUTOM,   speedkp,     "",        0,      100,    0.25,   53  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedflt,    "",        0,      16,     5,      57  ) \
-    PARAM_ENTRY(CAT_AUTOM,   cruisemode,  CRUISEMODS,0,      3,      0,      62  ) \
+    PARAM_ENTRY(CAT_AUTOM,   cruisemode,  CRUISEMODS,0,      4,      0,      62  ) \
     PARAM_ENTRY(CAT_AUTOM,   cruisethrotlim,"%",     0,      100,    50,     155 ) \
     PARAM_ENTRY(CAT_CONTACT, udcsw,       "V",       0,      1000,   330,    20  ) \
     PARAM_ENTRY(CAT_CONTACT, udcswbuck,   "V",       0,      1000,   540,    80  ) \
@@ -156,6 +157,8 @@
     PARAM_ENTRY(CAT_COMM,    canspeed,    CANSPEEDS, 0,      4,      2,      83  ) \
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      88  ) \
     PARAM_ENTRY(CAT_COMM,    nodeid,      "",        1,      63,     1,      129 ) \
+    PARAM_ENTRY(CAT_COMM,    controlid,   "",        1,      2047,   63,     156 ) \
+    PARAM_ENTRY(CAT_COMM,    controlcheck,CHECKS,    0,      1,      1,      157 ) \
     TESTP_ENTRY(CAT_TEST,    manualstart, ONOFF,     0,      1,      0,      150 ) \
 
 #define VALUE_BLOCK1 \
@@ -181,7 +184,8 @@
     VALUE_ENTRY(pot2,        "dig",   2016 ) \
     VALUE_ENTRY(regenpreset, "%",     2051 ) \
     VALUE_ENTRY(potnom,      "%",     2017 ) \
-    VALUE_ENTRY(dir,         DIRS,    2018 ) \
+    VALUE_ENTRY(seldir,      DIRS,    2018 ) \
+    VALUE_ENTRY(rotordir,    DIRS,    2053 ) \
     VALUE_ENTRY(tmphs,       "°C",    2019 ) \
     VALUE_ENTRY(tmpm,        "°C",    2020 ) \
     VALUE_ENTRY(uaux,        "V",     2021 ) \
@@ -197,6 +201,7 @@
     VALUE_ENTRY(din_ocur,    OKERR,   2030 ) \
     VALUE_ENTRY(din_desat,   OKERR,   2031 ) \
     VALUE_ENTRY(din_bms,     ONOFF,   2032 ) \
+    VALUE_ENTRY(uptime,      "10ms",  2054 ) \
     VALUE_ENTRY(cpuload,     "%",     2035 ) \
 
 #define VALUES_SINE \
@@ -263,7 +268,7 @@
 #define SNS_M        "12=KTY83-110, 13=KTY84-130, 14=Leaf, 15=KTY81-110, 16=Toyota, 21=OutlanderFront, 22=EpcosB57861-S, 23=ToyotaGen2"
 #define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=speedfrq"
 #define SINECURVES   "0=VoltageSlip, 1=Simultaneous"
-#define CRUISEMODS   "0=Off, 1=Switch, 2=CAN, 3=ThrottlePot"
+#define CRUISEMODS   "0=Off, 1=Switch, 2=CAN, 3=ThrottlePot, 4=Limiter"
 #define DIRMODES     "0=Button, 1=Switch, 2=ButtonReversed, 3=SwitchReversed, 4=DefaultForward"
 #define IDLEMODS     "0=Always, 1=NoBrake, 2=Cruise, 3=Off, 4=HillHold"
 #define ONOFF        "0=Off, 1=On, 2=na"
@@ -274,10 +279,11 @@
 #define CANSPEEDS    "0=125k, 1=250k, 2=500k, 3=800k, 4=1M"
 #define CANIOS       "1=Cruise, 2=Start, 4=Brake, 8=Fwd, 16=Rev, 32=Bms"
 #define CANPERIODS   "0=100ms, 1=10ms"
-#define HWREVS       "0=Rev1, 1=Rev2, 2=Rev3, 3=Tesla, 4=BluePill, 5=Prius"
+#define HWREVS       "0=Rev1, 1=Rev2, 2=Rev3, 3=Tesla, 4=BluePill, 5=Prius, 6=MiniMainboard, 7=Leaf2, 8=Leaf3, 9=BMWi3"
 #define SWAPS        "0=None, 1=Currents12, 2=SinCos, 4=PWMOutput13, 8=PWMOutput23"
 #define OUTMODES     "0=DcSw, 1=TmpmThresh, 2=TmphsThresh"
 #define STATUS       "0=None, 1=UdcLow, 2=UdcHigh, 4=UdcBelowUdcSw, 8=UdcLim, 16=EmcyStop, 32=MProt, 64=PotPressed, 128=TmpHs, 256=WaitStart, 512=BrakeCheck"
+#define CHECKS       "0=CounterOnly, 1=StmCrc8"
 #define CAT_MOTOR    "Motor"
 #define CAT_INVERTER "Inverter"
 #define CAT_THROTTLE "Throttle"
@@ -295,10 +301,20 @@
 #define CAN_PERIOD_100MS    0
 #define CAN_PERIOD_10MS     1
 
+#define PARAM_ID_SUM_START_OFFSET GITHUB_RUN_NUMBER
+
+#if GITHUB_RUN_NUMBER == 0 //local build
+#define VER(G) VERSION.R
+#else //github runner build
+#define VER(G) VERSION.##G.B
+#endif
+
+#define VER2(G) VER(G)
+
 #if CONTROL == CTRL_SINE
-#define VERSTR STRINGIFY(4=VER-sine)
+#define VERSTR STRINGIFY(4=VER2(GITHUB_RUN_NUMBER)-sine)
 #elif CONTROL == CTRL_FOC
-#define VERSTR STRINGIFY(4=VER-foc)
+#define VERSTR STRINGIFY(4=VER2(GITHUB_RUN_NUMBER)-foc)
 #endif // CONTROL
 
 enum _outmodes
@@ -313,7 +329,8 @@ enum cruisemodes
    CRUISE_OFF = 0,
    CRUISE_SWITCH = 1,
    CRUISE_CAN = 2,
-   CRUISE_POT = 3
+   CRUISE_POT = 3,
+   CRUISE_LIMITER = 4
 };
 
 enum _potmodes

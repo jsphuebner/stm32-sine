@@ -31,20 +31,27 @@ OBJDUMP		= $(PREFIX)-objdump
 MKDIR_P     = mkdir -p
 TERMINAL_DEBUG ?= 0
 CFLAGS		= -Os -ggdb3 -Wall -Wextra -Iinclude/ -Ilibopeninv/include -Ilibopencm3/include \
-             -fno-common -fno-builtin -pedantic -DSTM32F1 -DT_DEBUG=$(TERMINAL_DEBUG) \
-             -DCONTROL=CTRL_$(CONTROL) -DCTRL_SINE=0 -DCTRL_FOC=1 \
-				 -mcpu=cortex-m3 -mthumb -std=gnu99 -ffunction-sections -fdata-sections
+              -fno-common -fno-builtin -pedantic -DSTM32F1 -DT_DEBUG=$(TERMINAL_DEBUG) \
+              -DCONTROL=CTRL_$(CONTROL) -DCTRL_SINE=0 -DCTRL_FOC=1 \
+              -mcpu=cortex-m3 -mthumb -std=gnu99 -ffunction-sections -fdata-sections
 CPPFLAGS    = -Os -ggdb3 -Wall -Wextra -Iinclude/ -Ilibopeninv/include -Ilibopencm3/include \
-            -fno-common -std=c++11 -pedantic -DSTM32F1 -DT_DEBUG=$(TERMINAL_DEBUG) \
-             -DCONTROL=CTRL_$(CONTROL) -DCTRL_SINE=0 -DCTRL_FOC=1 \
-				-ffunction-sections -fdata-sections -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -mcpu=cortex-m3 -mthumb
+              -fno-common -std=c++11 -pedantic -DSTM32F1 -DT_DEBUG=$(TERMINAL_DEBUG) \
+              -DCONTROL=CTRL_$(CONTROL) -DCTRL_SINE=0 -DCTRL_FOC=1 \
+              -ffunction-sections -fdata-sections -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -mcpu=cortex-m3 -mthumb
+
+# Check if the variable GITHUB_RUN_NUMBER exists. When running on the github actions running, this
+# variable is automatically available.
+# Create a compiler define with the content of the variable. Or, if it does not exist, use replacement value 99999.
+EXTRACOMPILERFLAGS  = $(shell \
+    if [ -z "$$GITHUB_RUN_NUMBER" ]; then echo "-DGITHUB_RUN_NUMBER=0"; else echo "-DGITHUB_RUN_NUMBER=$$GITHUB_RUN_NUMBER"; fi )
+
 LDSCRIPT	= stm32_sine.ld
 LDFLAGS  = -Llibopencm3/lib -ggdb3 -T$(LDSCRIPT) -march=armv7 -nostartfiles -Wl,--gc-sections,-Map,linker.map
 OBJSL		= stm32_sine.o hwinit.o stm32scheduler.o params.o terminal.o terminal_prj.o \
            my_string.o digio.o sine_core.o my_fp.o fu.o inc_encoder.o printf.o anain.o \
            temp_meas.o param_save.o throttle.o errormessage.o pwmgeneration.o \
            picontroller.o terminalcommands.o vehiclecontrol.o \
-           stm32_can.o canmap.o canhardware.o
+           stm32_can.o canmap.o canhardware.o cansdo.o
 
 ifeq ($(CONTROL), SINE)
 	OBJSL += pwmgeneration-sine.o
@@ -54,6 +61,7 @@ ifeq ($(CONTROL), FOC)
 endif
 
 OBJS     = $(patsubst %.o,obj/%.o, $(OBJSL))
+DEPENDS  = $(patsubst %.o,obj/%.d, $(OBJSL))
 vpath %.c src/ libopeninv/src
 vpath %.cpp src/ libopeninv/src
 
@@ -107,13 +115,15 @@ $(BINARY): $(OBJS) $(LDSCRIPT)
 	@printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(LD) $(LDFLAGS) -o $(BINARY) $(OBJS) -lopencm3_stm32f1
 
+-include $(DEPENDS)
+
 $(OUT_DIR)/%.o: %.c Makefile
 	@printf "  CC      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(CFLAGS) -o $@ -c $<
+	$(Q)$(CC) $(CFLAGS) -MMD -MP -o $@ -c $<
 
 $(OUT_DIR)/%.o: %.cpp Makefile
 	@printf "  CPP     $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CPP) $(CPPFLAGS) -o $@ -c $<
+	$(Q)$(CPP) $(CPPFLAGS) $(EXTRACOMPILERFLAGS) -MMD -MP -o $@ -c $<
 
 clean:
 	@printf "  CLEAN   ${OUT_DIR}\n"

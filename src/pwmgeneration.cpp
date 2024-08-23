@@ -36,17 +36,18 @@
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
 #define FRQ_DIVIDER 8192 //PWM ISR callback frequency divider
 
-uint16_t PwmGeneration::pwmfrq = 1;
-uint16_t PwmGeneration::angle;
-s32fp    PwmGeneration::ampnom;
-s32fp    PwmGeneration::fslip;
-s32fp    PwmGeneration::frq;
-s32fp    PwmGeneration::frqFiltered;
-uint8_t  PwmGeneration::shiftForTimer;
-int      PwmGeneration::opmode;
-s32fp    PwmGeneration::ilofs[2];
-int      PwmGeneration::polePairRatio;
-int16_t  PwmGeneration::slipIncr;
+uint16_t  PwmGeneration::pwmfrq = 1;
+uint16_t  PwmGeneration::angle;
+s32fp     PwmGeneration::ampnom;
+s32fp     PwmGeneration::fslip;
+s32fp     PwmGeneration::frq;
+s32fp     PwmGeneration::frqFiltered;
+uint8_t   PwmGeneration::shiftForTimer;
+int       PwmGeneration::opmode;
+s32fp     PwmGeneration::ilofs[2];
+int       PwmGeneration::polePairRatio;
+int16_t   PwmGeneration::slipIncr;
+tim_oc_id PwmGeneration::ocChannels[3];
 
 static int      execTicks;
 static bool     tripped;
@@ -370,6 +371,25 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, bool activeLow)
    const uint16_t pwmmax = 1U << pwmdigits;
    const uint8_t outputMode = activeLow ? GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN : GPIO_CNF_OUTPUT_ALTFN_PUSHPULL;
 
+   if ((Param::GetInt(Param::pinswap) & SWAP_PWM13) > 0)
+   {
+      ocChannels[0] = TIM_OC3;
+      ocChannels[1] = TIM_OC2;
+      ocChannels[2] = TIM_OC1;
+   }
+   else if ((Param::GetInt(Param::pinswap) & SWAP_PWM23) > 0)
+   {
+      ocChannels[0] = TIM_OC1;
+      ocChannels[1] = TIM_OC3;
+      ocChannels[2] = TIM_OC2;
+   }
+   else
+   {
+      ocChannels[0] = TIM_OC1;
+      ocChannels[1] = TIM_OC2;
+      ocChannels[2] = TIM_OC3;
+   }
+
    //Disable output in active low mode before resetting timer, otherwise shoot through will occur!
    if (activeLow)
    {
@@ -404,6 +424,10 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, bool activeLow)
       timer_set_break_polarity_high(PWM_TIMER);
 
    timer_enable_break(PWM_TIMER);
+
+   if (hwRev == HW_PRIUS && Param::GetInt(Param::ocurlim) == -1)
+      timer_disable_break(PWM_TIMER);
+
    timer_set_enabled_off_state_in_run_mode(PWM_TIMER);
    timer_set_enabled_off_state_in_idle_mode(PWM_TIMER);
    timer_set_deadtime(PWM_TIMER, deadtime);

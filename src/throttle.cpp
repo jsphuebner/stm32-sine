@@ -52,8 +52,9 @@ float Throttle::idckp;
 float Throttle::fmax;
 int Throttle::accelmax;
 int Throttle::accelflt;
+float Throttle::maxregentravelhz;
 
-bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
+bool Throttle::CheckAndLimitRange(int* potval, uint8_t potIdx)
 {
    int potMin = potmax[potIdx] > potmin[potIdx] ? potmin[potIdx] : potmax[potIdx];
    int potMax = potmax[potIdx] > potmin[potIdx] ? potmax[potIdx] : potmin[potIdx];
@@ -75,12 +76,34 @@ bool Throttle::CheckAndLimitRange(int* potval, int potIdx)
    return true;
 }
 
+bool Throttle::IsThrottlePressed(int pot1)
+{
+   float percent = DigitsToPercent(pot1, 0);
+   return percent > brknom;
+}
+
 float Throttle::DigitsToPercent(int potval, int potidx)
 {
    if (potidx > 1) return 0;
    if (potmax[potidx] == potmin[potidx]) return 100.0f;
 
    return (100 * (potval - potmin[potidx])) / (potmax[potidx] - potmin[potidx]);
+}
+
+void Throttle::UpdateDynamicRegenTravel(float regenTravelMax, float frequency)
+{
+   if (maxregentravelhz == 0) //dynamic travel turned off
+   {
+      brknom = regenTravelMax;
+      return;
+   }
+
+   // increase speedBasedRegenTravel linearly until rotorfreq reaches maxregentravelhz, then stay at max.
+   // Don't go over max regentravel
+   float speedBasedRegenTravel = 3 + regenTravelMax * frequency / maxregentravelhz;
+   speedBasedRegenTravel = MIN(regenTravelMax, speedBasedRegenTravel);
+
+   brknom = speedBasedRegenTravel;
 }
 
 float Throttle::CalcThrottle(float potnom, float pot2nom, bool brkpedal)
@@ -177,12 +200,8 @@ bool Throttle::HoldPosition(int distance, float& finalSpnt)
 
 bool Throttle::TemperatureDerate(float temp, float tempMax, float& finalSpnt)
 {
-   float limit = 0;
-
-   if (temp <= tempMax)
-      limit = 100.0f;
-   else if (temp < (tempMax + 2.0f))
-      limit = 50.0f;
+   float limit = (tempMax - temp) * 10; //derate 10% per °C as we approach tempMax
+   limit = MAX(0, limit);
 
    if (finalSpnt >= 0)
       finalSpnt = MIN(finalSpnt, limit);

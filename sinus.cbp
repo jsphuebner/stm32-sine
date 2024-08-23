@@ -77,6 +77,7 @@
 		<Unit filename="libopeninv/include/anain.h" />
 		<Unit filename="libopeninv/include/canhardware.h" />
 		<Unit filename="libopeninv/include/canmap.h" />
+		<Unit filename="libopeninv/include/cansdo.h" />
 		<Unit filename="libopeninv/include/crc8.h" />
 		<Unit filename="libopeninv/include/delay.h" />
 		<Unit filename="libopeninv/include/digio.h" />
@@ -100,6 +101,7 @@
 		<Unit filename="libopeninv/src/anain.cpp" />
 		<Unit filename="libopeninv/src/canhardware.cpp" />
 		<Unit filename="libopeninv/src/canmap.cpp" />
+		<Unit filename="libopeninv/src/cansdo.cpp" />
 		<Unit filename="libopeninv/src/crc8.cpp" />
 		<Unit filename="libopeninv/src/digio.cpp" />
 		<Unit filename="libopeninv/src/errormessage.cpp" />
@@ -149,13 +151,13 @@
 		<Unit filename="test/test_fu.cpp">
 			<Option target="Test" />
 		</Unit>
-		<Unit filename="test/test_list.h">
-			<Option target="Test" />
-		</Unit>
 		<Unit filename="test/test_main.cpp">
 			<Option target="Test" />
 		</Unit>
 		<Unit filename="test/test_throttle.cpp">
+			<Option target="Test" />
+		</Unit>
+		<Unit filename="test/test_vcu.cpp">
 			<Option target="Test" />
 		</Unit>
 		<Extensions>
@@ -169,14 +171,11 @@
 				<general />
 			</DoxyBlocks>
 			<debugger>
+				<remote_debugging target="FOC">
+					<options conn_type="0" ip_address="localhost" ip_port="3333" additional_cmds="load&#x0A;r" />
+				</remote_debugging>
 				<remote_debugging target="SlipControl">
-					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" additional_cmds="load&#x0A;r" />
-				</remote_debugging>
-				<remote_debugging target="Test">
-					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" />
-				</remote_debugging>
-				<remote_debugging target="FieldOrientedControl">
-					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="3333" additional_cmds="load&#x0A;r" />
+					<options conn_type="0" ip_address="localhost" ip_port="3333" additional_cmds="load&#x0A;r" />
 				</remote_debugging>
 			</debugger>
 		</Extensions>
