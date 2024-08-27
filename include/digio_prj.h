@@ -38,6 +38,7 @@
     DIG_IO_ENTRY(ocur_in,     GPIOD, GPIO15, PinMode::INPUT_FLT) /* non-existant */  \
     DIG_IO_ENTRY(desat_in,    GPIOD, GPIO15, PinMode::INPUT_FLT) /* non-existant */  \
     DIG_IO_ENTRY(dcsw_out,    GPIOC, GPIO15, PinMode::OUTPUT)      \
+    DIG_IO_ENTRY(fan_out,     GPIOA, GPIO0,  PinMode::OUTPUT)  /* map to unused pin by default */    \
     DIG_IO_ENTRY(vtg_out,     GPIOD, GPIO14, PinMode::OUTPUT) /* non-existant */     \
     DIG_IO_ENTRY(prec_out,    GPIOB, GPIO4,  PinMode::OUTPUT)      \
     DIG_IO_ENTRY(led_out,     GPIOC, GPIO13, PinMode::OUTPUT)      \

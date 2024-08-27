@@ -195,6 +195,7 @@ DigIo DigIo::brk_out;
 DigIo DigIo::dcsw_out;
 DigIo DigIo::prec_out;
 DigIo DigIo::vtg_out;
+DigIo DigIo::fan_out;
 DigIo DigIo::temp0_out;
 DigIo DigIo::cruise_in;
 DigIo DigIo::start_in;
