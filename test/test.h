@@ -29,7 +29,7 @@ extern int _failedAssertions;
       std::cout << "Test " << __FILE__ << "::" << __func__ << " passed." << std::endl; \
    else \
    {  \
-      std::cout << "Assertion failed: " << STRING(c) << " in " __FILE__ " : " << __LINE__ << std::endl;    \
+      std::cout << "Assertion failed: " << STRING(c) << " in " __FILE__ " : " << std::dec << __LINE__ << std::endl;    \
       _failedAssertions++; \
    }
 
