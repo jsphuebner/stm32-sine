@@ -38,7 +38,6 @@
     PARAM_ENTRY(CAT_MOTOR,   dirchrpm,    "rpm",     0,      20000,  100,    87  ) \
     PARAM_ENTRY(CAT_MOTOR,   dirmode,     DIRMODES,  0,      4,      1,      95  ) \
     PARAM_ENTRY(CAT_MOTOR,   snsm,        SNS_M,     12,     23,     12,     46  ) \
-    PARAM_ENTRY(CAT_MOTOR,   roadspeedgain,"1000r/mile", 0,  20,     8.2,    111 ) \
 
 #define MOTOR_PARAMETERS_SINE \
     PARAM_ENTRY(CAT_MOTOR,   boost,       "dig",     0,      37813,  1700,   1   ) \
@@ -175,7 +174,6 @@
 #define VALUE_BLOCK2 \
     VALUE_ENTRY(fstat,       "Hz",    2011 ) \
     VALUE_ENTRY(speed,       "rpm",   2012 ) \
-    VALUE_ENTRY(roadspeed,   "kmh/mph",2043 ) \
     VALUE_ENTRY(cruisespeed, "rpm",   2041 ) \
     VALUE_ENTRY(turns,       "",      2037 ) \
     VALUE_ENTRY(amp,         "dig",   2013 ) \

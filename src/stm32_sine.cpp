@@ -129,16 +129,13 @@ static void Ms10Task(void)
    int newMode = MOD_OFF;
    int stt = STAT_NONE;
    float udc = VehicleControl::ProcessUdc();
-   uint32_t speed = Encoder::GetSpeed();
 
    ErrorMessage::SetTime(rtc_get_counter_val());
    Encoder::UpdateRotorFrequency(100);
    VehicleControl::CalcAndOutputTemp();
    VehicleControl::GetDigInputs();
    float torquePercent = VehicleControl::ProcessThrottle();
-   float roadSpeed = (speed * Param::GetFloat(Param::roadspeedgain)) / 1000.0f;
 
-   Param::SetFloat(Param::roadspeed, roadSpeed);
    Param::SetInt(Param::speed, Encoder::GetSpeed());
    Param::SetInt(Param::rotordir, Encoder::GetRotorDirection());
 
