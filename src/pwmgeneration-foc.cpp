@@ -38,6 +38,8 @@
 #define QLIMIT_FREQUENCY FP_FROMINT(30)
 #endif // QLIMIT_FREQUENCY
 
+static s32fp MeasureCoggingCurrent(uint16_t angle, s32fp id);
+static int32_t GenerateAntiCoggingSignal(uint16_t angle, s32fp coggingCurrent);
 static int initwait = 0;
 static bool isIdle = false;
 static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(2/3)*1.05 (inverter losses)
@@ -86,7 +88,10 @@ void PwmGeneration::Run()
          dController.SetRef(limitedId + Param::Get(Param::manualid));
       }
 
-      int32_t ud = dController.Run(id);
+      s32fp coggingCurrent = MeasureCoggingCurrent(angle, id);
+      int32_t antiCogScaled = GenerateAntiCoggingSignal(angle, coggingCurrent);
+      Param::SetInt(Param::anticog, antiCogScaled);
+      int32_t ud = dController.Run(id, antiCogScaled);
       int32_t qlimit = FOC::GetQLimit(ud);
 
       if (frqFiltered < QLIMIT_FREQUENCY)
@@ -216,7 +221,7 @@ s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
 
 void PwmGeneration::CalcNextAngleSync()
 {
-   if (Encoder::SeenNorthSignal())
+   if (true)
    {
       uint16_t syncOfs = Param::GetInt(Param::syncofs);
       uint16_t rotorAngle = Encoder::GetRotorAngle();
@@ -248,4 +253,45 @@ void PwmGeneration::RunOffsetCalibration()
       il1Avg = il2Avg = 0;
       samples = 0;
    }
+}
+
+static s32fp MeasureCoggingCurrent(uint16_t angle, s32fp id)
+{
+   static uint16_t previousAngle = 0;
+   static s32fp minId = 0x7fffffff, maxId = -0x7fffffff;
+   static s32fp coggingCurrent = 0;
+
+   if (previousAngle < 32767 && angle > 32767)
+   {
+      coggingCurrent = ABS(minId - maxId);
+      minId = 0x7fffffff;
+      maxId = -minId;
+   }
+   else
+   {
+      minId = MIN(id, minId);
+      maxId = MAX(id, maxId);
+   }
+   previousAngle = angle;
+   return coggingCurrent;
+}
+
+static int32_t GenerateAntiCoggingSignal(uint16_t angle, s32fp coggingCurrent)
+{
+   angle += Param::GetInt(Param::cogph);
+
+   if (angle < 16384)
+      angle = angle; //no change
+   else if (angle < 32768) //90 to 180°
+      angle = 32767 - angle;
+   else if (angle < 49152) //180 to 270°
+      angle = angle - 32767;
+   else //270 to 360°
+      angle = 65535 - angle;
+
+   uint16_t antiCog = 4 * angle;
+   int32_t antiCogScaled = ((int32_t)antiCog) - 32767;
+   antiCogScaled = FP_TOINT((antiCogScaled * FP_MUL(coggingCurrent, Param::Get(Param::cogkp))) / 65536);
+
+   return antiCogScaled;
 }

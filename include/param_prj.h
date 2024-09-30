@@ -24,8 +24,8 @@
    2. Temporary parameters
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 159
-//Next value Id: 2055
+//Next param id (increase when adding new parameter!): 161
+//Next value Id: 2056
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -53,6 +53,8 @@
     PARAM_ENTRY(CAT_MOTOR,   iqkp,        "",        0,      20000,  32,     107 ) \
     PARAM_ENTRY(CAT_MOTOR,   idkp,        "",        0,      20000,  32,     149 ) \
     PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      100000, 20000,  108 ) \
+    PARAM_ENTRY(CAT_MOTOR,   cogkp,       "",        -10000, 10000,  0,      159 ) \
+    PARAM_ENTRY(CAT_MOTOR,   cogph,       "",        0,      65535,  0,      160 ) \
     PARAM_ENTRY(CAT_MOTOR,   vlimflt,     "",        0,      16,     10,     145 ) \
     PARAM_ENTRY(CAT_MOTOR,   vlimmargin,  "dig",     0,      10000,  2500,   141 ) \
     PARAM_ENTRY(CAT_MOTOR,   fwcurmax,    "A",       -1000,  0,     -100,    144 ) \
@@ -216,6 +218,7 @@
     VALUE_ENTRY(ifw,     "A",     2048 ) \
     VALUE_ENTRY(ud,      "dig",   2046 ) \
     VALUE_ENTRY(uq,      "dig",   2047 ) \
+    VALUE_ENTRY(anticog, "dig",   2055 ) \
 
 #if CONTROL == CTRL_SINE
 #define PARAM_LIST \
