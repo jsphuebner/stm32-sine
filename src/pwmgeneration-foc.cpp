@@ -291,7 +291,7 @@ static int32_t GenerateAntiCoggingSignal(uint16_t angle, s32fp coggingCurrent)
 
    uint16_t antiCog = 4 * angle;
    int32_t antiCogScaled = ((int32_t)antiCog) - 32767;
-   antiCogScaled = FP_TOINT((antiCogScaled * FP_MUL(coggingCurrent, Param::Get(Param::cogkp))) / 65536);
+   antiCogScaled = (antiCogScaled * FP_TOINT(coggingCurrent) * Param::GetInt(Param::cogkp)) / 65536;
 
    return antiCogScaled;
 }
