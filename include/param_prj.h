@@ -17,14 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VERSION 5.36
+#define VERSION 5.37
 
 /* Entries should be ordered as follows:
    1. Saveable parameters
    2. Temporary parameters
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 161
+//Next param id (increase when adding new parameter!): 162
 //Next value Id: 2056
 /*              category     name         unit       min     max     default id */
 
@@ -53,8 +53,9 @@
     PARAM_ENTRY(CAT_MOTOR,   iqkp,        "",        0,      20000,  32,     107 ) \
     PARAM_ENTRY(CAT_MOTOR,   idkp,        "",        0,      20000,  32,     149 ) \
     PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      100000, 20000,  108 ) \
-    PARAM_ENTRY(CAT_MOTOR,   cogkp,       "",        -10000, 10000,  0,      159 ) \
+    PARAM_ENTRY(CAT_MOTOR,   cogkp,       "",        -1000,  1000,   0,      159 ) \
     PARAM_ENTRY(CAT_MOTOR,   cogph,       "",        0,      65535,  0,      160 ) \
+    PARAM_ENTRY(CAT_MOTOR,   cogmax,       "",       0,      30000,  0,      161 ) \
     PARAM_ENTRY(CAT_MOTOR,   vlimflt,     "",        0,      16,     10,     145 ) \
     PARAM_ENTRY(CAT_MOTOR,   vlimmargin,  "dig",     0,      10000,  2500,   141 ) \
     PARAM_ENTRY(CAT_MOTOR,   fwcurmax,    "A",       -1000,  0,     -100,    144 ) \
