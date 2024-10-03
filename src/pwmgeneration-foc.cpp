@@ -33,6 +33,7 @@
 
 #define FRQ_TO_ANGLE(frq) FP_TOINT((frq << SineCore::BITS) / pwmfrq)
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
+#define DEGREE_TO_DIGIT(a) (((a) * 65536) / 360)
 
 #ifndef QLIMIT_FREQUENCY
 #define QLIMIT_FREQUENCY FP_FROMINT(30)
@@ -276,15 +277,22 @@ static s32fp MeasureCoggingCurrent(uint16_t angle, s32fp id)
    return coggingCurrent;
 }
 
+/** \brief Generates a trapezoidal wave form to counter the cogging current of IPM motors
+ *
+ * \param angle rotor angle
+ * \param coggingCurrent magnitude of cogging current in A
+ * \return int32_t counter waveform as integer
+ *
+ */
 static int32_t GenerateAntiCoggingSignal(uint16_t angle, s32fp coggingCurrent)
 {
    angle += Param::GetInt(Param::cogph);
 
-   if (angle < 16384)
+   if (angle < DEGREE_TO_DIGIT(90))
       angle = angle; //no change
-   else if (angle < 32768) //90 to 180°
+   else if (angle < DEGREE_TO_DIGIT(180)) //90 to 180°
       angle = 32767 - angle;
-   else if (angle < 49152) //180 to 270°
+   else if (angle < DEGREE_TO_DIGIT(270)) //180 to 270°
       angle = angle - 32767;
    else //270 to 360°
       angle = 65535 - angle;
