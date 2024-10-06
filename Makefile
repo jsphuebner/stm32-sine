@@ -159,6 +159,8 @@ get-deps:
 	$(Q)${MAKE} -C libopencm3
 
 Test:
-	cd test && $(MAKE)
+	$(MAKE) -C test
+	$(MAKE) -C libopeninv/test
 cleanTest:
-	cd test && $(MAKE) clean
+	$(MAKE) -C test clean
+	$(MAKE) -C libopeninv/test clean
