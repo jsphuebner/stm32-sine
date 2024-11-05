@@ -48,20 +48,20 @@ static void TestSetup()
 
 static void TestBrkPedal()
 {
-   int percent = Throttle::CalcThrottle(1500, 3000, true);
+   int percent = Throttle::CalcThrottle(1500, 3000, true, 1000);
    ASSERT(percent == -25)
-   percent = Throttle::CalcThrottle(1500, 3000, true);
+   percent = Throttle::CalcThrottle(1500, 3000, true, 1000);
    ASSERT(percent == -50)
-   percent = Throttle::CalcThrottle(1500, 3000, true);
+   percent = Throttle::CalcThrottle(1500, 3000, true, 1000);
    ASSERT(percent == -60)
-   percent = Throttle::CalcThrottle(1500, 3000, true);
+   percent = Throttle::CalcThrottle(1500, 3000, true, 1000);
    ASSERT(percent == -60)
 }
 
 static void TestRegen()
 {
-   Throttle::CalcThrottle(2000, 3000, false);
-   int percent = Throttle::CalcThrottle(1000, 3000, false);
+   Throttle::CalcThrottle(2000, 3000, false, 1000);
+   int percent = Throttle::CalcThrottle(1000, 3000, false, 1000);
    ASSERT(percent == -25)
 }
 #if 0
