@@ -54,8 +54,12 @@ jobs:
 
       - name: Build unit tests on host
         run: |
-          make -C test
+          make Test
 
-      - name: Run unit tests on host
+      - name: Run stm32-sine unit tests on host
         run: |
           test/test_sine
+
+      - name: Run libopeninv unit tests on host
+        run: |
+          libopeninv/test/test_libopeninv

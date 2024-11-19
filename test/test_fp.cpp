@@ -31,37 +31,6 @@ class FPTest: public UnitTest
       FPTest(const std::list<VoidFunction>* cases): UnitTest(cases) {}
 };
 
-static void TestMacros()
-{
-   ASSERT(FP_MUL(FP_FROMFLT(5.5), FP_FROMFLT(2.03125)) == FP_FROMFLT(5.5 * 2.03125));
-   ASSERT(FP_MUL(FP_FROMFLT(5.5), FP_FROMFLT(2.03225)) == FP_FROMFLT(5.5 * 2.03125));
-   ASSERT(FP_DIV(FP_FROMFLT(5.5), FP_FROMFLT(2.03125)) == FP_FROMFLT(5.5 / 2.03125));
-}
-
-static void TestItoa()
-{
-   char buf[10];
-   ASSERT(strcmp(fp_itoa(buf, FP_FROMFLT(2.03125)), "2.03") == 0);
-   ASSERT(strcmp(fp_itoa(buf, FP_FROMFLT(-2.125)), "-2.12") == 0);
-   ASSERT(strcmp(fp_itoa(buf, FP_FROMFLT(2.15624)), "2.12") == 0);
-   ASSERT(strcmp(fp_itoa(buf, FP_FROMFLT(2.15625)), "2.15") == 0);
-}
-
-static void TestAtoi()
-{
-   ASSERT(fp_atoi("-2.5", 5) == FP_FROMFLT(-2.5));
-   ASSERT(fp_atoi("2.155", 5) == FP_FROMFLT(2.16));
-}
-
-static void TestMedian3()
-{
-   ASSERT(MEDIAN3(1,2,3) == 2);
-   ASSERT(MEDIAN3(3,2,1) == 2);
-   ASSERT(MEDIAN3(1,3,2) == 2);
-   ASSERT(MEDIAN3(2,3,1) == 2);
-   ASSERT(MEDIAN3(2,1,3) == 2);
-}
-
 static void TestAtan2()
 {
    uint16_t res;
@@ -73,6 +42,6 @@ static void TestAtan2()
 }
 
 //This line registers the test
-REGISTER_TEST(FPTest, TestMacros, TestItoa, TestAtoi, TestMedian3, TestAtan2);
+REGISTER_TEST(FPTest, TestAtan2);
 
 
