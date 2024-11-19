@@ -57,25 +57,20 @@ extern "C" const TERM_CMD TermCmds[] =
   { NULL, NULL }
 };
 
-static void LoadDefaults(Terminal* term, char *arg)
+static void LoadDefaults(Terminal* , char *)
 {
-   arg = arg;
-   term = term;
    Param::LoadDefaults();
    printf("Defaults loaded\r\n");
 }
 
-static void StopInverter(Terminal* term, char *arg)
+static void StopInverter(Terminal*, char *)
 {
-   arg = arg;
-   term = term;
    Param::SetInt(Param::opmode, 0);
    printf("Inverter halted.\r\n");
 }
 
-static void StartInverter(Terminal* term, char *arg)
+static void StartInverter(Terminal* , char *arg)
 {
-   term = term;
    arg = my_trim(arg);
    #if CONTROL == CTRL_SINE
    int val = my_atoi(arg);
@@ -94,17 +89,13 @@ static void StartInverter(Terminal* term, char *arg)
    #endif
 }
 
-static void PrintErrors(Terminal* term, char *arg)
+static void PrintErrors(Terminal* , char *)
 {
-   term = term;
-   arg = arg;
    ErrorMessage::PrintAllErrors();
 }
 
-static void PrintSerial(Terminal* term, char *arg)
+static void PrintSerial(Terminal* , char *)
 {
-   arg = arg;
-   term = term;
    printf("%X:%X:%X\r\n", DESIG_UNIQUE_ID2, DESIG_UNIQUE_ID1, DESIG_UNIQUE_ID0);
 }
 

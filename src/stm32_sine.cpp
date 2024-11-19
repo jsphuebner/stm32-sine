@@ -307,7 +307,10 @@ void Param::Change(Param::PARAM_NUM paramNum)
          PwmGeneration::SetPolePairRatio(Param::GetInt(Param::polepairs) / Param::GetInt(Param::respolepairs));
 
          #if CONTROL == CTRL_FOC
-         PwmGeneration::SetControllerGains(Param::GetInt(Param::iqkp), Param::GetInt(Param::idkp), Param::GetInt(Param::curki));
+         PwmGeneration::SetControllerGains(Param::GetInt(Param::iqkp),
+                                           Param::GetInt(Param::idkp),
+                                           Param::GetInt(Param::exckp),
+                                           Param::GetInt(Param::curki));
          Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
          FOC::SetMotorParameters(Param::GetFloat(Param::lqminusld) / 1000.0f, Param::GetFloat(Param::fluxlinkage) / 1000.0f);
          FOC::SetMaximumModulationIndex(Param::GetInt(Param::modmax));
@@ -347,10 +350,7 @@ void Param::Change(Param::PARAM_NUM paramNum)
 
          if (hwRev != HW_BLUEPILL)
          {
-            if (Param::GetInt(Param::pwmfunc) == PWM_FUNC_SPEEDFRQ)
-               gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO9);
-            else
-               gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO9);
+            gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO9);
          }
          break;
    }

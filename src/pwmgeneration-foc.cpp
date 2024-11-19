@@ -49,7 +49,9 @@ static const uint32_t shiftForFilter = 8;
 static s32fp idMtpa = 0, iqMtpa = 0;
 static PiController qController;
 static PiController dController;
+static PiController excController;
 static s32fp fwCurMax = 0;
+static s32fp excCurMax = 0;
 
 void PwmGeneration::Run()
 {
@@ -77,16 +79,31 @@ void PwmGeneration::Run()
          if (0 == frq) amplitudeErrFiltered = fwOutMax << shiftForFilter;
 
          int vlim = amplitudeErrFiltered >> shiftForFilter;
-         s32fp ifw = ((fwOutMax - vlim) * fwCurMax) / fwOutMax;
-         Param::SetFixed(Param::ifw, ifw);
 
-         s32fp limitedIq = (vlim * iqMtpa) / fwOutMax;
-         qController.SetRef(limitedIq + Param::Get(Param::manualiq));
+         if (hwRev == HW_ZOE)
+         {
+            s32fp exciterSpnt = (excCurMax * vlim) / fwOutMax;
+            s32fp iexc = FP_DIV((AnaIn::udc.Get() - Param::GetInt(Param::udcofs)), Param::GetInt(Param::udcgain));
+            Param::SetFixed(Param::ifw, iexc);
+            dController.SetRef(idMtpa + Param::Get(Param::manualid));
+            excController.SetRef(exciterSpnt);
+            uint16_t pwm = excController.Run(iexc);
+            Param::SetInt(Param::uexc, pwm);
+            timer_set_oc_value(OVER_CUR_TIMER, TIM_OC4, pwm);
+         }
+         else
+         {
+            s32fp ifw = ((fwOutMax - vlim) * fwCurMax) / fwOutMax;
+            Param::SetFixed(Param::ifw, ifw);
 
-         s32fp limitedId = -2 * ABS(limitedIq); //ratio between idMtpa and iqMtpa never > 2
-         limitedId = MAX(idMtpa, limitedId);
-         limitedId = MIN(ifw, limitedId);
-         dController.SetRef(limitedId + Param::Get(Param::manualid));
+            s32fp limitedIq = (vlim * iqMtpa) / fwOutMax;
+            qController.SetRef(limitedIq + Param::Get(Param::manualiq));
+
+            s32fp limitedId = -2 * ABS(limitedIq); //ratio between idMtpa and iqMtpa never > 2
+            limitedId = MAX(idMtpa, limitedId);
+            limitedId = MIN(ifw, limitedId);
+            dController.SetRef(limitedId + Param::Get(Param::manualid));
+         }
       }
 
       s32fp coggingCurrent = MeasureCoggingCurrent(angle, id);
@@ -122,8 +139,10 @@ void PwmGeneration::Run()
       if (isIdle || initwait > 0)
       {
          timer_disable_break_main_output(PWM_TIMER);
+         //timer_set_oc_value(OVER_CUR_TIMER, TIM_OC4, 0); //stop rotor excitation
          dController.ResetIntegrator();
          qController.ResetIntegrator();
+         //excController.ResetIntegrator();
          RunOffsetCalibration();
          amplitudeErrFiltered = fwOutMax << shiftForFilter;
       }
@@ -149,9 +168,10 @@ void PwmGeneration::Run()
    }
 }
 
-void PwmGeneration::SetFwCurMax(float cur)
+void PwmGeneration::SetFwExcCurMax(float fwcur, float excur)
 {
-   fwCurMax = FP_FROMFLT(cur);
+   fwCurMax = FP_FROMFLT(fwcur);
+   excCurMax = FP_FROMFLT(excur);
 }
 
 void PwmGeneration::SetTorquePercent(float torquePercent)
@@ -172,10 +192,11 @@ void PwmGeneration::SetTorquePercent(float torquePercent)
    idMtpa = FP_FROMFLT(id);
 }
 
-void PwmGeneration::SetControllerGains(int iqkp, int idkp, int ki)
+void PwmGeneration::SetControllerGains(int iqkp, int idkp, int exckp, int ki)
 {
    qController.SetGains(iqkp, ki);
    dController.SetGains(idkp, ki);
+   excController.SetGains(exckp, 1000);
 }
 
 void PwmGeneration::PwmInit()
@@ -190,6 +211,8 @@ void PwmGeneration::PwmInit()
    dController.ResetIntegrator();
    dController.SetCallingFrequency(pwmfrq);
    dController.SetMinMaxY(-maxVd, maxVd);
+   excController.SetCallingFrequency(pwmfrq);
+   excController.SetMinMaxY(0, 2048);
 
    if (opmode == MOD_ACHEAT)
       AcHeatTimerSetup();

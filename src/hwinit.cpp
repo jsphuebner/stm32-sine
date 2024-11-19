@@ -139,7 +139,8 @@ static HWREV ReadVariantResistor()
    //See here for variants: https://openinverter.org/wiki/Mini_Mainboard#Hardware_detection
    if ((result1 + result2) < 30) return HW_BMWI3; //connected to MISO so always low
    else if (result2 > 3700) return HW_MINI; //might have to compare this against result1 later
-   else if (result1 > 510 && result1 < 630) return HW_LEAF3;
+   else if (result1 > 510 && result1 < 616) return HW_LEAF3;
+   else if (result1 > 624 && result1 < 670) return HW_ZOE;
    else return HW_MINI;
 }
 

@@ -17,15 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VERSION 5.37
+#define VERSION 5.38
 
 /* Entries should be ordered as follows:
    1. Saveable parameters
    2. Temporary parameters
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 162
-//Next value Id: 2056
+//Next param id (increase when adding new parameter!): 164
+//Next value Id: 2057
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -53,12 +53,14 @@
     PARAM_ENTRY(CAT_MOTOR,   iqkp,        "",        0,      20000,  32,     107 ) \
     PARAM_ENTRY(CAT_MOTOR,   idkp,        "",        0,      20000,  32,     149 ) \
     PARAM_ENTRY(CAT_MOTOR,   curki,       "",        0,      100000, 20000,  108 ) \
+    PARAM_ENTRY(CAT_MOTOR,   exckp,       "",        0,      20000,  3000,   162 ) \
     PARAM_ENTRY(CAT_MOTOR,   cogkp,       "",        -1000,  1000,   0,      159 ) \
     PARAM_ENTRY(CAT_MOTOR,   cogph,       "",        0,      65535,  0,      160 ) \
     PARAM_ENTRY(CAT_MOTOR,   cogmax,       "",       0,      30000,  0,      161 ) \
     PARAM_ENTRY(CAT_MOTOR,   vlimflt,     "",        0,      16,     10,     145 ) \
     PARAM_ENTRY(CAT_MOTOR,   vlimmargin,  "dig",     0,      10000,  2500,   141 ) \
     PARAM_ENTRY(CAT_MOTOR,   fwcurmax,    "A",       -1000,  0,     -100,    144 ) \
+    PARAM_ENTRY(CAT_MOTOR,   excurmax,    "A",       0,      10,     0,      163 ) \
     PARAM_ENTRY(CAT_MOTOR,   syncofs,     "dig",     0,      65535,  0,      70  ) \
     PARAM_ENTRY(CAT_MOTOR,   lqminusld,   "mH",      0,      1000,   0,      139 ) \
     PARAM_ENTRY(CAT_MOTOR,   fluxlinkage, "mWeber",  0,      1000,   90,     140 ) \
@@ -71,7 +73,7 @@
     PARAM_ENTRY(CAT_INVERTER,ocurlim,     "A",       -65536, 65536,  100,    22  ) \
     PARAM_ENTRY(CAT_INVERTER,il1gain,     "dig/A",   -100,   100,    4.7,    27  ) \
     PARAM_ENTRY(CAT_INVERTER,il2gain,     "dig/A",   -100,   100,    4.7,    28  ) \
-    PARAM_ENTRY(CAT_INVERTER,udcgain,     "dig/V",   0,      4095,   6.175,  29  ) \
+    PARAM_ENTRY(CAT_INVERTER,udcgain,     "dig/V",   -100,   100,    6.175,  29  ) \
     PARAM_ENTRY(CAT_INVERTER,udcofs,      "dig",     0,      4095,   0,      77  ) \
     PARAM_ENTRY(CAT_INVERTER,udclim,      "V",       0,      1000,   540,    48  ) \
     PARAM_ENTRY(CAT_INVERTER,snshs,       SNS_HS,    0,      7,      0,      45  ) \
@@ -219,6 +221,7 @@
     VALUE_ENTRY(ifw,     "A",     2048 ) \
     VALUE_ENTRY(ud,      "dig",   2046 ) \
     VALUE_ENTRY(uq,      "dig",   2047 ) \
+    VALUE_ENTRY(uexc,    "dig",   2056 ) \
     VALUE_ENTRY(anticog, "dig",   2055 ) \
 
 #if CONTROL == CTRL_SINE
@@ -268,7 +271,7 @@
 #define TRIPMODES    "0=AllOff, 1=DcSwOn, 2=PrechargeOn, 3=AutoResume"
 #define SNS_HS       "0=JCurve, 1=Semikron, 2=MBB600, 3=KTY81, 4=PT1000, 5=NTCK45_2k2, 6=Leaf, 7=BMW-i3"
 #define SNS_M        "12=KTY83-110, 13=KTY84-130, 14=Leaf, 15=KTY81-110, 16=Toyota, 21=OutlanderFront, 22=EpcosB57861-S, 23=ToyotaGen2"
-#define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=speedfrq"
+#define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=exciter"
 #define SINECURVES   "0=VoltageSlip, 1=Simultaneous"
 #define CRUISEMODS   "0=Off, 1=Switch, 2=CAN, 3=ThrottlePot, 4=Limiter"
 #define DIRMODES     "0=Button, 1=Switch, 2=ButtonReversed, 3=SwitchReversed, 4=DefaultForward"
@@ -281,7 +284,7 @@
 #define CANSPEEDS    "0=125k, 1=250k, 2=500k, 3=800k, 4=1M"
 #define CANIOS       "1=Cruise, 2=Start, 4=Brake, 8=Fwd, 16=Rev, 32=Bms"
 #define CANPERIODS   "0=100ms, 1=10ms"
-#define HWREVS       "0=Rev1, 1=Rev2, 2=Rev3, 3=Tesla, 4=BluePill, 5=Prius, 6=MiniMainboard, 7=Leaf2, 8=Leaf3, 9=BMWi3"
+#define HWREVS       "0=Rev1, 1=Rev2, 2=Rev3, 3=Tesla, 4=BluePill, 5=Prius, 6=MiniMainboard, 7=Leaf2, 8=Leaf3, 9=BMWi3, 10=Zoe"
 #define SWAPS        "0=None, 1=Currents12, 2=SinCos, 4=PWMOutput13, 8=PWMOutput23"
 #define OUTMODES     "0=DcSw, 1=TmpmThresh, 2=TmphsThresh"
 #define STATUS       "0=None, 1=UdcLow, 2=UdcHigh, 4=UdcBelowUdcSw, 8=UdcLim, 16=EmcyStop, 32=MProt, 64=PotPressed, 128=TmpHs, 256=WaitStart, 512=BrakeCheck"
@@ -348,7 +351,7 @@ enum _pwmfuncs
    PWM_FUNC_TMPM = 0,
    PWM_FUNC_TMPHS,
    PWM_FUNC_SPEED,
-   PWM_FUNC_SPEEDFRQ
+   PWM_FUNC_EXCITER
 };
 
 enum _idlemodes
