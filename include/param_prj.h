@@ -25,7 +25,7 @@
    3. Display values
  */
 //Next param id (increase when adding new parameter!): 159
-//Next value Id: 2055
+//Next value Id: 2066
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -166,6 +166,7 @@
     VALUE_ENTRY(opmode,      OPMODES, 2000 ) \
     VALUE_ENTRY(lasterr,     errorListString,  2038 ) \
     VALUE_ENTRY(status,      STATUS,  2044 ) \
+    VALUE_ENTRY(status_GD3100,      STATUS3100,  2063 ) \
     VALUE_ENTRY(udc,         "V",     2001 ) \
     VALUE_ENTRY(idc,         "A",     2002 ) \
     VALUE_ENTRY(il1,         "A",     2003 ) \
@@ -201,6 +202,12 @@
     VALUE_ENTRY(din_bms,     ONOFF,   2032 ) \
     VALUE_ENTRY(uptime,      "10ms",  2054 ) \
     VALUE_ENTRY(cpuload,     "%",     2035 ) \
+    VALUE_ENTRY(MG_Rx0,      "dig",   2056 ) \
+    VALUE_ENTRY(MG_Rx1,      "dig",   2057 ) \
+    VALUE_ENTRY(MG_Rx2,      "dig",   2058 ) \
+    VALUE_ENTRY(MG_Rx3,      "dig",   2059 ) \
+    VALUE_ENTRY(INT_L,       ONOFF,   2064 ) \
+    VALUE_ENTRY(INT_H,       ONOFF,   2065 ) \
 
 #define VALUES_SINE \
     VALUE_ENTRY(ilmax,       "A",     2005 ) \
@@ -281,6 +288,7 @@
 #define SWAPS        "0=None, 1=Currents12, 2=SinCos, 4=PWMOutput13, 8=PWMOutput23"
 #define OUTMODES     "0=DcSw, 1=TmpmThresh, 2=TmphsThresh"
 #define STATUS       "0=None, 1=UdcLow, 2=UdcHigh, 4=UdcBelowUdcSw, 8=UdcLim, 16=EmcyStop, 32=MProt, 64=PotPressed, 128=TmpHs, 256=WaitStart, 512=BrakeCheck"
+#define STATUS3100   "0=None, 1=IGBTOC, 2=IGBTSC, 3=DESAT, 4=CLAMP, 5=TempWarn, 6=Temp_Shdn, 7=DIEOT, 8=VSUPOV, 9=VCCREGUV, 10=VCCREGOV, 11=VEEOR, 12=VREFOR, 13=DIECOMM, 14=WDOG, 15=VGE, 16=CRCERR,17=SPIERR,18=PWMDT,19=VDDOR,20=BISTFail,21=VGEPIN,22=INTPIN,23=FSENBPIN,24=FSSTATPIN,25=PWMALTPIN,26=PWMPIN,27=FSISOPIN"
 #define CHECKS       "0=CounterOnly, 1=StmCrc8"
 #define CAT_MOTOR    "Motor"
 #define CAT_INVERTER "Inverter"
@@ -415,6 +423,38 @@ enum status
    STAT_TMPHS = 128,
    STAT_WAITSTART = 256,
    STAT_BRAKECHECK = 512
+};
+
+enum status_GD3100
+{
+   None = 0,
+   IGBT_OVER_CURRENT = 1,
+   IGBT_SHORT_CIRCUIT = 2,
+   VCE_DESAT_EVENT = 3,
+   VCE_CLAMP_EVENT = 4,
+   IGBT_OVERTEMP_WARN = 5,
+   IGBT_OVERTEMP_SHUTDN = 6,
+   DIE_OVERTEMP_SHUTDN = 7,
+   VSUP_OVER_VOLTAGE = 8,
+   VCCREG_UNDER_VOLTAGE = 9,
+   VCC_OVER_VOLTAGE = 10,
+   VEE_OUT_OF_RANGE = 11,
+   VREF_OUT_OF_RANGE = 12,
+   DIE_COMM_ERROR = 13,
+   WDOG_FAULT = 14,
+   VGE_FAULT = 15,
+   CONFIG_CRC_ERROR = 16,
+   SPI_ERROR = 17,
+   PWM_DEADTIME_FAULT = 18,
+   VDD_OUT_OF_RANGE = 19,
+   BIST_FAILURE = 20,
+   VGE_PIN_STATE = 21,
+   INTB_PIN_STATE = 22,
+   FSENB_PIN_STATE = 23,
+   FSSTATE_PIN_STATE = 24,
+   PWMALT_PIN_STATE = 25,
+   PWM_PIN_STATE = 26,
+   FSISO_PIN_STATE=27
 };
 
 //Generated enum-string for possible errors
