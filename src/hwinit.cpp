@@ -57,11 +57,13 @@ void clock_setup(void)
    rcc_periph_clock_enable(RCC_GPIOB);
    rcc_periph_clock_enable(RCC_GPIOC);
    rcc_periph_clock_enable(RCC_GPIOD);
+   rcc_periph_clock_enable(RCC_GPIOE);
    rcc_periph_clock_enable(RCC_USART3);
    rcc_periph_clock_enable(RCC_TIM1); //Main PWM
    rcc_periph_clock_enable(RCC_TIM2); //Scheduler, over current on blue pill
    rcc_periph_clock_enable(RCC_TIM3); //Rotor Encoder
    rcc_periph_clock_enable(RCC_TIM4); //Overcurrent / AUX PWM, scheduler on blue pill
+   rcc_periph_clock_enable(RCC_TIM5); //Gate PSU driver on MG board
    rcc_periph_clock_enable(RCC_DMA1);  //ADC, Encoder and UART3
    rcc_periph_clock_enable(RCC_ADC1);
    rcc_periph_clock_enable(RCC_ADC2);
@@ -76,7 +78,7 @@ void spi_setup()
    gpio_primary_remap(AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_ON, AFIO_MAPR_SPI1_REMAP);
 
    spi_init_master(SPI1, SPI_CR1_BAUDRATE_FPCLK_DIV_32, SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE,
-                  SPI_CR1_CPHA_CLK_TRANSITION_1, SPI_CR1_DFF_16BIT, SPI_CR1_MSBFIRST);
+                  SPI_CR1_CPHA_CLK_TRANSITION_1, SPI_CR1_DFF_8BIT, SPI_CR1_MSBFIRST);//8 bit for MG
 
    spi_enable_software_slave_management(SPI1);
    spi_set_nss_high(SPI1);
@@ -145,6 +147,7 @@ static HWREV ReadVariantResistor()
 
 HWREV detect_hw()
 {
+    return HW_REV3;//bodge for test
    //Check if PB3 and PC10 are connected (mini mainboard)
    gpio_set_mode(GPIOC, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO10);
    gpio_set(GPIOC, GPIO10);
@@ -377,5 +380,28 @@ void tim_setup()
    {
       gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO7 | GPIO8 | GPIO9);
    }
+}
+
+void tim5_setup()//Used on VCT6 for MG gate drive power supply
+{
+    gpio_set_mode(GPIOA,GPIO_MODE_OUTPUT_50_MHZ,GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,GPIO0);	// GPIOA0=TIM5.CH1
+    gpio_set_mode(GPIOA,GPIO_MODE_OUTPUT_50_MHZ,GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,GPIO1);	// GPIOA1=TIM5.CH2
+    timer_disable_counter(TIM5);
+    timer_set_prescaler(TIM5,0);
+    timer_set_alignment(TIM5, TIM_CR1_CMS_CENTER_1);
+    timer_enable_preload(TIM5);
+    timer_enable_oc_preload(TIM5, TIM_OC1);
+    timer_enable_oc_preload(TIM5, TIM_OC2);
+    timer_set_oc_mode(TIM5, TIM_OC1, TIM_OCM_PWM1);
+    timer_set_oc_mode(TIM5, TIM_OC2, TIM_OCM_PWM1);
+    timer_set_oc_polarity_high(TIM5, TIM_OC1);
+    timer_set_oc_polarity_low(TIM5, TIM_OC2);
+    timer_enable_oc_output(TIM5, TIM_OC1);
+    timer_enable_oc_output(TIM5, TIM_OC2);
+    timer_generate_event(TIM5, TIM_EGR_UG);
+    timer_set_period(TIM5, 270);//frequency 133khz
+    timer_set_oc_value(TIM5, TIM_OC1,125);//125=46% high
+    timer_set_oc_value(TIM5, TIM_OC2,150);//140=44% high
+    //timer_enable_counter(TIM5);
 }
 

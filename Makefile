@@ -51,7 +51,7 @@ OBJSL		= stm32_sine.o hwinit.o stm32scheduler.o params.o terminal.o terminal_prj
            my_string.o digio.o sine_core.o my_fp.o fu.o inc_encoder.o printf.o anain.o \
            temp_meas.o param_save.o throttle.o errormessage.o pwmgeneration.o \
            picontroller.o terminalcommands.o vehiclecontrol.o \
-           stm32_can.o canmap.o canhardware.o cansdo.o
+           stm32_can.o canmap.o canhardware.o cansdo.o GD31xxOI.o
 
 ifeq ($(CONTROL), SINE)
 	OBJSL += pwmgeneration-sine.o
@@ -159,8 +159,6 @@ get-deps:
 	$(Q)${MAKE} -C libopencm3
 
 Test:
-	$(MAKE) -C test
-	$(MAKE) -C libopeninv/test
+	cd test && $(MAKE)
 cleanTest:
-	$(MAKE) -C test clean
-	$(MAKE) -C libopeninv/test clean
+	cd test && $(MAKE) clean

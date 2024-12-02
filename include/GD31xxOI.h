@@ -1,9 +1,8 @@
 /*
  * This file is part of the stm32-sine project.
  *
- * Copyright (C) 2010 Johannes Huebner <contact@johanneshuebner.com>
- * Copyright (C) 2010 Edward Cheeseman <cheesemanedward@gmail.com>
- * Copyright (C) 2009 Uwe Hermann <uwe@hermann-uwe.de>
+ * Copyright (C) 2011 Johannes Huebner <dev@johanneshuebner.com>
+ * Copyright (C) 2019 Nail Guzel
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,31 +16,31 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Simplified library for interfacing with the NXP GD3100 gate drivers
+ * found on the MG inverter platform.
  */
 
-#ifndef HWINIT_H_INCLUDED
-#define HWINIT_H_INCLUDED
+#include "stddef.h"
+#include "stdbool.h"
+#include <stdint.h>
+#include "delay.h"
 
+#define REQ_ADC_EXT 0x4001
+#define REQ_STAT1   0x2800
+#define REQ_STAT2   0x3000
+#define REQ_STAT3   0x3800
 
-#ifdef __cplusplus
-extern "C"
+/// SPI channels
+enum SpiChannelMG
 {
-#endif
+	MGSPI1_H = 1,
+	MGSPI2_H = 2,
+	MGSPI3_H = 3,
+	MGSPI1_L = 4,
+	MGSPI2_L = 5,
+	MGSPI3_L = 6,
+};
 
-void clock_setup(void);
-void usart_setup(void);
-void nvic_setup(void);
-void rtc_setup(void);
-void tim_setup(void);
-void tim5_setup(void);
-void spi_setup(void);
-HWREV detect_hw(void);
-void write_bootloader_pininit(bool bootprec, bool pwmActiveLow);
-HWREV io_setup();
-uint16_t pwmio_setup(bool activeLow);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // HWINIT_H_INCLUDED
+extern uint32_t Send16 (enum SpiChannelMG channel,uint16_t txData16);
+extern uint32_t Config_MG (enum SpiChannelMG channel);
