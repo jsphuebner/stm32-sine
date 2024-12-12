@@ -46,6 +46,8 @@
 #include "stm32_can.h"
 #include "canmap.h"
 #include "cansdo.h"
+#include "GD31xxOI.h"
+#include "delay.h"
 
 #define PRINT_JSON 0
 
@@ -57,6 +59,15 @@ static CanMap* canMap;
 static CanSdo* canSdo;
 static Terminal* terminal;
 static bool seenBrakePedal = false;
+
+static uint8_t MG_psu_timer=20;//2 sec delay to fire up MG logic side 5v gate supply
+static bool MG_psu_on=false;
+static bool MG_ReadStat=false;
+static uint8_t MG_com_cnt=10;
+static uint32_t MG_gate_stat=0;
+uint16_t MGrxData[6];
+static uint8_t MG_Cycler=5;
+
 
 static void Ms100Task(void)
 {
@@ -98,6 +109,54 @@ static void Ms100Task(void)
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
       canMap->SendAll();
+   //////////////////////MG///////////////////////////////////////////////////////////////
+   if(MG_psu_timer!=0 && !MG_psu_on) MG_psu_timer--;
+   if(MG_psu_timer==0 && !MG_psu_on)
+   {
+   timer_enable_counter(TIM5);//Turn on MG gate driver HV side PSU
+   DigIo::v5_ctrl.Set();//Turn on MG gate driver logic side 5v power after 2 seconds
+   MG_psu_on=true;
+   }
+   MG_com_cnt--;
+
+   if(MG_com_cnt==0)
+   {
+
+    MG_com_cnt=10;
+    if(MG_Cycler==0)
+    {
+    MG_ReadStat=!MG_ReadStat;
+    MG_Cycler=5;
+    }
+
+    if(!MG_ReadStat)
+    {
+
+    }
+
+
+    MG_Cycler--;
+
+    MGrxData[0]=Send16(MGSPI1_H,REQ_ADC_EXT);//HS Temp 1
+    MGrxData[1]=Send16(MGSPI2_H,REQ_ADC_EXT);//HS Temp 2
+    MGrxData[2]=Send16(MGSPI3_H,REQ_ADC_EXT);//HS Temp 3
+    MGrxData[3]=Send16(MGSPI3_L,REQ_ADC_EXT);//UDC
+
+
+
+
+   }
+
+    Param::SetInt(Param::status_GD3100, 0);
+    Param::SetInt(Param::MG_Rx0,MGrxData[0]);
+    Param::SetInt(Param::MG_Rx1,MGrxData[1]);
+    Param::SetInt(Param::MG_Rx2,MGrxData[2]);
+    Param::SetInt(Param::MG_Rx3,MGrxData[3]);
+
+    Param::SetInt(Param::INT_H,DigIo::inta_in.Get());//Display status of gate driver interrupt line
+    Param::SetInt(Param::INT_L,DigIo::intb_in.Get());
+
+   ///////////////////////////////////////////////////////////////////////////////////////
 }
 
 static void RunCharger(float udc)
@@ -405,6 +464,15 @@ extern "C" int main(void)
    nvic_setup();
    parm_load();
    ErrorMessage::SetTime(1);
+   //////////MG//////////////////////////////
+   DigIo::v5_ctrl.Set();//Turn on MG gate driver logic side 5v power after 2 seconds
+   DigIo::cs1_hi.Set();//Disable all SPI CS lines on MG
+   DigIo::cs2_hi.Set();
+   DigIo::cs3_hi.Set();
+   DigIo::cs1_lo.Set();
+   DigIo::cs2_lo.Set();
+   DigIo::cs3_lo.Set();
+   /////////////////////////////////////////
    Param::SetInt(Param::pwmio, pwmio_setup(Param::GetBool(Param::pwmpol)));
 
    MotorVoltage::SetMaxAmp(SineCore::MAXAMP);
@@ -437,6 +505,19 @@ extern "C" int main(void)
    Param::Change(Param::nodeid);
    Param::Change(Param::outmode);
    write_bootloader_pininit(Param::GetBool(Param::bootprec), Param::GetBool(Param::pwmpol));
+   /////////////MG/////////////////////////
+   tim5_setup();//Enable gate drive psu on MG board
+   spi_setup();//MG gate drivers
+   timer_enable_counter(TIM5);//Turn on MG gate driver HV side PSU
+    uDelay(20);
+    MG_gate_stat=Config_MG(MGSPI1_H);//configure all 6 MG gate drivers
+    MG_gate_stat=Config_MG(MGSPI1_H);//must be sent twice to 1H as its a bit dumb
+    MG_gate_stat=Config_MG(MGSPI2_H);
+    MG_gate_stat=Config_MG(MGSPI3_H);
+    MG_gate_stat=Config_MG(MGSPI1_L);
+    MG_gate_stat=Config_MG(MGSPI2_L);
+    MG_gate_stat=Config_MG(MGSPI3_L);
+
 
    while(1)
    {

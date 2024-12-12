@@ -480,7 +480,8 @@ float VehicleControl::ProcessUdc()
    }
    else
    {
-      udcRaw = AnaIn::udc.Get();
+      //udcRaw = AnaIn::udc.Get();
+      udcRaw = Param::GetInt(Param::MG_Rx3);//MG bodge
    }
 
    udcFiltered = IIRFILTER(udcFiltered, udcRaw, 2);
@@ -616,10 +617,12 @@ void VehicleControl::GetTemps(float& tmphs, float &tmpm)
       TempMeas::Sensors snshs = (TempMeas::Sensors)Param::GetInt(Param::snshs);
       TempMeas::Sensors snsm = (TempMeas::Sensors)Param::GetInt(Param::snsm);
 
-      int tmphsi = AnaIn::tmphs.Get();
+      //int tmphsi = AnaIn::tmphs.Get();
+      int tmphsi = MIN(MIN(Param::GetInt(Param::MG_Rx0),Param::GetInt(Param::MG_Rx1)),Param::GetInt(Param::MG_Rx3));//MG bodge
       int tmpmi = AnaIn::tmpm.Get();
 
       tmpm = TempMeas::Lookup(tmpmi, snsm);
+
 
       if (hwRev == HW_PRIUS)
       {
@@ -646,7 +649,8 @@ void VehicleControl::GetTemps(float& tmphs, float &tmpm)
       }
       else
       {
-         tmphs = TempMeas::Lookup(tmphsi, snshs);
+         //tmphs = TempMeas::Lookup(tmphsi, snshs);
+         tmphs = 0;//tmphsi;//MG Bodge
       }
    }
 }
