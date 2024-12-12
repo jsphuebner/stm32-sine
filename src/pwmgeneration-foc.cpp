@@ -87,6 +87,7 @@ void PwmGeneration::Run()
             Param::SetFixed(Param::ifw, iexc);
             dController.SetRef(idMtpa + Param::Get(Param::manualid));
             excController.SetRef(exciterSpnt);
+            qController.SetRef(iqMtpa + Param::Get(Param::manualiq));
             uint16_t pwm = excController.Run(iexc);
             Param::SetInt(Param::uexc, pwm);
             timer_set_oc_value(OVER_CUR_TIMER, TIM_OC4, pwm);
