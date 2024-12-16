@@ -72,6 +72,7 @@
 			<Option target="SlipControl" />
 			<Option target="FOC" />
 		</Unit>
+		<Unit filename="include/GD31xxOI.h" />
 		<Unit filename="include/anain_prj.h" />
 		<Unit filename="include/digio_prj.h" />
 		<Unit filename="include/errormessage_prj.h" />
@@ -83,6 +84,1585 @@
 		<Unit filename="include/temp_meas.h" />
 		<Unit filename="include/throttle.h" />
 		<Unit filename="include/vehiclecontrol.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/assert.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/common.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/cortex.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/doc-cm3.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/dwt.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/fpb.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/itm.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/mpu.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/scb.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/scs.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/sync.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/systick.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/tpiu.h" />
+		<Unit filename="libopencm3/include/libopencm3/cm3/vector.h" />
+		<Unit filename="libopencm3/include/libopencm3/dispatch/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/acmp.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/burtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/cmu.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/acmp_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/adc_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/burtc_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/cmu_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/dac_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/dma_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/emu_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/gpio_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/gpio_common_hglg.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/i2c_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/letimer_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/msc_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/opamp_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/prs_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/rmu_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/rtc_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/timer_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/uart_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/usart_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/usb_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/wdog_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/common/wdog_common_hglg.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/emu.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/acmp.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/burtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/cmu.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/doc-ezr32wg.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/emu.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/letimer.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/msc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/opamp.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/prs.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/rmu.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/rtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/uart.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/usb.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/ezr32wg/wdog.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/g/doc-efm32g.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/g/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/gg/doc-efm32gg.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/gg/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/hg/cmu.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/hg/doc-efm32hg.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/hg/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/hg/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/hg/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/hg/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/hg/usb.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/hg/wdog.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/letimer.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/acmp.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/burtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/cmu.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/doc-efm32lg.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/emu.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/letimer.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/msc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/opamp.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/prs.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/rmu.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/rtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/uart.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/usb.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/lg/wdog.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/msc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/opamp.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/prs.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/rmu.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/rtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/tg/doc-efm32tg.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/tg/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/tg/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/uart.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/usb.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wdog.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/acmp.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/burtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/cmu.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/doc-efm32wg.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/emu.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/letimer.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/msc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/opamp.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/prs.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/rmu.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/rtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/uart.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/usb.h" />
+		<Unit filename="libopencm3/include/libopencm3/efm32/wg/wdog.h" />
+		<Unit filename="libopencm3/include/libopencm3/ethernet/mac.h" />
+		<Unit filename="libopencm3/include/libopencm3/ethernet/mac_stm32fxx7.h" />
+		<Unit filename="libopencm3/include/libopencm3/ethernet/phy.h" />
+		<Unit filename="libopencm3/include/libopencm3/ethernet/phy_ksz80x1.h" />
+		<Unit filename="libopencm3/include/libopencm3/ethernet/phy_lan87xx.h" />
+		<Unit filename="libopencm3/include/libopencm3/ethernet/phy_ste100.h" />
+		<Unit filename="libopencm3/include/libopencm3/gd32/f1x0/doc-gd32f1x0.h" />
+		<Unit filename="libopencm3/include/libopencm3/gd32/f1x0/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/gd32/f1x0/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/gd32/f1x0/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/gd32/f1x0/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/gd32/f1x0/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/gd32/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/gd32/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/gd32/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/gd32/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm3s/doc-lm3s.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm3s/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm3s/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm3s/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm3s/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm3s/systemcontrol.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm3s/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm4f/doc-lm4f.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm4f/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm4f/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm4f/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm4f/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm4f/ssi.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm4f/systemcontrol.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm4f/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm4f/uart.h" />
+		<Unit filename="libopencm3/include/libopencm3/lm4f/usb.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc13xx/doc-lpc13xx.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc13xx/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc13xx/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc13xx/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc17xx/clock.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc17xx/doc-lpc17xx.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc17xx/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc17xx/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc17xx/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc17xx/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/atimer.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/ccu.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/cgu.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/creg.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/doc-lpc43xx.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/eventrouter.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/gima.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/gpdma.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/i2s.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/ipc.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/m0/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/m4/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/rgu.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/ritimer.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/scu.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/sdio.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/sgpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/ssp.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/uart.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/usb.h" />
+		<Unit filename="libopencm3/include/libopencm3/lpc43xx/wwdt.h" />
+		<Unit filename="libopencm3/include/libopencm3/msp432/e4/doc-msp432e4.h" />
+		<Unit filename="libopencm3/include/libopencm3/msp432/e4/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/msp432/e4/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/msp432/e4/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/msp432/e4/systemcontrol.h" />
+		<Unit filename="libopencm3/include/libopencm3/pac55xx/can.h" />
+		<Unit filename="libopencm3/include/libopencm3/pac55xx/ccs.h" />
+		<Unit filename="libopencm3/include/libopencm3/pac55xx/doc-pac55xx.h" />
+		<Unit filename="libopencm3/include/libopencm3/pac55xx/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/pac55xx/memctl.h" />
+		<Unit filename="libopencm3/include/libopencm3/pac55xx/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/pac55xx/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/pac55xx/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3a/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3a/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3a/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3a/pio.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3a/pmc.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3n/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3n/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3n/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3n/periph.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3n/pio.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3n/pmc.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3s/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3s/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3s/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3s/periph.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3s/pio.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3s/pmc.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3s/smc.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3u/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3u/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3u/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3u/periph.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3u/pio.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3u/pmc.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3x/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3x/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3x/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3x/pio.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/3x/pmc.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/4l/adcife.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/4l/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/4l/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/4l/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/4l/pm.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/4l/scif.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/adcife.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/common/gpio_common_3a3u3x.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/common/gpio_common_3n3s.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/common/gpio_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/common/periph_common_3a3x.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/common/pio_common_3a3u3x.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/common/pio_common_3n3s.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/common/pio_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/common/pmc_common_3a3s3x.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/common/pmc_common_3a3u3x.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/common/pmc_common_3n3u.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/common/pmc_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/common/smc_common_3a3u3x.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/d/doc-samd.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/d/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/d/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/d/port.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/eefc.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/periph.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/pio.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/pm.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/pmc.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/pwm.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/scif.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/smc.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/tc.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/uart.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/sam/wdt.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/can.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/cec.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/adc_common_v1.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/adc_common_v1_multi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/adc_common_v2.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/adc_common_v2_multi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/adc_common_v2_single.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/crc_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/crc_v2.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/crs_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/crypto_common_f24.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/dac_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/dac_common_v1.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/dac_common_v2.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/dcmi_common_f47.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/dma2d_common_f47.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/dma_common_csel.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/dma_common_f24.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/dma_common_l1f013.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/dmamux_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/dsi_common_f47.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/exti_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/exti_common_v1.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/exti_common_v2.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/flash_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/flash_common_f.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/flash_common_f01.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/flash_common_f24.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/flash_common_idcache.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/flash_common_l01.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/fmc_common_f47.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/gpio_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/gpio_common_f234.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/gpio_common_f24.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/hash_common_f24.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/hrtim_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/i2c_common_v1.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/i2c_common_v2.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/iwdg_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/iwdg_common_v2.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/lptimer_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/ltdc_common_f47.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/opamp_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/opamp_common_v1.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/opamp_common_v2.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/pwr_common_v1.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/pwr_common_v2.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/quadspi_common_v1.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/rcc_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/rng_common_v1.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/rtc_common_l1f024.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/spi_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/spi_common_v1.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/spi_common_v1_frf.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/spi_common_v2.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/st_usbfs_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/st_usbfs_v1.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/st_usbfs_v2.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/syscfg_common_l1f234.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/timer_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/timer_common_f24.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/usart_common_all.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/usart_common_f124.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/usart_common_f24.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/usart_common_fifos.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/common/usart_common_v2.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/comparator.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/crc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/crs.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/crypto.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/dbgmcu.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/dcmi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/desig.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/dma2d.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/dmamux.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/dsi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/exti.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/cec.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/comparator.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/crc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/crs.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/doc-stm32f0.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/exti.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/iwdg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/rtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/spi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/st_usbfs.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/syscfg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/tsc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f0/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/bkp.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/crc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/doc-stm32f1.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/exti.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/iwdg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/rtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/spi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/st_usbfs.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f1/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/crc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/crypto.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/doc-stm32f2.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/exti.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/hash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/iwdg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/rng.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/rtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/spi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/syscfg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f2/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/comparator.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/crc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/doc-stm32f3.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/exti.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/hrtim.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/iwdg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/opamp.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/rtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/spi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/st_usbfs.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/syscfg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f3/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/crc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/crypto.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/dcmi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/dma2d.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/doc-stm32f4.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/dsi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/exti.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/fmc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/hash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/iwdg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/lptimer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/ltdc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/quadspi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/rng.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/rtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/spi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/syscfg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f4/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/crc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/dcmi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/dma2d.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/doc-stm32f7.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/dsi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/exti.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/fmc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/iwdg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/lptimer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/ltdc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/quadspi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/rng.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/spi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/syscfg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/f7/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/fdcan.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/fsmc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/crc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/dmamux.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/doc-stm32g0.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/exti.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/iwdg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/lptimer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/rng.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/spi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/syscfg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g0/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/crs.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/dmamux.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/doc-stm32g4.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/fdcan.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/opamp.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/quadspi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/spi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/st_usbfs.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/g4/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/doc-stm32h7.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/exti.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/fdcan.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/fmc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/quadspi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/rng.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/spi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/syscfg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/h7/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/hash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/hrtim.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/iwdg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/crc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/crs.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/doc-stm32l0.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/exti.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/iwdg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/lptimer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/rng.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/rtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/spi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/st_usbfs.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/syscfg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l0/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/crc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/doc-stm32l1.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/exti.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/iwdg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/lcd.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/ri.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/rtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/spi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/st_usbfs.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/syscfg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l1/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/adc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/crc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/crs.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/dac.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/dma.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/doc-stm32l4.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/exti.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/i2c.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/iwdg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/lptimer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/quadspi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/rng.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/rtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/spi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/st_usbfs.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/syscfg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/l4/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/lptimer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/ltdc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/opamp.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/quadspi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/rcc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/rng.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/rtc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/sdio.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/spi.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/st_usbfs.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/syscfg.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/tools.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/tsc.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/usart.h" />
+		<Unit filename="libopencm3/include/libopencm3/stm32/wwdg.h" />
+		<Unit filename="libopencm3/include/libopencm3/swm050/clk.h" />
+		<Unit filename="libopencm3/include/libopencm3/swm050/doc-swm050.h" />
+		<Unit filename="libopencm3/include/libopencm3/swm050/flash.h" />
+		<Unit filename="libopencm3/include/libopencm3/swm050/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/swm050/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/swm050/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/swm050/pwr.h" />
+		<Unit filename="libopencm3/include/libopencm3/swm050/syscon.h" />
+		<Unit filename="libopencm3/include/libopencm3/swm050/sysctl.h" />
+		<Unit filename="libopencm3/include/libopencm3/swm050/timer.h" />
+		<Unit filename="libopencm3/include/libopencm3/swm050/wdt.h" />
+		<Unit filename="libopencm3/include/libopencm3/usb/audio.h" />
+		<Unit filename="libopencm3/include/libopencm3/usb/cdc.h" />
+		<Unit filename="libopencm3/include/libopencm3/usb/dfu.h" />
+		<Unit filename="libopencm3/include/libopencm3/usb/doc-usb.h" />
+		<Unit filename="libopencm3/include/libopencm3/usb/dwc/otg_common.h" />
+		<Unit filename="libopencm3/include/libopencm3/usb/dwc/otg_fs.h" />
+		<Unit filename="libopencm3/include/libopencm3/usb/dwc/otg_hs.h" />
+		<Unit filename="libopencm3/include/libopencm3/usb/hid.h" />
+		<Unit filename="libopencm3/include/libopencm3/usb/midi.h" />
+		<Unit filename="libopencm3/include/libopencm3/usb/msc.h" />
+		<Unit filename="libopencm3/include/libopencm3/usb/usbd.h" />
+		<Unit filename="libopencm3/include/libopencm3/usb/usbstd.h" />
+		<Unit filename="libopencm3/include/libopencm3/vf6xx/anadig.h" />
+		<Unit filename="libopencm3/include/libopencm3/vf6xx/ccm.h" />
+		<Unit filename="libopencm3/include/libopencm3/vf6xx/doc-vf6xx.h" />
+		<Unit filename="libopencm3/include/libopencm3/vf6xx/gpio.h" />
+		<Unit filename="libopencm3/include/libopencm3/vf6xx/iomuxc.h" />
+		<Unit filename="libopencm3/include/libopencm3/vf6xx/memorymap.h" />
+		<Unit filename="libopencm3/include/libopencm3/vf6xx/nvic.h" />
+		<Unit filename="libopencm3/include/libopencm3/vf6xx/uart.h" />
+		<Unit filename="libopencm3/include/libopencmsis/core_cm3.h" />
+		<Unit filename="libopencm3/include/libopencmsis/dispatch/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/efm32/ezr32wg/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/efm32/g/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/efm32/gg/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/efm32/hg/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/efm32/lg/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/efm32/tg/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/efm32/wg/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/gd32/f1x0/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/lm3s/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/lpc13xx/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/lpc17xx/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/lpc43xx/m0/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/lpc43xx/m4/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/msp432/e4/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/pac55xx/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/sam/3a/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/sam/3n/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/sam/3s/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/sam/3u/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/sam/3x/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/sam/4l/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/sam/d/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/stm32/f0/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/stm32/f1/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/stm32/f2/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/stm32/f3/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/stm32/f4/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/stm32/f7/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/stm32/g0/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/stm32/g4/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/stm32/h7/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/stm32/l0/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/stm32/l1/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/stm32/l4/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/swm050/irqhandlers.h" />
+		<Unit filename="libopencm3/include/libopencmsis/vf6xx/irqhandlers.h" />
+		<Unit filename="libopencm3/lib/cm3/assert.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/cm3/dwt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/cm3/nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/cm3/scb.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/cm3/sync.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/cm3/systick.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/cm3/vector.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/dispatch/vector_chipset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/dispatch/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/acmp_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/adc_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/burtc_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/cmu_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/dac_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/dma_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/emu_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/gpio_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/i2c_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/letimer_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/msc_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/prs_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/rmu_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/rtc_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/timer_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/usart_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/common/wdog_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/ezr32wg/vector_chipset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/ezr32wg/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/g/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/gg/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/hg/cmu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/hg/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/lg/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/tg/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/wg/vector_chipset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/efm32/wg/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/ethernet/mac.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/ethernet/mac_stm32fxx7.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/ethernet/phy.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/ethernet/phy_ksz80x1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/gd32/f1x0/flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/gd32/f1x0/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/gd32/f1x0/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lm3s/gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lm3s/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lm3s/usart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lm3s/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lm4f/gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lm4f/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lm4f/systemcontrol.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lm4f/uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lm4f/vector_chipset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc13xx/gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc13xx/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc17xx/gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc17xx/pwr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc17xx/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc43xx/gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc43xx/i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc43xx/ipc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc43xx/m0/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc43xx/m4/vector_chipset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc43xx/m4/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc43xx/scu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc43xx/ssp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc43xx/timer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/lpc43xx/uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/msp432/e4/gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/msp432/e4/systemcontrol.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/msp432/e4/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/pac55xx/can.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/pac55xx/ccs.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/pac55xx/gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/pac55xx/memctl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/pac55xx/usart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/pac55xx/vector_chipset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/pac55xx/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/3a/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/3n/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/3s/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/3u/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/3x/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/4l/adcife.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/4l/gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/4l/pm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/4l/scif.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/4l/usart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/4l/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/common/gpio_common_3a3u3x.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/common/gpio_common_3n3s.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/common/gpio_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/common/pmc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/common/usart_common_3.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/common/usart_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/d/port.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/sam/d/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/can.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/adc_common_f47.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/adc_common_v1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/adc_common_v1_multi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/adc_common_v2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/adc_common_v2_multi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/crc_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/crc_v2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/crs_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/crypto_common_f24.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/dac_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/dac_common_v1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/dac_common_v2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/dcmi_common_f47.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/desig_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/desig_common_v1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/dma2d_common_f47.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/dma_common_csel.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/dma_common_f24.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/dma_common_l1f013.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/dmamux.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/dsi_common_f47.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/exti_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/exti_common_v2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/fdcan_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/flash_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/flash_common_f.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/flash_common_f01.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/flash_common_f24.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/flash_common_idcache.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/flash_common_l01.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/fmc_common_f47.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/gpio_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/gpio_common_f0234.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/hash_common_f24.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/i2c_common_v1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/i2c_common_v2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/iwdg_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/lptimer_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/ltdc_common_f47.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/opamp_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/opamp_common_v1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/opamp_common_v2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/pwr_common_v1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/pwr_common_v2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/quadspi_common_v1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/rcc_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/rng_common_v1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/rtc_common_l1f024.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/spi_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/spi_common_v1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/spi_common_v1_frf.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/spi_common_v2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/st_usbfs_core.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/st_usbfs_core.h" />
+		<Unit filename="libopencm3/lib/stm32/common/timer_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/timer_common_f0234.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/timer_common_f24.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/usart_common_all.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/usart_common_f124.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/usart_common_fifos.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/common/usart_common_v2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f0/adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f0/comparator.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f0/flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f0/i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f0/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f0/syscfg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f0/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f1/adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f1/flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f1/gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f1/i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f1/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f1/rtc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f1/timer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f1/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f2/crypto.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f2/flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f2/i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f2/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f2/rng.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f2/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f3/adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f3/flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f3/i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f3/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f3/vector_chipset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f3/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f4/crypto.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f4/flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f4/i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f4/pwr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f4/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f4/rng.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f4/rtc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f4/vector_chipset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f4/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f7/desig.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f7/flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f7/pwr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f7/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f7/vector_chipset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/f7/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/g0/adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/g0/flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/g0/pwr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/g0/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/g0/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/g4/adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/g4/fdcan.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/g4/flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/g4/pwr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/g4/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/g4/vector_chipset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/g4/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/h7/fdcan.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/h7/pwr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/h7/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/h7/vector_chipset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/h7/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l0/i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l0/iwdg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l0/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l0/rng.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l0/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l1/adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l1/desig.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l1/flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l1/i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l1/lcd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l1/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l1/timer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l1/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l4/adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l4/flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l4/i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l4/pwr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l4/rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l4/vector_chipset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/l4/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/st_usbfs_v1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/stm32/st_usbfs_v2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/swm050/clk.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/swm050/flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/swm050/gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/swm050/pwr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/swm050/syscon.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/swm050/timer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/swm050/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/swm050/wdt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb_audio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb_cdc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb_control.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb_dwc_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb_dwc_common.h" />
+		<Unit filename="libopencm3/lib/usb/usb_efm32.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb_efm32hg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb_f107.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb_f207.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb_hid.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb_lm4f.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb_midi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb_msc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/usb/usb_private.h" />
+		<Unit filename="libopencm3/lib/usb/usb_standard.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/vf6xx/ccm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/vf6xx/gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/vf6xx/iomuxc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/vf6xx/uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/vf6xx/vector_chipset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/lib/vf6xx/vector_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/gadget-zero/delay.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/gadget-zero/delay.h" />
+		<Unit filename="libopencm3/tests/gadget-zero/delay_efm32.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/gadget-zero/main-efm32hg309-generic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/gadget-zero/main-stm32f072disco.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/gadget-zero/main-stm32f103-generic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/gadget-zero/main-stm32f3-disco.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/gadget-zero/main-stm32f429i-disco.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/gadget-zero/main-stm32f4disco.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/gadget-zero/main-stm32l053disco.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/gadget-zero/main-stm32l1-generic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/gadget-zero/main-tilm4f120xl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/gadget-zero/usb-gadget0.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/gadget-zero/usb-gadget0.h" />
+		<Unit filename="libopencm3/tests/shared/trace.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libopencm3/tests/shared/trace.h" />
+		<Unit filename="libopencm3/tests/shared/trace_stdio.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="libopeninv/include/anain.h" />
 		<Unit filename="libopeninv/include/canhardware.h" />
 		<Unit filename="libopeninv/include/canmap.h" />
@@ -139,37 +1719,19 @@
 		<Unit filename="libopeninv/test/Makefile">
 			<Option target="Test libopeninv" />
 		</Unit>
-		<Unit filename="libopeninv/test/stub_canhardware.cpp">
-			<Option target="Test libopeninv" />
-		</Unit>
-		<Unit filename="libopeninv/test/stub_canhardware.h">
-			<Option target="Test libopeninv" />
-		</Unit>
+		<Unit filename="libopeninv/test/stub_canhardware.cpp" />
+		<Unit filename="libopeninv/test/stub_canhardware.h" />
 		<Unit filename="libopeninv/test/stub_libopencm3.c">
 			<Option compilerVar="CC" />
-			<Option target="Test libopeninv" />
 		</Unit>
-		<Unit filename="libopeninv/test/test-include/hwdefs.h">
-			<Option target="Test libopeninv" />
-		</Unit>
-		<Unit filename="libopeninv/test/test-include/param_prj.h">
-			<Option target="Test libopeninv" />
-		</Unit>
-		<Unit filename="libopeninv/test/test.h">
-			<Option target="Test libopeninv" />
-		</Unit>
-		<Unit filename="libopeninv/test/test_canmap.cpp">
-			<Option target="Test libopeninv" />
-		</Unit>
-		<Unit filename="libopeninv/test/test_fp.cpp">
-			<Option target="Test libopeninv" />
-		</Unit>
-		<Unit filename="libopeninv/test/test_fu.cpp">
-			<Option target="Test libopeninv" />
-		</Unit>
-		<Unit filename="libopeninv/test/test_main.cpp">
-			<Option target="Test libopeninv" />
-		</Unit>
+		<Unit filename="libopeninv/test/test-include/hwdefs.h" />
+		<Unit filename="libopeninv/test/test-include/param_prj.h" />
+		<Unit filename="libopeninv/test/test.h" />
+		<Unit filename="libopeninv/test/test_canmap.cpp" />
+		<Unit filename="libopeninv/test/test_fp.cpp" />
+		<Unit filename="libopeninv/test/test_fu.cpp" />
+		<Unit filename="libopeninv/test/test_main.cpp" />
+		<Unit filename="src/GD31xxOI.cpp" />
 		<Unit filename="src/hwinit.cpp" />
 		<Unit filename="src/inc_encoder.cpp" />
 		<Unit filename="src/pwmgeneration-foc.cpp" />
@@ -187,34 +1749,17 @@
 		<Unit filename="test/Makefile">
 			<Option target="Test" />
 		</Unit>
-		<Unit filename="test/stub_canhardware.cpp">
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="test/stub_canhardware.h">
-			<Option target="Test" />
-		</Unit>
+		<Unit filename="test/stub_canhardware.cpp" />
+		<Unit filename="test/stub_canhardware.h" />
 		<Unit filename="test/stub_libopencm3.c">
 			<Option compilerVar="CC" />
-			<Option target="Test" />
 		</Unit>
-		<Unit filename="test/test.h">
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="test/test_fp.cpp">
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="test/test_fu.cpp">
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="test/test_main.cpp">
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="test/test_throttle.cpp">
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="test/test_vcu.cpp">
-			<Option target="Test" />
-		</Unit>
+		<Unit filename="test/test.h" />
+		<Unit filename="test/test_fp.cpp" />
+		<Unit filename="test/test_fu.cpp" />
+		<Unit filename="test/test_main.cpp" />
+		<Unit filename="test/test_throttle.cpp" />
+		<Unit filename="test/test_vcu.cpp" />
 		<Extensions>
 			<DoxyBlocks>
 				<comment_style block="0" line="0" />
