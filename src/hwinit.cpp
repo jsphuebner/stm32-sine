@@ -141,13 +141,13 @@ static HWREV ReadVariantResistor()
    //See here for variants: https://openinverter.org/wiki/Mini_Mainboard#Hardware_detection
    if ((result1 + result2) < 30) return HW_BMWI3; //connected to MISO so always low
    else if (result2 > 3700) return HW_MINI; //might have to compare this against result1 later
+   else if (result1 > 327 && result1 < 347) return HW_MG;
    else if (result1 > 510 && result1 < 630) return HW_LEAF3;
    else return HW_MINI;
 }
 
 HWREV detect_hw()
 {
-    return HW_REV3;//bodge for test
    //Check if PB3 and PC10 are connected (mini mainboard)
    gpio_set_mode(GPIOC, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO10);
    gpio_set(GPIOC, GPIO10);
@@ -190,7 +190,7 @@ HWREV io_setup()
    hwRev = detect_hw();
 
    ANA_IN_CONFIGURE(ANA_IN_LIST);
-   DIG_IO_CONFIGURE(DIG_IO_LIST);
+   DIG_IO_CONFIGURE(DIG_IO_LIST_STD);
 
    switch (hwRev)
    {
@@ -204,6 +204,9 @@ HWREV io_setup()
          DigIo::temp1_out.Configure(GPIOC, GPIO8, PinMode::OUTPUT);
          //Essentially disable error output by mapping it to an unused pin
          DigIo::err_out.Configure(GPIOB, GPIO9, PinMode::INPUT_FLT);
+         break;
+      case HW_MG:
+         DIG_IO_CONFIGURE(DIG_IO_LIST_MG);
          break;
       case HW_BLUEPILL:
          ANA_IN_CONFIGURE(ANA_IN_LIST_BLUEPILL);
@@ -402,6 +405,6 @@ void tim5_setup()//Used on VCT6 for MG gate drive power supply
     timer_set_period(TIM5, 270);//frequency 133khz
     timer_set_oc_value(TIM5, TIM_OC1,125);//125=46% high
     timer_set_oc_value(TIM5, TIM_OC2,150);//140=44% high
-    //timer_enable_counter(TIM5);
+    timer_enable_counter(TIM5);
 }
 

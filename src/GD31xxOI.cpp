@@ -22,9 +22,13 @@
  */
 
 #include "GD31xxOI.h"
-#include "digio.h"
+#include "hwinit.h"
 #include <libopencm3/stm32/spi.h>
 
+#define REQ_ADC_EXT 0x4001
+#define REQ_STAT1   0x2800
+#define REQ_STAT2   0x3000
+#define REQ_STAT3   0x3800
 
 // CRC table for polynomial 0x2F.
 static const uint8_t MGcrc_table[256] = {
@@ -52,6 +56,51 @@ static const uint16_t MG_Gate_Config[24] = {
    0X82B3, 0XA05A, 0XA470, 0X88DB, 0X8CD4, 0X9024, 0X964B, 0X9906, 0X9C3F, 0XAC00, 0XB400, 0X8440
 };
 
+uint16_t MGSPI::temps[3];
+uint16_t MGSPI::udc;
+
+void MGSPI::Initialize() {
+   DigIo::v5_ctrl.Set(); //Turn on MG gate driver logic side 5v power after 2 seconds
+   DigIo::cs1_hi.Set();  //Disable all SPI CS lines on MG
+   DigIo::cs2_hi.Set();
+   DigIo::cs3_hi.Set();
+   DigIo::cs1_lo.Set();
+   DigIo::cs2_lo.Set();
+   DigIo::cs3_lo.Set();
+
+   tim5_setup();//Enable gate drive psu on MG board
+   spi_setup();//MG gate drivers
+   uDelay(20);
+
+   ConfigureGateDriver(DigIo::cs1_hi);  //configure all 6 MG gate drivers
+   ConfigureGateDriver(DigIo::cs1_hi);  //must be sent twice to 1H as its a bit dumb
+   ConfigureGateDriver(DigIo::cs2_hi);
+   ConfigureGateDriver(DigIo::cs3_hi);
+   ConfigureGateDriver(DigIo::cs1_lo);
+   ConfigureGateDriver(DigIo::cs2_lo);
+   ConfigureGateDriver(DigIo::cs2_lo);
+}
+
+void MGSPI::CyclicFunction() {
+   static uint8_t MG_Cycler = 0;
+
+   switch (MG_Cycler){
+   case 0:
+      temps[0] = Send16(DigIo::cs1_hi, REQ_ADC_EXT);//HS Temp 1
+      break;
+   case 1:
+      temps[1] = Send16(DigIo::cs2_hi, REQ_ADC_EXT);//HS Temp 1
+      break;
+   case 2:
+      temps[2] = Send16(DigIo::cs3_hi, REQ_ADC_EXT);//HS Temp 1
+      break;
+   case 3:
+      udc = Send16(DigIo::cs3_lo, REQ_ADC_EXT);//HS Temp 1
+      break;
+   }
+
+   MG_Cycler = (MG_Cycler + 1) & 0x7; //count from 0-7
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Function name: Calculate_MGSPI_CRC
@@ -93,63 +142,23 @@ static uint8_t Calculate_SPI_CRC(uint16_t inData) {
 //
 /// @return        uint32_t - Returns 16 bit answer from device
 //////////////////////////////////////////////////////////////////////////////////////////
-uint32_t Send16 (enum SpiChannelMG channel,uint16_t txData16) {
+uint32_t MGSPI::Send16 (DigIo& cspin, uint16_t txData16) {
    uint8_t  i=0;
    uint8_t rxData8[3];
    uint16_t outData=0;
    uint8_t txData8[3];
    // Set chip select low
-   switch(channel) {
-   case 1:
-      DigIo::cs1_hi.Clear();
-      break;
-   case 2:
-      DigIo::cs2_hi.Clear();
-      break;
-   case 3:
-      DigIo::cs3_hi.Clear();
-      break;
-   case 4:
-      DigIo::cs1_lo.Clear();
-      break;
-   case 5:
-      DigIo::cs2_lo.Clear();
-      break;
-   case 6:
-      DigIo::cs3_lo.Clear();
-      break;
-   default:
-      break;
-   }
+   cspin.Clear();
+
    txData8[0]=txData16>>8;
    txData8[1]=txData16 & 0xFF;
    txData8[2]=Calculate_SPI_CRC(txData16);
+
    for(i=0; i<3; i++) {
       rxData8[i]=spi_xfer(SPI1,txData8[i]);
    }
 
-   switch(channel) {
-   case 1:
-      DigIo::cs1_hi.Set();
-      break;
-   case 2:
-      DigIo::cs2_hi.Set();
-      break;
-   case 3:
-      DigIo::cs3_hi.Set();
-      break;
-   case 4:
-      DigIo::cs1_lo.Set();
-      break;
-   case 5:
-      DigIo::cs2_lo.Set();
-      break;
-   case 6:
-      DigIo::cs3_lo.Set();
-      break;
-   default:
-      break;
-   }
+   cspin.Set();
    outData=(rxData8[1] | rxData8[0]<<8) & 0x3FF;
    return outData;
 }
@@ -163,11 +172,11 @@ uint32_t Send16 (enum SpiChannelMG channel,uint16_t txData16) {
 //
 /// @return        uint32_t - Returns 16 bit answer from device
 //////////////////////////////////////////////////////////////////////////////////////////
-uint32_t Config_MG (enum SpiChannelMG channel) {
+uint32_t MGSPI::ConfigureGateDriver(DigIo& cspin) {
    uint32_t dummyData;
    for(int i=0; i<=23; i++) {
       uDelay(20);// need to allow 20us per command as per datasheet
-      dummyData=Send16(channel,MG_Gate_Config[i]);
+      dummyData=Send16(cspin, MG_Gate_Config[i]);
    }
 
    return dummyData;

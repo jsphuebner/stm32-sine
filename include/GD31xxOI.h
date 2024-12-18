@@ -22,25 +22,22 @@
  */
 
 #include "stddef.h"
-#include "stdbool.h"
 #include <stdint.h>
 #include "delay.h"
+#include "digio.h"
 
-#define REQ_ADC_EXT 0x4001
-#define REQ_STAT1   0x2800
-#define REQ_STAT2   0x3000
-#define REQ_STAT3   0x3800
+class MGSPI {
 
-/// SPI channels
-enum SpiChannelMG
-{
-	MGSPI1_H = 1,
-	MGSPI2_H = 2,
-	MGSPI3_H = 3,
-	MGSPI1_L = 4,
-	MGSPI2_L = 5,
-	MGSPI3_L = 6,
+public:
+   static void Initialize();
+   static void CyclicFunction();
+   static uint16_t GetRawTemperature(int index) { return temps[index]; }
+   static uint16_t GetUdc() { return udc; }
+
+private:
+   static uint16_t temps[3];
+   static uint16_t udc;
+
+   static uint32_t Send16(DigIo& cspin,uint16_t txData16);
+   static uint32_t ConfigureGateDriver(DigIo& cspin);
 };
-
-extern uint32_t Send16 (enum SpiChannelMG channel,uint16_t txData16);
-extern uint32_t Config_MG (enum SpiChannelMG channel);

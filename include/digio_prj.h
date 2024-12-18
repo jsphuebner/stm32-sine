@@ -3,8 +3,65 @@
 
 #include "hwdefs.h"
 
+//Since there are various HW variants we first declare all possible pins...
+
 #define DIG_IO_LIST \
-    DIG_IO_ENTRY(cruise_in,   GPIOB, GPIO2,  PinMode::INPUT_PD)   \
+    DIG_IO_ENTRY(cruise_in,,,)     \
+    DIG_IO_ENTRY(start_in,,,)      \
+    DIG_IO_ENTRY(brake_in,,,)      \
+    DIG_IO_ENTRY(mprot_in,,,)      \
+    DIG_IO_ENTRY(fwd_in,,,)        \
+    DIG_IO_ENTRY(rev_in,,,)        \
+    DIG_IO_ENTRY(emcystop_in,,,)   \
+    DIG_IO_ENTRY(bk_in,,,)         \
+    DIG_IO_ENTRY(bms_in,,,)        \
+    DIG_IO_ENTRY(ocur_in,,,)       \
+    DIG_IO_ENTRY(desat_in,,,)      \
+    DIG_IO_ENTRY(dcsw_out,,,)      \
+    DIG_IO_ENTRY(fan_out,,,)       \
+    DIG_IO_ENTRY(vtg_out,,,)       \
+    DIG_IO_ENTRY(prec_out,,,)      \
+    DIG_IO_ENTRY(led_out,,,)       \
+    DIG_IO_ENTRY(err_out,,,)       \
+    DIG_IO_ENTRY(temp0_out,,,)     \
+    DIG_IO_ENTRY(speed_out,,,)     \
+    DIG_IO_ENTRY(brk_out,,,)       \
+    DIG_IO_ENTRY(cs1_hi,,,)        \
+    DIG_IO_ENTRY(cs2_hi,,,)        \
+    DIG_IO_ENTRY(cs3_hi,,,)        \
+    DIG_IO_ENTRY(cs1_lo,,,)        \
+    DIG_IO_ENTRY(cs2_lo,,,)        \
+    DIG_IO_ENTRY(cs3_lo,,,)        \
+    DIG_IO_ENTRY(v5_ctrl,,,)       \
+    DIG_IO_ENTRY(intb_in,,,)       \
+    DIG_IO_ENTRY(inta_in,,,)       \
+
+//...Then we assign the physical GPIOs per variant
+
+#define DIG_IO_LIST_STD \
+    DIG_IO_ENTRY(cruise_in,   GPIOB, GPIO5,  PinMode::INPUT_FLT)   \
+    DIG_IO_ENTRY(start_in,    GPIOB, GPIO6,  PinMode::INPUT_FLT)   \
+    DIG_IO_ENTRY(brake_in,    GPIOA, GPIO2,  PinMode::INPUT_FLT)   \
+    DIG_IO_ENTRY(mprot_in,    GPIOA, GPIO3,  PinMode::INPUT_PU)    \
+    DIG_IO_ENTRY(fwd_in,      GPIOA, GPIO4,  PinMode::INPUT_FLT)   \
+    DIG_IO_ENTRY(rev_in,      GPIOC, GPIO6,  PinMode::INPUT_FLT)   \
+    DIG_IO_ENTRY(emcystop_in, GPIOC, GPIO7,  PinMode::INPUT_FLT)   \
+    DIG_IO_ENTRY(bk_in,       GPIOB, GPIO12, PinMode::INPUT_FLT)   \
+    DIG_IO_ENTRY(bms_in,      GPIOC, GPIO8,  PinMode::INPUT_PD)    \
+    DIG_IO_ENTRY(ocur_in,     GPIOA, GPIO1,  PinMode::INPUT_FLT)   \
+    DIG_IO_ENTRY(desat_in,    GPIOC, GPIO9,  PinMode::INPUT_FLT)   \
+    DIG_IO_ENTRY(dcsw_out,    GPIOC, GPIO13, PinMode::OUTPUT)      \
+    DIG_IO_ENTRY(fan_out,     GPIOA, GPIO0,  PinMode::OUTPUT)  /* map to unused pin by default */    \
+    DIG_IO_ENTRY(vtg_out,     GPIOC, GPIO11, PinMode::OUTPUT)      \
+    DIG_IO_ENTRY(prec_out,    GPIOB, GPIO1,  PinMode::OUTPUT)      \
+    DIG_IO_ENTRY(led_out,     GPIOC, GPIO12, PinMode::OUTPUT)      \
+    DIG_IO_ENTRY(err_out,     GPIOC, GPIO10, PinMode::OUTPUT)      \
+    DIG_IO_ENTRY(temp0_out,   GPIOC, GPIO10, PinMode::OUTPUT)      \
+    DIG_IO_ENTRY(speed_out,   GPIOB, GPIO9,  PinMode::OUTPUT)      \
+    DIG_IO_ENTRY(brk_out,     GPIOC, GPIO5,  PinMode::OUTPUT)      \
+
+#define DIG_IO_LIST_MG \
+    DIG_IO_ENTRY(cruise_in,   GPIOB, GPIO2,  PinMode::INPUT_PD)    \
     DIG_IO_ENTRY(start_in,    GPIOD, GPIO7,  PinMode::INPUT_FLT)   \
     DIG_IO_ENTRY(brake_in,    GPIOE, GPIO4,  PinMode::INPUT_FLT)   \
     DIG_IO_ENTRY(mprot_in,    GPIOE, GPIO5,  PinMode::INPUT_PU)    \

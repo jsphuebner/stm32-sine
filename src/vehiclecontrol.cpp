@@ -32,6 +32,7 @@
 #include "my_math.h"
 #include "pwmgeneration.h"
 #include "hwinit.h"
+#include "GD31xxOI.h"
 
 #define PRECHARGE_TIMEOUT 500 //5s
 #define CAN_TIMEOUT       50  //500ms
@@ -478,11 +479,10 @@ float VehicleControl::ProcessUdc()
       BmwAdcAcquire();
       udcRaw = bmwAdcValues[ADC_CHAN_UDC];
    }
+   else if (HW_MG == hwRev)
+      udcRaw = MGSPI::GetUdc();
    else
-   {
-      //udcRaw = AnaIn::udc.Get();
-      udcRaw = Param::GetInt(Param::MG_Rx3);//MG bodge
-   }
+      udcRaw = AnaIn::udc.Get();
 
    udcFiltered = IIRFILTER(udcFiltered, udcRaw, 2);
    udcfp = (udcFiltered - udcofs) / udcgain;
@@ -617,8 +617,7 @@ void VehicleControl::GetTemps(float& tmphs, float &tmpm)
       TempMeas::Sensors snshs = (TempMeas::Sensors)Param::GetInt(Param::snshs);
       TempMeas::Sensors snsm = (TempMeas::Sensors)Param::GetInt(Param::snsm);
 
-      //int tmphsi = AnaIn::tmphs.Get();
-      int tmphsi = MIN(MIN(Param::GetInt(Param::MG_Rx0),Param::GetInt(Param::MG_Rx1)),Param::GetInt(Param::MG_Rx3));//MG bodge
+      int tmphsi = AnaIn::tmphs.Get();
       int tmpmi = AnaIn::tmpm.Get();
 
       tmpm = TempMeas::Lookup(tmpmi, snsm);
@@ -640,6 +639,12 @@ void VehicleControl::GetTemps(float& tmphs, float &tmpm)
 
          tmphs = 166.66f - tmphsi / priusTempCoeff;
       }
+      else if (hwRev == HW_MG)
+      {
+         tmphsi = MIN(MGSPI::GetRawTemperature(0), MGSPI::GetRawTemperature(1));
+         tmphsi = MIN(MGSPI::GetRawTemperature(2), tmphsi);
+         tmphs = tmphsi / 32;
+      }
       else if (snshs == TempMeas::TEMP_BMWI3HS)
       {
          //For the next line to work, BmwAdcGet() must be called regularly
@@ -649,8 +654,7 @@ void VehicleControl::GetTemps(float& tmphs, float &tmpm)
       }
       else
       {
-         //tmphs = TempMeas::Lookup(tmphsi, snshs);
-         tmphs = 0;//tmphsi;//MG Bodge
+         tmphs = TempMeas::Lookup(tmphsi, snshs);
       }
    }
 }

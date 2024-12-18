@@ -166,7 +166,6 @@
     VALUE_ENTRY(opmode,      OPMODES, 2000 ) \
     VALUE_ENTRY(lasterr,     errorListString,  2038 ) \
     VALUE_ENTRY(status,      STATUS,  2044 ) \
-    VALUE_ENTRY(status_GD3100,      STATUS3100,  2063 ) \
     VALUE_ENTRY(udc,         "V",     2001 ) \
     VALUE_ENTRY(idc,         "A",     2002 ) \
     VALUE_ENTRY(il1,         "A",     2003 ) \
@@ -202,12 +201,6 @@
     VALUE_ENTRY(din_bms,     ONOFF,   2032 ) \
     VALUE_ENTRY(uptime,      "10ms",  2054 ) \
     VALUE_ENTRY(cpuload,     "%",     2035 ) \
-    VALUE_ENTRY(MG_Rx0,      "dig",   2056 ) \
-    VALUE_ENTRY(MG_Rx1,      "dig",   2057 ) \
-    VALUE_ENTRY(MG_Rx2,      "dig",   2058 ) \
-    VALUE_ENTRY(MG_Rx3,      "dig",   2059 ) \
-    VALUE_ENTRY(INT_L,       ONOFF,   2064 ) \
-    VALUE_ENTRY(INT_H,       ONOFF,   2065 ) \
 
 #define VALUES_SINE \
     VALUE_ENTRY(ilmax,       "A",     2005 ) \
