@@ -87,6 +87,36 @@ void spi_setup()
    spi_enable(SPI1);
 }
 
+void spi_setup_teslam3()
+{
+    gpio_primary_remap(AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_ON, AFIO_MAPR_SPI1_REMAP);
+
+    // The STGAP1AS requires CPOL = 0, CPHA = 1 and 16-bit MSB transfers
+    spi_reset(SPI1);
+    spi_init_master(
+        SPI1,
+        SPI_CR1_BAUDRATE_FPCLK_DIV_8,
+        SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE,
+        SPI_CR1_CPHA_CLK_TRANSITION_2,
+        SPI_CR1_DFF_16BIT,
+        SPI_CR1_MSBFIRST);
+    spi_set_full_duplex_mode(SPI1);
+
+    // Enable software slave management so we have correct behaviour for the 6
+    // daisy-chained gate driver chips
+    spi_enable_software_slave_management(SPI1);
+    spi_set_nss_high(SPI1);
+    spi_set_unidirectional_mode(SPI1);
+
+    gpio_set_mode(
+        GPIOB,
+        GPIO_MODE_OUTPUT_50_MHZ,
+        GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
+        GPIO5 | GPIO3);
+    gpio_set_mode(GPIOB, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO4);
+    spi_enable(SPI1);
+}
+
 static bool is_floating(uint32_t port, uint16_t pin)
 {
    //A pin is considered floating if its state can be controlled with the internal 30k pull-up/down resistor
@@ -142,6 +172,7 @@ static HWREV ReadVariantResistor()
    if ((result1 + result2) < 30) return HW_BMWI3; //connected to MISO so always low
    else if (result2 > 3700) return HW_MINI; //might have to compare this against result1 later
    else if (result1 > 327 && result1 < 347) return HW_MG;
+   else if (result1 > 395 && result1 < 419) return HW_TESLAM3;
    else if (result1 > 510 && result1 < 630) return HW_LEAF3;
    else return HW_MINI;
 }
@@ -207,6 +238,9 @@ HWREV io_setup()
          break;
       case HW_MG:
          DIG_IO_CONFIGURE(DIG_IO_LIST_MG);
+         break;
+      case HW_TESLAM3:
+         DIG_IO_CONFIGURE(DIG_IO_LIST_TESLAM3);
          break;
       case HW_BLUEPILL:
          ANA_IN_CONFIGURE(ANA_IN_LIST_BLUEPILL);
