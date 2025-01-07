@@ -48,6 +48,7 @@
 #include "cansdo.h"
 #include "GD31xxOI.h"
 #include "delay.h"
+#include "teslamodel3.h"
 
 #define PRINT_JSON 0
 
@@ -102,6 +103,11 @@ static void Ms100Task(void)
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
       canMap->SendAll();
+
+   if (hwRev == HW_TESLAM3)
+   {
+      TeslaModel3::CyclicFunction();
+   }
 }
 
 static void RunCharger(float udc)
@@ -414,6 +420,10 @@ extern "C" int main(void)
 
    MotorVoltage::SetMaxAmp(SineCore::MAXAMP);
    PwmGeneration::SetCurrentOffset(2048, 2048);
+   if (hwRev == HW_TESLAM3)
+   {
+      TeslaModel3::Initialize();
+   }
 
    Stm32Scheduler s(hwRev == HW_BLUEPILL ? TIM4 : TIM2); //We never exit main so it's ok to put it on stack
    scheduler = &s;

@@ -76,12 +76,15 @@
 		<Unit filename="include/anain_prj.h" />
 		<Unit filename="include/digio_prj.h" />
 		<Unit filename="include/errormessage_prj.h" />
+		<Unit filename="include/hw/stgap1as_gate_driver.h" />
 		<Unit filename="include/hwdefs.h" />
 		<Unit filename="include/hwinit.h" />
 		<Unit filename="include/inc_encoder.h" />
 		<Unit filename="include/param_prj.h" />
 		<Unit filename="include/pwmgeneration.h" />
 		<Unit filename="include/temp_meas.h" />
+		<Unit filename="include/teslagatedriver.h" />
+		<Unit filename="include/teslamodel3.h" />
 		<Unit filename="include/throttle.h" />
 		<Unit filename="include/vehiclecontrol.h" />
 		<Unit filename="libopencm3/include/libopencm3/cm3/assert.h" />
@@ -1740,6 +1743,7 @@
 		<Unit filename="src/stm32_sine.cpp" />
 		<Unit filename="src/temp_meas.cpp" />
 		<Unit filename="src/terminal_prj.cpp" />
+		<Unit filename="src/teslamodel3.cpp" />
 		<Unit filename="src/throttle.cpp" />
 		<Unit filename="src/vehiclecontrol.cpp" />
 		<Unit filename="stm32_sine.ld">

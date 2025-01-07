@@ -1,9 +1,7 @@
 /*
  * This file is part of the stm32-sine project.
  *
- * Copyright (C) 2010 Johannes Huebner <contact@johanneshuebner.com>
- * Copyright (C) 2010 Edward Cheeseman <cheesemanedward@gmail.com>
- * Copyright (C) 2009 Uwe Hermann <uwe@hermann-uwe.de>
+ * Copyright (C) 2025 David J. Fiddes <D.J@fiddes.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,21 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef TESLAMODEL3_H
+#define TESLAMODEL3_H
 
-#ifndef HWINIT_H_INCLUDED
-#define HWINIT_H_INCLUDED
+/**
+ * \brief Encapsulate all of the Tesla Model 3 Inverter board specific
+ * functionality
+ */
+class TeslaModel3
+{
+public:
+    static void Initialize();
+    static void CyclicFunction();
+};
 
-void clock_setup(void);
-void usart_setup(void);
-void nvic_setup(void);
-void rtc_setup(void);
-void tim_setup(void);
-void tim5_setup(void);
-void spi_setup(void);
-void spi_setup_teslam3(void);
-HWREV detect_hw(void);
-void write_bootloader_pininit(bool bootprec, bool pwmActiveLow);
-HWREV io_setup();
-uint16_t pwmio_setup(bool activeLow);
 
-#endif // HWINIT_H_INCLUDED
+#endif // TESLAMODEL3_H
