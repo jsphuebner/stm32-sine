@@ -47,3 +47,22 @@ uint32_t crc_calculate(uint32_t data)
 {
     return 0xaa55;
 }
+
+uint16_t gpio_get(uint32_t port, uint16_t pin)
+{
+   return 0;
+}
+
+void gpio_set(uint32_t port, uint16_t pin)
+{
+}
+
+void gpio_clear(uint32_t port, uint16_t pin)
+{
+}
+
+enum tim_oc_id { DUMMY };
+void timer_set_oc_value(uint32_t, enum tim_oc_id, uint32_t)
+{
+
+}

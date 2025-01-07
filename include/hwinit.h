@@ -22,12 +22,6 @@
 #ifndef HWINIT_H_INCLUDED
 #define HWINIT_H_INCLUDED
 
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 void clock_setup(void);
 void usart_setup(void);
 void nvic_setup(void);
@@ -39,9 +33,5 @@ HWREV detect_hw(void);
 void write_bootloader_pininit(bool bootprec, bool pwmActiveLow);
 HWREV io_setup();
 uint16_t pwmio_setup(bool activeLow);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // HWINIT_H_INCLUDED

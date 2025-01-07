@@ -6,7 +6,7 @@ CFLAGS    = -std=c99 -ggdb -DSTM32F1 -I../include -I../libopeninv/include -I../l
 CPPFLAGS    = -ggdb -DSTM32F1 -DCTRL_FOC=1 -DCTRL_SINE=0 -DCTRL=CTRL_FOC -I../include -I../libopeninv/include -I../libopencm3/include
 LDFLAGS     = -g
 BINARY		= test_sine
-OBJS		= test_main.o fu.o test_fu.o test_fp.o test_vcu.o my_fp.o my_string.o params.o vehiclecontrol.o \
+OBJS		= test_main.o fu.o test_fu.o test_fp.o test_vcu.o my_fp.o my_string.o params.o vehiclecontrol.o GD31xxOI.o \
 			  test_throttle.o throttle.o sine_core.o temp_meas.o stub_canhardware.o \
 			  stub_libopencm3.o
 VPATH = ../src ../libopeninv/src

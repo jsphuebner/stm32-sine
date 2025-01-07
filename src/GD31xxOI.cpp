@@ -68,8 +68,8 @@ void MGSPI::Initialize() {
    DigIo::cs2_lo.Set();
    DigIo::cs3_lo.Set();
 
-   tim5_setup();//Enable gate drive psu on MG board
-   spi_setup();//MG gate drivers
+   tim5_setup(); //Enable gate drive psu on MG board
+   spi_setup();  //MG gate drivers
    uDelay(20);
 
    ConfigureGateDriver(DigIo::cs1_hi);  //configure all 6 MG gate drivers
@@ -89,10 +89,10 @@ void MGSPI::CyclicFunction() {
       temps[0] = Send16(DigIo::cs1_hi, REQ_ADC_EXT);//HS Temp 1
       break;
    case 1:
-      temps[1] = Send16(DigIo::cs2_hi, REQ_ADC_EXT);//HS Temp 1
+      temps[1] = Send16(DigIo::cs2_hi, REQ_ADC_EXT);//HS Temp 2
       break;
    case 2:
-      temps[2] = Send16(DigIo::cs3_hi, REQ_ADC_EXT);//HS Temp 1
+      temps[2] = Send16(DigIo::cs3_hi, REQ_ADC_EXT);//HS Temp 3
       break;
    case 3:
       udc = Send16(DigIo::cs3_lo, REQ_ADC_EXT);//HS Temp 1

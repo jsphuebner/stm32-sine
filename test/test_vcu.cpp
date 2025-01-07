@@ -157,28 +157,13 @@ extern "C" uint32_t rtc_get_counter_val()
    return rtc;
 }
 
-extern "C" void timer_set_oc_value(uint32_t, enum tim_oc_id, uint32_t)
+void spi_setup()
 {
 
 }
 
-extern "C" void spi_setup()
-{
+void tim5_setup() {}
 
-}
-
-extern "C" uint16_t gpio_get(uint32_t port, uint16_t pin)
-{
-   return 0;
-}
-
-extern "C" void gpio_set(uint32_t port, uint16_t pin)
-{
-}
-
-extern "C" void gpio_clear(uint32_t port, uint16_t pin)
-{
-}
 
 extern "C" uint16_t spi_xfer(uint32_t, uint16_t)
 {
@@ -207,6 +192,13 @@ DigIo DigIo::emcystop_in;
 DigIo DigIo::bms_in;
 DigIo DigIo::ocur_in;
 DigIo DigIo::desat_in;
+DigIo DigIo::cs1_hi;
+DigIo DigIo::cs1_lo;
+DigIo DigIo::cs2_hi;
+DigIo DigIo::cs2_lo;
+DigIo DigIo::cs3_hi;
+DigIo DigIo::cs3_lo;
+DigIo DigIo::v5_ctrl;
 AnaIn AnaIn::uaux(0);
 AnaIn AnaIn::udc(1);
 AnaIn AnaIn::tmphs(2);
@@ -218,6 +210,7 @@ void DigIo::Configure(uint32_t, uint16_t, PinMode::PinMode)
 {
 
 }
+
 
 uint16_t AnaIn::Get()
 {
