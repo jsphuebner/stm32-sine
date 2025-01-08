@@ -1722,18 +1722,37 @@
 		<Unit filename="libopeninv/test/Makefile">
 			<Option target="Test libopeninv" />
 		</Unit>
-		<Unit filename="libopeninv/test/stub_canhardware.cpp" />
-		<Unit filename="libopeninv/test/stub_canhardware.h" />
+		<Unit filename="libopeninv/test/stub_canhardware.cpp">
+			<Option target="Test libopeninv" />
+		</Unit>
+		<Unit filename="libopeninv/test/stub_canhardware.h">
+			<Option target="Test libopeninv" />
+		</Unit>
 		<Unit filename="libopeninv/test/stub_libopencm3.c">
 			<Option compilerVar="CC" />
+			<Option target="Test libopeninv" />
 		</Unit>
-		<Unit filename="libopeninv/test/test-include/hwdefs.h" />
-		<Unit filename="libopeninv/test/test-include/param_prj.h" />
-		<Unit filename="libopeninv/test/test.h" />
-		<Unit filename="libopeninv/test/test_canmap.cpp" />
-		<Unit filename="libopeninv/test/test_fp.cpp" />
-		<Unit filename="libopeninv/test/test_fu.cpp" />
-		<Unit filename="libopeninv/test/test_main.cpp" />
+		<Unit filename="libopeninv/test/test-include/hwdefs.h">
+			<Option target="Test libopeninv" />
+		</Unit>
+		<Unit filename="libopeninv/test/test-include/param_prj.h">
+			<Option target="Test libopeninv" />
+		</Unit>
+		<Unit filename="libopeninv/test/test.h">
+			<Option target="Test libopeninv" />
+		</Unit>
+		<Unit filename="libopeninv/test/test_canmap.cpp">
+			<Option target="Test libopeninv" />
+		</Unit>
+		<Unit filename="libopeninv/test/test_fp.cpp">
+			<Option target="Test libopeninv" />
+		</Unit>
+		<Unit filename="libopeninv/test/test_fu.cpp">
+			<Option target="Test libopeninv" />
+		</Unit>
+		<Unit filename="libopeninv/test/test_main.cpp">
+			<Option target="Test libopeninv" />
+		</Unit>
 		<Unit filename="src/GD31xxOI.cpp" />
 		<Unit filename="src/hwinit.cpp" />
 		<Unit filename="src/inc_encoder.cpp" />
@@ -1753,10 +1772,15 @@
 		<Unit filename="test/Makefile">
 			<Option target="Test" />
 		</Unit>
-		<Unit filename="test/stub_canhardware.cpp" />
-		<Unit filename="test/stub_canhardware.h" />
+		<Unit filename="test/stub_canhardware.cpp">
+			<Option target="Test" />
+		</Unit>
+		<Unit filename="test/stub_canhardware.h">
+			<Option target="Test" />
+		</Unit>
 		<Unit filename="test/stub_libopencm3.c">
 			<Option compilerVar="CC" />
+			<Option target="Test" />
 		</Unit>
 		<Unit filename="test/test.h" />
 		<Unit filename="test/test_fp.cpp" />
