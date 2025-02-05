@@ -363,21 +363,24 @@ static void ProcessCustomSdoCommands(CanSdo::SdoFrame* sdoFrame)
 {
    if (sdoFrame->index == SDO_INDEX_COMMANDS && sdoFrame->cmd == SDO_WRITE)
    {
+      sdoFrame->cmd = SDO_WRITE_REPLY;
       switch (sdoFrame->subIndex)
       {
       case START_COMMAND_SUBINDEX:
          if (sdoFrame->data < MOD_LAST)
-         {
             Param::SetInt(Param::opmode, sdoFrame->data);
-            sdoFrame->cmd = SDO_WRITE_REPLY;
-            sdoFrame->data = 0;
+         else
+         {
+            sdoFrame->cmd = SDO_ABORT;
+            sdoFrame->data = SDO_ERR_RANGE;
          }
          break;
       case STOP_COMMAND_SUBINDEX:
          Param::SetInt(Param::opmode, 0);
-         sdoFrame->cmd = SDO_WRITE_REPLY;
-         sdoFrame->data = 0;
          break;
+      default:
+         sdoFrame->cmd = SDO_ABORT;
+         sdoFrame->data = SDO_ERR_INVIDX;
       }
    }
 }
@@ -476,10 +479,14 @@ extern "C" int main(void)
       }
       if (0 != sdoFrame)
       {
+         CanSdo::SdoFrame sdoOrig = *sdoFrame;
          SdoCommands::ProcessStandardCommands(sdoFrame);
 
          if (sdoFrame->cmd == SDO_ABORT)
+         {
+            *sdoFrame = sdoOrig;
             ProcessCustomSdoCommands(sdoFrame);
+         }
 
          sdo.SendSdoReply(sdoFrame);
       }
