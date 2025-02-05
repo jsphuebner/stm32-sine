@@ -1685,6 +1685,7 @@
 		<Unit filename="libopeninv/include/params.h" />
 		<Unit filename="libopeninv/include/picontroller.h" />
 		<Unit filename="libopeninv/include/printf.h" />
+		<Unit filename="libopeninv/include/sdocommands.h" />
 		<Unit filename="libopeninv/include/sine_core.h" />
 		<Unit filename="libopeninv/include/stm32_can.h" />
 		<Unit filename="libopeninv/include/stm32_loader.h" />
@@ -1714,6 +1715,7 @@
 		<Unit filename="libopeninv/src/printf.cpp">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="libopeninv/src/sdocommands.cpp" />
 		<Unit filename="libopeninv/src/sine_core.cpp" />
 		<Unit filename="libopeninv/src/stm32_can.cpp" />
 		<Unit filename="libopeninv/src/stm32scheduler.cpp" />
@@ -1773,6 +1775,16 @@
 			<Option target="Test" />
 		</Unit>
 		<Unit filename="test/stub_canhardware.cpp">
+			<Option target="Test" />
+		</Unit>
+		<Unit filename="test/stub_canhardware.h">
+			<Option target="Test" />
+		</Unit>
+		<Unit filename="test/stub_libopencm3.c">
+			<Option compilerVar="CC" />
+			<Option target="Test" />
+		</Unit>
+		<Unit filename="test/test.h">
 			<Option target="Test" />
 		</Unit>
 		<Unit filename="test/stub_canhardware.h">
