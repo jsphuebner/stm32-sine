@@ -46,8 +46,11 @@
 #include "stm32_can.h"
 #include "canmap.h"
 #include "cansdo.h"
+#include "sdocommands.h"
 
 #define PRINT_JSON 0
+#define START_COMMAND_SUBINDEX 4
+#define STOP_COMMAND_SUBINDEX 5
 
 HWREV hwRev; //Hardware variant of board we are running on
 
@@ -220,13 +223,13 @@ static void Ms10Task(void)
       PwmGeneration::SetOpmode(MOD_OFF);
       Throttle::cruiseSpeed = -1;
       TerminalCommands::EnableSaving();
-      canSdo->EnableSaving();
+      SdoCommands::EnableSaving();
    }
    else if (0 == initWait)
    {
       //Disable saving in Run mode
       TerminalCommands::DisableSaving();
-      canSdo->DisableSaving();
+      SdoCommands::DisableSaving();
       PwmGeneration::SetTorquePercent(0);
       Throttle::RampThrottle(0); //Restart ramp
       Encoder::Reset();
@@ -356,6 +359,29 @@ void Param::Change(Param::PARAM_NUM paramNum)
    }
 }
 
+static void ProcessCustomSdoCommands(CanSdo::SdoFrame* sdoFrame)
+{
+   if (sdoFrame->index == SDO_INDEX_COMMANDS && sdoFrame->cmd == SDO_WRITE)
+   {
+      switch (sdoFrame->subIndex)
+      {
+      case START_COMMAND_SUBINDEX:
+         if (sdoFrame->data < MOD_LAST)
+         {
+            Param::SetInt(Param::opmode, sdoFrame->data);
+            sdoFrame->cmd = SDO_WRITE_REPLY;
+            sdoFrame->data = 0;
+         }
+         break;
+      case STOP_COMMAND_SUBINDEX:
+         Param::SetInt(Param::opmode, 0);
+         sdoFrame->cmd = SDO_WRITE_REPLY;
+         sdoFrame->data = 0;
+         break;
+      }
+   }
+}
+
 static void UpgradeParameters()
 {
    Param::SetInt(Param::version, 4); //backward compatibility
@@ -441,10 +467,21 @@ extern "C" int main(void)
    while(1)
    {
       char c = 0;
+      CanSdo::SdoFrame* sdoFrame = sdo.GetPendingUserspaceSdo();
       t.Run();
+
       if (canSdo->GetPrintRequest() == PRINT_JSON)
       {
          TerminalCommands::PrintParamsJson(canSdo, &c);
+      }
+      if (0 != sdoFrame)
+      {
+         SdoCommands::ProcessStandardCommands(sdoFrame);
+
+         if (sdoFrame->cmd == SDO_ABORT)
+            ProcessCustomSdoCommands(sdoFrame);
+
+         sdo.SendSdoReply(sdoFrame);
       }
    }
 
