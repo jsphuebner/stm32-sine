@@ -601,7 +601,7 @@ void VehicleControl::GetTemps(float& tmphs, float &tmpm)
          case 3:
             //Mux 1.3 is grounded on SDU and reads stator temperature 2 on LDU
             //Mux 2.3 is grounded on both drive units
-            isLdu = tmpmi > 50;  //Tied to GND on SDU
+            isLdu = tmpmi > 20;  //Tied to GND on SDU
             if (isLdu)
                mTemps[1] = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
             //Now update to maximum temperaure
