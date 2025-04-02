@@ -175,7 +175,7 @@ void VehicleControl::CruiseControl()
    }
 
    //Always disable cruise control when brake pedal is pressed or forward signal goes away
-   if (Param::GetBool(Param::din_brake) || !Param::GetBool(Param::din_forward))
+   if (Param::GetBool(Param::din_brake) || (!Param::GetBool(Param::din_forward) && CRUISE_POT != cruisemode))
    {
       Throttle::cruiseSpeed = -1;
    }

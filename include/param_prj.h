@@ -100,7 +100,7 @@
 
 #define CHARGER_PARAMETERS \
     PARAM_ENTRY(CAT_CHARGER, chargemode,  CHARGEMODS,0,      4,      0,      74  ) \
-    PARAM_ENTRY(CAT_CHARGER, chargecur,   "A",       0,      50,     0,      71  ) \
+    PARAM_ENTRY(CAT_CHARGER, chargecur,   "A",       0,      500,    0,      71  ) \
     PARAM_ENTRY(CAT_CHARGER, chargekp,    "dig",     -100,   100,    80,     72  ) \
     PARAM_ENTRY(CAT_CHARGER, chargeki,    "dig",     -100,   100,    10,     126 ) \
     PARAM_ENTRY(CAT_CHARGER, chargeflt,   "dig",     0,      10,     8,      73  ) \

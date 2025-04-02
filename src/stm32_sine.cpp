@@ -153,7 +153,7 @@ static void Ms10Task(void)
 
    stt |= DigIo::emcystop_in.Get() || hwRev == HW_REV3 ? STAT_NONE : STAT_EMCYSTOP;
    stt |= DigIo::mprot_in.Get() ? STAT_NONE : STAT_MPROT;
-   stt |= Throttle::IsThrottlePressed(Param::GetInt(Param::pot)) ? STAT_POTPRESSED : STAT_NONE;
+   stt |= torquePercent > 0 ? STAT_POTPRESSED : STAT_NONE;
    stt |= udc >= Param::GetFloat(Param::udcsw) ? STAT_NONE : STAT_UDCBELOWUDCSW;
    stt |= udc < Param::GetFloat(Param::udclim) ? STAT_NONE : STAT_UDCLIM;
    stt |= seenBrakePedal ? STAT_NONE : STAT_BRAKECHECK;
@@ -449,6 +449,7 @@ extern "C" int main(void)
    canSdo = &sdo;
    VehicleControl::SetCan(can);
    TerminalCommands::SetCanMap(canMap);
+   SdoCommands::SetCanMap(canMap);
 
    s.AddTask(Ms100Task, 100);
    s.AddTask(Ms10Task, 10);
