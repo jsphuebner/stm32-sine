@@ -33,11 +33,14 @@
 
 #define FRQ_TO_ANGLE(frq) FP_TOINT((frq << SineCore::BITS) / pwmfrq)
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
+#define DEGREE_TO_DIGIT(a) (((a) * 65536) / 360)
 
 #ifndef QLIMIT_FREQUENCY
 #define QLIMIT_FREQUENCY FP_FROMINT(30)
 #endif // QLIMIT_FREQUENCY
 
+static s32fp MeasureCoggingCurrent(uint16_t angle, s32fp id);
+static int32_t GenerateAntiCoggingSignal(uint16_t angle, s32fp coggingCurrent);
 static int initwait = 0;
 static bool isIdle = false;
 static const s32fp dcCurFac = FP_FROMFLT(0.81649658092772603273 * 1.05); //sqrt(2/3)*1.05 (inverter losses)
@@ -46,7 +49,9 @@ static const uint32_t shiftForFilter = 8;
 static s32fp idMtpa = 0, iqMtpa = 0;
 static PiController qController;
 static PiController dController;
+static PiController excController;
 static s32fp fwCurMax = 0;
+static s32fp excCurMax = 0;
 
 void PwmGeneration::Run()
 {
@@ -75,19 +80,38 @@ void PwmGeneration::Run()
          if (0 == frq) amplitudeErrFiltered = fwOutMax << shiftForFilter;
 
          int vlim = amplitudeErrFiltered >> shiftForFilter;
-         s32fp ifw = ((fwOutMax - vlim) * fwCurMax) / fwOutMax;
-         Param::SetFixed(Param::ifw, ifw);
 
-         s32fp limitedIq = (vlim * iqMtpa) / fwOutMax;
-         qController.SetRef(limitedIq + Param::Get(Param::manualiq));
+         if (hwRev == HW_ZOE)
+         {
+            s32fp exciterSpnt = (excCurMax * vlim) / fwOutMax;
+            s32fp iexc = FP_DIV((AnaIn::udc.Get() - Param::GetInt(Param::udcofs)), Param::GetInt(Param::udcgain));
+            Param::SetFixed(Param::ifw, iexc);
+            dController.SetRef(idMtpa + Param::Get(Param::manualid));
+            excController.SetRef(exciterSpnt);
+            qController.SetRef(iqMtpa + Param::Get(Param::manualiq));
+            uint16_t pwm = excController.Run(iexc);
+            Param::SetInt(Param::uexc, pwm);
+            timer_set_oc_value(OVER_CUR_TIMER, TIM_OC4, pwm);
+         }
+         else
+         {
+            s32fp ifw = ((fwOutMax - vlim) * fwCurMax) / fwOutMax;
+            Param::SetFixed(Param::ifw, ifw);
 
-         s32fp limitedId = -2 * ABS(limitedIq); //ratio between idMtpa and iqMtpa never > 2
-         limitedId = MAX(idMtpa, limitedId);
-         limitedId = MIN(ifw, limitedId);
-         dController.SetRef(limitedId + Param::Get(Param::manualid));
+            s32fp limitedIq = (vlim * iqMtpa) / fwOutMax;
+            qController.SetRef(limitedIq + Param::Get(Param::manualiq));
+
+            s32fp limitedId = -2 * ABS(limitedIq); //ratio between idMtpa and iqMtpa never > 2
+            limitedId = MAX(idMtpa, limitedId);
+            limitedId = MIN(ifw, limitedId);
+            dController.SetRef(limitedId + Param::Get(Param::manualid));
+         }
       }
 
-      int32_t ud = dController.Run(id);
+      s32fp coggingCurrent = MeasureCoggingCurrent(angle, id);
+      int32_t antiCogScaled = GenerateAntiCoggingSignal(angle, coggingCurrent);
+      Param::SetInt(Param::anticog, antiCogScaled);
+      int32_t ud = dController.Run(id, antiCogScaled);
       int32_t qlimit = FOC::GetQLimit(ud);
 
       if (frqFiltered < QLIMIT_FREQUENCY)
@@ -117,8 +141,10 @@ void PwmGeneration::Run()
       if (isIdle || initwait > 0)
       {
          timer_disable_break_main_output(PWM_TIMER);
+         //timer_set_oc_value(OVER_CUR_TIMER, TIM_OC4, 0); //stop rotor excitation
          dController.ResetIntegrator();
          qController.ResetIntegrator();
+         //excController.ResetIntegrator();
          RunOffsetCalibration();
          amplitudeErrFiltered = fwOutMax << shiftForFilter;
       }
@@ -144,9 +170,10 @@ void PwmGeneration::Run()
    }
 }
 
-void PwmGeneration::SetFwCurMax(float cur)
+void PwmGeneration::SetFwExcCurMax(float fwcur, float excur)
 {
-   fwCurMax = FP_FROMFLT(cur);
+   fwCurMax = FP_FROMFLT(fwcur);
+   excCurMax = FP_FROMFLT(excur);
 }
 
 void PwmGeneration::SetTorquePercent(float torquePercent)
@@ -167,10 +194,11 @@ void PwmGeneration::SetTorquePercent(float torquePercent)
    idMtpa = FP_FROMFLT(id);
 }
 
-void PwmGeneration::SetControllerGains(int iqkp, int idkp, int ki)
+void PwmGeneration::SetControllerGains(int iqkp, int idkp, int exckp, int ki)
 {
    qController.SetGains(iqkp, ki);
    dController.SetGains(idkp, ki);
+   excController.SetGains(exckp, 1000);
 }
 
 void PwmGeneration::PwmInit()
@@ -185,6 +213,8 @@ void PwmGeneration::PwmInit()
    dController.ResetIntegrator();
    dController.SetCallingFrequency(pwmfrq);
    dController.SetMinMaxY(-maxVd, maxVd);
+   excController.SetCallingFrequency(pwmfrq);
+   excController.SetMinMaxY(0, 2048);
 
    if (opmode == MOD_ACHEAT)
       AcHeatTimerSetup();
@@ -217,7 +247,7 @@ s32fp PwmGeneration::ProcessCurrents(s32fp& id, s32fp& iq)
 
 void PwmGeneration::CalcNextAngleSync()
 {
-   if (Encoder::SeenNorthSignal())
+   if (true)
    {
       uint16_t syncOfs = Param::GetInt(Param::syncofs);
       uint16_t rotorAngle = Encoder::GetRotorAngle();
@@ -249,4 +279,55 @@ void PwmGeneration::RunOffsetCalibration()
       il1Avg = il2Avg = 0;
       samples = 0;
    }
+}
+
+static s32fp MeasureCoggingCurrent(uint16_t angle, s32fp id)
+{
+   static uint16_t previousAngle = 0;
+   static s32fp minId = 0x7fffffff, maxId = -0x7fffffff;
+   static s32fp coggingCurrent = 0;
+
+   if (previousAngle < 32767 && angle > 32767)
+   {
+      coggingCurrent = ABS(minId - maxId);
+      minId = 0x7fffffff;
+      maxId = -minId;
+   }
+   else
+   {
+      minId = MIN(id, minId);
+      maxId = MAX(id, maxId);
+   }
+   previousAngle = angle;
+   return coggingCurrent;
+}
+
+/** \brief Generates a trapezoidal wave form to counter the cogging current of IPM motors
+ *
+ * \param angle rotor angle
+ * \param coggingCurrent magnitude of cogging current in A
+ * \return int32_t counter waveform as integer
+ *
+ */
+static int32_t GenerateAntiCoggingSignal(uint16_t angle, s32fp coggingCurrent)
+{
+   angle += Param::GetInt(Param::cogph);
+
+   if (angle < DEGREE_TO_DIGIT(90))
+      angle = angle; //no change
+   else if (angle < DEGREE_TO_DIGIT(180)) //90 to 180°
+      angle = 32767 - angle;
+   else if (angle < DEGREE_TO_DIGIT(270)) //180 to 270°
+      angle = angle - 32767;
+   else //270 to 360°
+      angle = 65535 - angle;
+
+   uint16_t antiCog = 4 * angle;
+   int32_t antiCogScaled = ((int32_t)antiCog) - 32767;
+   int32_t antiCogMax = Param::GetInt(Param::cogmax);
+   antiCogScaled = (antiCogScaled * FP_TOINT(coggingCurrent) * Param::GetInt(Param::cogkp)) / 65536;
+   antiCogScaled = MIN(antiCogScaled, antiCogMax);
+   antiCogScaled = MAX(antiCogScaled, -antiCogMax);
+
+   return antiCogScaled;
 }

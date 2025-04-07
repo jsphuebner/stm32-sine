@@ -25,7 +25,7 @@
 class Throttle
 {
    public:
-      static bool CheckAndLimitRange(int* potval, uint8_t potIdx);
+      static bool CheckAndLimitRange(int& potval, uint8_t potIdx);
       static float DigitsToPercent(int potval, int potidx);
       static float CalcThrottle(float potval, float pot2val, bool brkpedal);
       static float CalcThrottleBiDir(float potval, bool brkpedal);

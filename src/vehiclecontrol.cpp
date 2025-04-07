@@ -339,7 +339,7 @@ float VehicleControl::ProcessThrottle()
       Throttle::fmax = Param::GetFloat(Param::fmax) * 1.1f;
       float fwPercent = 100;
       Throttle::FrequencyLimitCommand(fwPercent, fstat);
-      PwmGeneration::SetFwCurMax(fwPercent * Param::GetFloat(Param::fwcurmax) / 100.0f);
+      PwmGeneration::SetFwExcCurMax(fwPercent * Param::GetFloat(Param::fwcurmax) / 100.0f, Param::GetFloat(Param::excurmax));
 #endif // CONTROL
    }
 
@@ -441,14 +441,15 @@ void VehicleControl::CalcAndOutputTemp()
       case PWM_FUNC_SPEED:
          tmpout = Param::GetInt(Param::speed) * pwmgain + pwmofs;
          break;
-      case PWM_FUNC_SPEEDFRQ:
+      case PWM_FUNC_EXCITER:
          //Handled in 1ms task
+         tmpout = -1;
          break;
    }
 
    tmpout = MIN(0xFFFF, MAX(0, tmpout));
 
-   timer_set_oc_value(OVER_CUR_TIMER, TIM_OC4, tmpout);
+   if (tmpout > 0) timer_set_oc_value(OVER_CUR_TIMER, TIM_OC4, tmpout);
 
    Param::SetFloat(Param::tmphs, temphsFiltered);
    Param::SetFloat(Param::tmpm, tempmFiltered);
@@ -471,6 +472,8 @@ float VehicleControl::ProcessUdc()
    //HW_REV1 had 3.9k resistors
    int uauxGain = hwRev == HW_REV1 ? 289 : 249;
    Param::SetFloat(Param::uaux, (float)AnaIn::uaux.Get() / uauxGain);
+
+   if (hwRev == HW_ZOE) return 0; //no udc measurement, nothing to do
 
    //Yes heatsink temperature also selects external ADC as udc source
    if (snshs == TempMeas::TEMP_BMWI3HS)
@@ -681,8 +684,8 @@ float VehicleControl::GetUserThrottleCommand()
       Param::SetInt(Param::pot2, pot2val);
    }
 
-   bool inRange1 = Throttle::CheckAndLimitRange(&potval, 0);
-   bool inRange2 = Throttle::CheckAndLimitRange(&pot2val, 1);
+   bool inRange1 = Throttle::CheckAndLimitRange(potval, 0);
+   bool inRange2 = Throttle::CheckAndLimitRange(pot2val, 1);
 
    Throttle::UpdateDynamicRegenTravel(Param::GetFloat(Param::regentravel), FP_TOFLOAT(Encoder::GetRotorFrequency()));
 
