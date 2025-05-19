@@ -214,7 +214,7 @@ void PwmGeneration::PwmInit()
    dController.SetCallingFrequency(pwmfrq);
    dController.SetMinMaxY(-maxVd, maxVd);
    excController.SetCallingFrequency(pwmfrq);
-   excController.SetMinMaxY(0, 2048);
+   excController.SetMinMaxY(0, 2548);
 
    if (opmode == MOD_ACHEAT)
       AcHeatTimerSetup();
