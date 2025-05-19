@@ -773,6 +773,7 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
    bool brake = Param::GetBool(Param::din_brake);
    int idlemode = Param::GetInt(Param::idlemode);
    int potmode = Param::GetInt(Param::potmode);
+   int cruisemode = Param::GetInt(Param::cruisemode);
    uint32_t speed = Encoder::GetSpeed();
    float cruiseSpnt = Throttle::CalcCruiseSpeed(speed);
 
@@ -796,6 +797,11 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
    {
       float idleSpnt = Throttle::CalcIdleSpeed(speed);
       finalSpnt = MAX(throtSpnt, idleSpnt);
+
+      //If we combine throttle speed control with idle speed, never drop speed setpoint below idle speed
+      //because then the motor will coast indefintely
+      if (CRUISE_POT == cruisemode)
+         Throttle::cruiseSpeed = MAX(Throttle::cruiseSpeed, Throttle::idleSpeed);
    }
    else if (idlemode == IDLE_MODE_HILLHOLD)
    {
@@ -816,7 +822,7 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
       }
    }
 
-   if (Throttle::cruiseSpeed > 0 && Throttle::cruiseSpeed > Throttle::idleSpeed)
+   if (Throttle::cruiseSpeed > 0 && Throttle::cruiseSpeed >= Throttle::idleSpeed)
    {
       if (Param::GetInt(Param::cruisemode) == CRUISE_LIMITER)
          finalSpnt = MIN(cruiseSpnt, throtSpnt);

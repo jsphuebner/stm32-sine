@@ -64,6 +64,7 @@ void PwmGeneration::Run()
 
       Encoder::UpdateRotorAngle(0);
       CalcNextAngleSync();
+      angle += dir * FP_TOINT(FP_MUL(Param::Get(Param::syncadv), frqFiltered));
       FOC::SetAngle(angle);
       ProcessCurrents(id, iq);
 
