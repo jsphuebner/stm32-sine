@@ -799,7 +799,7 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
       finalSpnt = MAX(throtSpnt, idleSpnt);
 
       //If we combine throttle speed control with idle speed, never drop speed setpoint below idle speed
-      //because then the motor will coast indefintely
+      //because then the motor will coast indefinitely
       if (CRUISE_POT == cruisemode)
          Throttle::cruiseSpeed = MAX(Throttle::cruiseSpeed, Throttle::idleSpeed);
    }

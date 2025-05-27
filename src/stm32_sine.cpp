@@ -84,8 +84,10 @@ static void Ms100Task(void)
       Param::SetInt(Param::din_desat, 2);
    }
 
+   int cruisemode = Param::GetInt(Param::cruisemode);
+
    if (rtc_get_counter_val() > 50) //500ms after start check for brake pedal
-      seenBrakePedal |= (Param::GetInt(Param::cruisemode) == CRUISE_OFF) || Param::GetBool(Param::din_brake);
+      seenBrakePedal |= (cruisemode == CRUISE_OFF || cruisemode == CRUISE_POT) || Param::GetBool(Param::din_brake);
 
    VehicleControl::SelectDirection();
    VehicleControl::CruiseControl();
