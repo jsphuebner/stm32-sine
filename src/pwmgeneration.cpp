@@ -164,6 +164,9 @@ extern "C" void tim1_brk_isr(void)
       ErrorMessage::Post(ERR_EMCYSTOP);
    else if (!DigIo::mprot_in.Get() && hwRev != HW_BLUEPILL)
       ErrorMessage::Post(ERR_MPROT);
+   //If it's not an over current error it must be a gate driver/desat fault
+   else if (DigIo::ocur_in.Get() && hwRev == HW_TESLA)
+      ErrorMessage::Post(ERR_DESAT);
    else //if (ocur || hwRev == HW_REV1)
       ErrorMessage::Post(ERR_OVERCURRENT);
 
