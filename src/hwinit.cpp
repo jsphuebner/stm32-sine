@@ -95,7 +95,7 @@ void spi_setup_teslam3()
     spi_reset(SPI1);
     spi_init_master(
         SPI1,
-        SPI_CR1_BAUDRATE_FPCLK_DIV_8,
+        SPI_CR1_BAUDRATE_FPCLK_DIV_32,
         SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE,
         SPI_CR1_CPHA_CLK_TRANSITION_2,
         SPI_CR1_DFF_16BIT,

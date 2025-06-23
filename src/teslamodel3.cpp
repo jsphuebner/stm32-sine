@@ -137,7 +137,11 @@ bool GateDriverInterface::IsShutdown()
  */
 void TeslaModel3::Initialize()
 {
-    if (!TeslaM3GateDriver::Init())
+    if (TeslaM3GateDriver::Init())
+    {
+        TeslaM3GateDriver::Enable();
+    }
+    else
     {
         ErrorMessage::Post(ERR_GATEDRIVEINITFAIL);
     }
