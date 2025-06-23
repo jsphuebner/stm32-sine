@@ -75,11 +75,12 @@ private:
 
     static void SendCommand(uint16_t cmd);
     static void WriteRegister(const Register& reg);
-    static void ReadRegister(uint16_t regNum, uint16_t* values);
+    static void ReadRegister(const Register& reg, uint16_t* values);
+    static void PipelinedReadRegister(uint16_t regNum, uint16_t* values);
     static bool VerifyRegister(
-        uint16_t regNum,
-        uint16_t validBits,
-        uint16_t value);
+        const DataBuffer values,
+        uint16_t         validBits,
+        uint16_t         value);
 
     static uint16_t InvertByte(uint16_t input);
     static uint16_t BuildCommand(uint16_t cmd);
@@ -174,14 +175,24 @@ bool GateDriver<SpiDriverT>::Init()
 template <typename SpiDriverT>
 bool GateDriver<SpiDriverT>::IsFaulty()
 {
-    bool status1 =
-        VerifyRegister(STGAP1AS_REG_STATUS1, STGAP1AS_REG_STATUS1_MASK, 0);
+    DataBuffer values;
+
+    PipelinedReadRegister(STGAP1AS_REG_STATUS1, NULL);
+
     DEVICE_DELAY_US(LocalRegReadDelay);
-    bool status2 =
-        VerifyRegister(STGAP1AS_REG_STATUS2, STGAP1AS_REG_STATUS2_MASK, 0);
+    PipelinedReadRegister(STGAP1AS_REG_STATUS2, values);
+
+    bool status1 = VerifyRegister(values, STGAP1AS_REG_STATUS1_MASK, 0);
+
     DEVICE_DELAY_US(LocalRegReadDelay);
-    bool status3 =
-        VerifyRegister(STGAP1AS_REG_STATUS3, STGAP1AS_REG_STATUS3_MASK, 0);
+    PipelinedReadRegister(STGAP1AS_REG_STATUS3, values);
+
+    bool status2 = VerifyRegister(values, STGAP1AS_REG_STATUS2_MASK, 0);
+
+    DEVICE_DELAY_US(LocalRegReadDelay);
+    PipelinedReadRegister(STGAP1AS_REG_STATUS3, values);
+
+    bool status3 = VerifyRegister(values, STGAP1AS_REG_STATUS3_MASK, 0);
 
     return !(status1 && status2 && status3);
 }
@@ -236,12 +247,12 @@ void GateDriver<SpiDriverT>::SetupGateDrivers()
 template <typename SpiDriverT>
 bool GateDriver<SpiDriverT>::VerifyGateDriverConfig()
 {
-    uint16_t regValues[NumDriverChips];
-    bool     result = true;
+    DataBuffer regValues;
+    bool       result = true;
     for (uint16_t i = 0; i < RegisterSetupSize; i++)
     {
         const Register& reg = GateDriverRegisterSetup[i];
-        ReadRegister(reg.reg, regValues);
+        ReadRegister(reg, regValues);
         DEVICE_DELAY_US(RemoteRegReadDelay);
 
         uint16_t mask = 1;
@@ -280,9 +291,9 @@ template <typename SpiDriverT>
 void GateDriver<SpiDriverT>::SendCommand(uint16_t cmd)
 {
     DataBuffer cmdBuffer;
-    for (uint16_t i = 0; i < NumDriverChips; i++)
+    for (uint16_t chip = 0; chip < NumDriverChips; chip++)
     {
-        cmdBuffer[i] = BuildCommand(cmd);
+        cmdBuffer[chip] = BuildCommand(cmd);
     }
 
     SpiDriverT::SendData(cmdBuffer, NULL);
@@ -347,17 +358,24 @@ void GateDriver<SpiDriverT>::WriteRegister(const Register& reg)
 //! \param values Register values array retrieved from all chips
 //!
 template <typename SpiDriverT>
-void GateDriver<SpiDriverT>::ReadRegister(uint16_t regNum, uint16_t* values)
+void GateDriver<SpiDriverT>::ReadRegister(const Register& reg, uint16_t* values)
 {
-    // Send the register read command ignoring any response (which is
-    // undefined)
+    // Build a command  buffer  to read from the chips we are interested in and
+    // ignore those we are not
     DataBuffer cmdBuffer;
 
-    for (uint16_t i = 0; i < NumDriverChips; i++)
+    uint16_t cmd = BuildCommand(STGAP1AS_CMD_READ_REG(reg.reg));
+    uint16_t nop = BuildCommand(STGAP1AS_CMD_NOP);
+
+    uint16_t mask = 1;
+    for (uint16_t chip = 0; chip < NumDriverChips; chip++)
     {
-        cmdBuffer[i] = BuildCommand(STGAP1AS_CMD_READ_REG(regNum));
+        cmdBuffer[chip] = reg.mask & mask ? cmd : nop;
+        mask = mask << 1;
     }
 
+    // Send the register read command. We are not interested in a data that
+    // comes back until the next SPI transaction.
     SpiDriverT::SendData(cmdBuffer, NULL);
 
     // Pessimistic for local reg reads but we'll assume that's not
@@ -369,10 +387,33 @@ void GateDriver<SpiDriverT>::ReadRegister(uint16_t regNum, uint16_t* values)
 
     for (uint16_t i = 0; i < NumDriverChips; i++)
     {
-        nopBuffer[i] = BuildCommand(STGAP1AS_CMD_NOP);
+        nopBuffer[i] = nop;
     }
 
     SpiDriverT::SendData(nopBuffer, values);
+}
+
+//
+//! \brief Read a specific register and retrieve a previous read response
+//!
+//! \param regNum Register number to read
+//! \param previousValues Array to store the results of the last read operation.
+//! May be NULL if the results are not required.
+//!
+template <typename SpiDriverT>
+void GateDriver<SpiDriverT>::PipelinedReadRegister(
+    uint16_t  regNum,
+    uint16_t* previousValues)
+{
+    // Send the register read command
+    DataBuffer cmdBuffer;
+
+    for (uint16_t i = 0; i < NumDriverChips; i++)
+    {
+        cmdBuffer[i] = BuildCommand(STGAP1AS_CMD_READ_REG(regNum));
+    }
+
+    SpiDriverT::SendData(cmdBuffer, previousValues);
 }
 
 //
@@ -385,13 +426,10 @@ void GateDriver<SpiDriverT>::ReadRegister(uint16_t regNum, uint16_t* values)
 //!
 template <typename SpiDriverT>
 bool GateDriver<SpiDriverT>::VerifyRegister(
-    uint16_t regNum,
-    uint16_t validBits,
-    uint16_t value)
+    const DataBuffer values,
+    uint16_t         validBits,
+    uint16_t         value)
 {
-    DataBuffer values;
-    ReadRegister(regNum, values);
-
     bool result = true;
     for (int chip = 0; chip < NumDriverChips; chip++)
     {
