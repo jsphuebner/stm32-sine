@@ -25,7 +25,7 @@
    3. Display values
  */
 //Next param id (increase when adding new parameter!): 159
-//Next value Id: 2066
+//Next value Id: 2061
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -201,6 +201,12 @@
     VALUE_ENTRY(din_bms,     ONOFF,   2032 ) \
     VALUE_ENTRY(uptime,      "10ms",  2054 ) \
     VALUE_ENTRY(cpuload,     "%",     2035 ) \
+    VALUE_ENTRY(m3_phaseA_hi, TESLAM3GATESTATUS, 2055 ) \
+    VALUE_ENTRY(m3_phaseA_lo, TESLAM3GATESTATUS, 2056 ) \
+    VALUE_ENTRY(m3_phaseB_hi, TESLAM3GATESTATUS, 2057 ) \
+    VALUE_ENTRY(m3_phaseB_lo, TESLAM3GATESTATUS, 2058 ) \
+    VALUE_ENTRY(m3_phaseC_hi, TESLAM3GATESTATUS, 2059 ) \
+    VALUE_ENTRY(m3_phaseC_lo, TESLAM3GATESTATUS, 2060 ) \
 
 #define VALUES_SINE \
     VALUE_ENTRY(ilmax,       "A",     2005 ) \
@@ -283,6 +289,7 @@
 #define STATUS       "0=None, 1=UdcLow, 2=UdcHigh, 4=UdcBelowUdcSw, 8=UdcLim, 16=EmcyStop, 32=MProt, 64=PotPressed, 128=TmpHs, 256=WaitStart, 512=BrakeCheck"
 #define STATUS3100   "0=None, 1=IGBTOC, 2=IGBTSC, 3=DESAT, 4=CLAMP, 5=TempWarn, 6=Temp_Shdn, 7=DIEOT, 8=VSUPOV, 9=VCCREGUV, 10=VCCREGOV, 11=VEEOR, 12=VREFOR, 13=DIECOMM, 14=WDOG, 15=VGE, 16=CRCERR,17=SPIERR,18=PWMDT,19=VDDOR,20=BISTFail,21=VGEPIN,22=INTPIN,23=FSENBPIN,24=FSSTATPIN,25=PWMALTPIN,26=PWMPIN,27=FSISOPIN"
 #define CHECKS       "0=CounterOnly, 1=StmCrc8"
+#define TESLAM3GATESTATUS "0=OK, 1=RxCRC, 2=Temp_Warn, 4=Temp_Shdn, 8=UVLOL, 16=UVLOH, 32=SENSE, 64=DESAT, 128=OVLOL, 256=OVLOH, 512=ASC, 1024=REGERRR, 2048=UVLOD, 4096=OVLOD, 8192=REGERRL, 16384=SPI_ERR, 32768=DT_ERR"
 #define CAT_MOTOR    "Motor"
 #define CAT_INVERTER "Inverter"
 #define CAT_THROTTLE "Throttle"
