@@ -19,8 +19,9 @@
 
 #include "teslamodel3.h"
 #include "digio.h"
-#include "hwinit.h"
 #include "errormessage.h"
+#include "hwinit.h"
+#include "params.h"
 #include <libopencm3/stm32/spi.h>
 
 // Define the delay macro needed by the tesla::GateDriver header-only class
@@ -137,7 +138,11 @@ bool GateDriverInterface::IsShutdown()
  */
 void TeslaModel3::Initialize()
 {
-    if (!TeslaM3GateDriver::Init())
+    if (TeslaM3GateDriver::Init())
+    {
+        TeslaM3GateDriver::Enable();
+    }
+    else
     {
         ErrorMessage::Post(ERR_GATEDRIVEINITFAIL);
     }
@@ -151,6 +156,28 @@ void TeslaModel3::CyclicFunction()
     if (TeslaM3GateDriver::IsFaulty())
     {
         ErrorMessage::Post(ERR_GATEDRIVEFAULT);
-        //TODO: Shutdown the inverter?
+
+        Param::SetInt(
+            Param::m3_phaseA_hi,
+            TeslaM3GateDriver::GetStatus(TeslaM3GateDriver::PhaseAHigh));
+        Param::SetInt(
+            Param::m3_phaseA_lo,
+            TeslaM3GateDriver::GetStatus(TeslaM3GateDriver::PhaseALow));
+
+        Param::SetInt(
+            Param::m3_phaseB_hi,
+            TeslaM3GateDriver::GetStatus(TeslaM3GateDriver::PhaseBHigh));
+        Param::SetInt(
+            Param::m3_phaseB_lo,
+            TeslaM3GateDriver::GetStatus(TeslaM3GateDriver::PhaseBLow));
+
+        Param::SetInt(
+            Param::m3_phaseC_hi,
+            TeslaM3GateDriver::GetStatus(TeslaM3GateDriver::PhaseCHigh));
+        Param::SetInt(
+            Param::m3_phaseC_lo,
+            TeslaM3GateDriver::GetStatus(TeslaM3GateDriver::PhaseCLow));
+
+        // TODO: Shutdown the inverter?
     }
 }
