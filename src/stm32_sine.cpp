@@ -337,6 +337,7 @@ void Param::Change(Param::PARAM_NUM paramNum)
          Throttle::brkcruise = Param::GetFloat(Param::cruiseregen);
          Throttle::throtmax = Param::GetFloat(Param::throtmax);
          Throttle::throtmin = Param::GetFloat(Param::throtmin);
+         Throttle::linearity = Param::GetFloat(Param::potlinearity) / 100;
          Throttle::idleSpeed = Param::GetInt(Param::idlespeed);
          Throttle::holdkp = Param::GetFloat(Param::holdkp);
          Throttle::speedkp = Param::GetFloat(Param::speedkp);

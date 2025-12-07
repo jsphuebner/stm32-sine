@@ -24,6 +24,7 @@
 
 int Throttle::potmin[2];
 int Throttle::potmax[2];
+float Throttle::linearity;
 float Throttle::brknom;
 float Throttle::brknompedal;
 float Throttle::brkmax;
@@ -128,7 +129,15 @@ float Throttle::CalcThrottle(float potnom, float pot2nom, bool brkpedal)
       potnom = 100.0f * potnom / (100.0f - brknom);
    }
 
-   return potnom;
+   if (potnom <= 0)
+      return potnom;
+
+   potnom /= 100;
+   float quad = potnom * potnom;
+   quad /= 1 / (1 - linearity);
+   float quadlinear = quad + potnom * linearity;
+
+   return quadlinear * 100;
 }
 
 float Throttle::CalcThrottleBiDir(float potval, bool brkpedal)
