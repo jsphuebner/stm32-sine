@@ -134,7 +134,7 @@ float Throttle::CalcThrottle(float potnom, float pot2nom, bool brkpedal)
 
    potnom /= 100;
    float quad = potnom * potnom;
-   quad /= 1 / (1 - linearity);
+   quad *= 1 - linearity;
    float quadlinear = quad + potnom * linearity;
 
    return quadlinear * 100;
