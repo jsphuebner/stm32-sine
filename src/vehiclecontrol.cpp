@@ -314,7 +314,23 @@ float VehicleControl::ProcessThrottle()
 
    Param::SetFloat(Param::potnom, finalSpnt);
 
-   if (finalSpnt < Param::GetFloat(Param::brklightout))
+   const float brkLightHysteresis = 2.0f; // percent of torque request
+   float brkLightThreshold = Param::GetFloat(Param::brklightout);
+   float brkLightOffThreshold = brkLightThreshold + brkLightHysteresis;
+   bool brakeLightOn = Param::GetBool(Param::dout_brake);
+
+   // Keep turn-off threshold in regen/coast range only, never into positive torque request
+   if (brkLightOffThreshold > 0)
+      brkLightOffThreshold = 0;
+
+   if (finalSpnt < brkLightThreshold)
+      brakeLightOn = true;
+   else if (finalSpnt > brkLightOffThreshold)
+      brakeLightOn = false;
+
+   Param::SetInt(Param::dout_brake, brakeLightOn);
+
+   if (brakeLightOn)
       DigIo::brk_out.Set();
    else
       DigIo::brk_out.Clear();

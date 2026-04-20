@@ -25,7 +25,7 @@
    3. Display values
  */
 //Next param id (increase when adding new parameter!): 164
-//Next value Id: 2057
+//Next value Id: 2058
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -205,6 +205,7 @@
     VALUE_ENTRY(din_ocur,    OKERR,   2030 ) \
     VALUE_ENTRY(din_desat,   OKERR,   2031 ) \
     VALUE_ENTRY(din_bms,     ONOFF,   2032 ) \
+    VALUE_ENTRY(dout_brake,  ONOFF,   2057 ) \
     VALUE_ENTRY(uptime,      "10ms",  2054 ) \
     VALUE_ENTRY(cpuload,     "%",     2035 ) \
 
@@ -427,4 +428,3 @@ enum status
 
 //Generated enum-string for possible errors
 extern const char* errorListString;
-
