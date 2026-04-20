@@ -24,6 +24,7 @@
 #include "hwdefs.h"
 #include "pwmgeneration.h"
 #include "vehiclecontrol.h"
+#include "throttle.h"
 #include "stub_canhardware.h"
 #include "test.h"
 
@@ -131,13 +132,56 @@ static void TestCanSeqError2()
    ASSERT(Param::GetInt(Param::potnom) == 0);
 }
 
+static void TestCanBrakeLightHysteresis()
+{
+   uint32_t data[2];
+
+   Throttle::potmin[0] = 0;
+   Throttle::potmax[0] = 3500;
+   Throttle::potmin[1] = 0;
+   Throttle::potmax[1] = 4095;
+   Throttle::brkmax = -50;
+   Throttle::brknompedal = -50;
+   Throttle::linearity = 1;
+   Throttle::regenRamp = 100;
+   Throttle::throttleRamp = 100;
+   Throttle::throtmax = 100;
+   Throttle::throtmin = -100;
+   Throttle::maxregentravelhz = 0;
+   Throttle::udcmax = 1000;
+   Throttle::idcmin = -5000;
+   Throttle::idckp = 1;
+
+   Param::SetInt(Param::potmode, POTMODE_CAN);
+   Param::SetFloat(Param::brklightout, -10);
+
+   FillInCanData(data, 500, 0, CAN_IO_FWD | CAN_IO_BRAKE, 0, 100, 1);
+   vcuCan->HandleRx(vcuCanId, data, 8);
+   VehicleControl::GetDigInputs();
+   VehicleControl::ProcessThrottle();
+   ASSERT(Param::GetBool(Param::dout_brake));
+
+   FillInCanData(data, 700, 0, CAN_IO_FWD, 0, 50, 2);
+   vcuCan->HandleRx(vcuCanId, data, 8);
+   VehicleControl::GetDigInputs();
+   VehicleControl::ProcessThrottle();
+   // Input chosen to stay between on-threshold (-10) and off-threshold (-8) -> light must stay on
+   ASSERT(Param::GetBool(Param::dout_brake));
+
+   FillInCanData(data, 3500, 0, CAN_IO_FWD, 0, 50, 3);
+   vcuCan->HandleRx(vcuCanId, data, 8);
+   VehicleControl::GetDigInputs();
+   VehicleControl::ProcessThrottle();
+   ASSERT(!Param::GetBool(Param::dout_brake));
+}
+
 void VCUTest::TestCaseSetup()
 {
    VehicleControl::SetCan(new CanStub());
    Param::LoadDefaults();
 }
 
-REGISTER_TEST(VCUTest, CanTest1, CanTest2, CanTest3, TestCanSeqError1, TestCanSeqError2);
+REGISTER_TEST(VCUTest, CanTest1, CanTest2, CanTest3, TestCanSeqError1, TestCanSeqError2, TestCanBrakeLightHysteresis);
 
 /* Stub functions */
 extern "C" void crc_reset()
