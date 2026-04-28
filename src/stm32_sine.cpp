@@ -60,6 +60,7 @@ static CanMap* canMap;
 static CanSdo* canSdo;
 static Terminal* terminal;
 static bool seenBrakePedal = false;
+static uint8_t canMapTxSlot = 0;
 
 static void Ms100Task(void)
 {
@@ -101,8 +102,6 @@ static void Ms100Task(void)
    Param::SetFloat(Param::uac, uac);
    #endif // CONTROL
 
-   if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
-      canMap->SendAll();
 }
 
 static void RunCharger(float udc)
@@ -253,8 +252,20 @@ static void Ms10Task(void)
 
    Param::SetInt(Param::uptime, rtc_get_counter_val());
 
+   if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
+   {
+      canMap->SendByIndex(canMapTxSlot);
+      canMapTxSlot = (canMapTxSlot + 1) % MAX_MESSAGES;
+   }
+}
+
+static void Ms1Task(void)
+{
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_10MS)
-      canMap->SendAll();
+   {
+      canMap->SendByIndex(canMapTxSlot);
+      canMapTxSlot = (canMapTxSlot + 1) % MAX_MESSAGES;
+   }
 }
 
 /** This function is called when the user changes a parameter */
@@ -456,6 +467,7 @@ extern "C" int main(void)
 
    s.AddTask(Ms100Task, 100);
    s.AddTask(Ms10Task, 10);
+   s.AddTask(Ms1Task, 1);
 
    DigIo::prec_out.Set();
 
@@ -498,4 +510,3 @@ extern "C" int main(void)
 
    return 0;
 }
-
