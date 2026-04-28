@@ -48,12 +48,8 @@
 #include "cansdo.h"
 #include "sdocommands.h"
 
-#define PRINT_JSON 0
-#define PRINT_JSON_HIDDEN 1
 #define START_COMMAND_SUBINDEX 4
 #define STOP_COMMAND_SUBINDEX 5
-#define CLEARMAP_COMMAND_SUBINDEX 6
-#define SDO_INDEX_PARAM_FLAG  0x2200
 
 HWREV hwRev; //Hardware variant of board we are running on
 
@@ -384,24 +380,7 @@ static void ProcessCustomSdoCommands(CanSdo::SdoFrame* sdoFrame)
       case STOP_COMMAND_SUBINDEX:
          Param::SetInt(Param::opmode, 0);
          break;
-      case CLEARMAP_COMMAND_SUBINDEX:
-         canMap->Clear();
-         break;
       default:
-         sdoFrame->cmd = SDO_ABORT;
-         sdoFrame->data = SDO_ERR_INVIDX;
-      }
-   }
-   else if (sdoFrame->index == SDO_INDEX_PARAM_FLAG && sdoFrame->cmd == SDO_WRITE)
-   {
-      Param::PARAM_NUM paramIdx = (Param::PARAM_NUM)sdoFrame->subIndex;
-      if (paramIdx < Param::PARAM_LAST)
-      {
-         Param::SetFlagsRaw(paramIdx, (uint8_t)sdoFrame->data);
-         sdoFrame->cmd = SDO_WRITE_REPLY;
-      }
-      else
-      {
          sdoFrame->cmd = SDO_ABORT;
          sdoFrame->data = SDO_ERR_INVIDX;
       }
@@ -493,14 +472,14 @@ extern "C" int main(void)
 
    while(1)
    {
-      char c = 0;
       CanSdo::SdoFrame* sdoFrame = sdo.GetPendingUserspaceSdo();
       t.Run();
 
-      if (canSdo->GetPrintRequest() == PRINT_JSON || canSdo->GetPrintRequest() == PRINT_JSON_HIDDEN)
+      int printRequest = canSdo->GetPrintRequest();
+      if (printRequest >= 0)
       {
-         char h[] = { (canSdo->GetPrintRequest() == PRINT_JSON_HIDDEN) ? 'h' : '\0', '\0' };
-         TerminalCommands::PrintParamsJson(canSdo, h);
+         char arg[2] = { printRequest ? 'h' : 0, 0 };
+         TerminalCommands::PrintParamsJson(canSdo, arg);
       }
       if (0 != sdoFrame)
       {
