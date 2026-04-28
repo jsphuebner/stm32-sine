@@ -153,24 +153,31 @@ static void TestCanBrakeLightHysteresis()
    Throttle::idckp = 1;
 
    Param::SetInt(Param::potmode, POTMODE_CAN);
-   Param::SetFloat(Param::brklightout, -10);
+   Param::SetFloat(Param::speedcal, 10000);
+   Param::SetFloat(Param::brklightout, -1);
+
+   Param::SetInt(Param::speed, 11000);
+   VehicleControl::ProcessThrottle();
 
    FillInCanData(data, 500, 0, CAN_IO_FWD | CAN_IO_BRAKE, 0, 100, 1);
    vcuCan->HandleRx(vcuCanId, data, 8);
    VehicleControl::GetDigInputs();
+   Param::SetInt(Param::speed, 10890);
    VehicleControl::ProcessThrottle();
    ASSERT(Param::GetBool(Param::dout_brake));
 
    FillInCanData(data, 700, 0, CAN_IO_FWD, 0, 50, 2);
    vcuCan->HandleRx(vcuCanId, data, 8);
    VehicleControl::GetDigInputs();
+   Param::SetInt(Param::speed, 10795);
    VehicleControl::ProcessThrottle();
-   // Input chosen to stay between on-threshold (-10) and off-threshold (-8) -> light must stay on
+   // Input chosen to stay between on-threshold (-1) and off-threshold (-0.9) -> light must stay on
    ASSERT(Param::GetBool(Param::dout_brake));
 
    FillInCanData(data, 3500, 0, CAN_IO_FWD, 0, 50, 3);
    vcuCan->HandleRx(vcuCanId, data, 8);
    VehicleControl::GetDigInputs();
+   Param::SetInt(Param::speed, 10715);
    VehicleControl::ProcessThrottle();
    ASSERT(!Param::GetBool(Param::dout_brake));
 }
