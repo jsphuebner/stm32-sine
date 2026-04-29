@@ -273,10 +273,23 @@ void VehicleControl::SelectDirection()
    Param::SetInt(Param::seldir, selectedDir);
 }
 
+void VehicleControl::UpdateVehicleSpeedValues()
+{
+   static float lastVehicleSpeed = 0;
+
+   float speed = Param::GetFloat(Param::speed);
+   float vehicleSpeed = speed / Param::GetFloat(Param::speedcal);
+
+   Param::SetFloat(Param::vehiclespeed, vehicleSpeed);
+   Param::SetFloat(Param::vehicleaccel, (vehicleSpeed - lastVehicleSpeed) * 100);
+   lastVehicleSpeed = vehicleSpeed;
+}
+
 float VehicleControl::ProcessThrottle()
 {
    float throtSpnt = 0, finalSpnt;
    const float fstat = Param::GetFloat(Param::fstat);
+   UpdateVehicleSpeedValues();
 
    if ((int)Encoder::GetSpeed() < Param::GetInt(Param::throtramprpm))
       Throttle::throttleRamp = Param::GetFloat(Param::throtramp);
@@ -314,18 +327,14 @@ float VehicleControl::ProcessThrottle()
 
    Param::SetFloat(Param::potnom, finalSpnt);
 
-   const float brkLightHysteresis = 2.0f; // percent of torque request
    float brkLightThreshold = Param::GetFloat(Param::brklightout);
-   float brkLightOffThreshold = brkLightThreshold + brkLightHysteresis;
+   float brkLightOffThreshold = brkLightThreshold - brkLightThreshold * 0.1f;
+   float vehicleAccel = Param::GetFloat(Param::vehicleaccel);
    bool brakeLightOn = Param::GetBool(Param::dout_brake);
 
-   // Keep turn-off threshold in regen/coast range only, never into positive torque request
-   if (brkLightOffThreshold > 0)
-      brkLightOffThreshold = 0;
-
-   if (finalSpnt < brkLightThreshold)
+   if (vehicleAccel < brkLightThreshold)
       brakeLightOn = true;
-   else if (finalSpnt > brkLightOffThreshold)
+   else if (vehicleAccel > brkLightOffThreshold)
       brakeLightOn = false;
 
    Param::SetInt(Param::dout_brake, brakeLightOn);

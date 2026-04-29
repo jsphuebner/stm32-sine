@@ -17,15 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VERSION 5.39
+#define VERSION 5.41
 
 /* Entries should be ordered as follows:
    1. Saveable parameters
    2. Temporary parameters
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 164
-//Next value Id: 2058
+//Next param id (increase when adding new parameter!): 166
+//Next value Id: 2060
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -113,8 +113,8 @@
     PARAM_ENTRY(CAT_CHARGER, chargepwmax, "%",       0,      99,     90,     79  )
 
 #define THROTTLE_PARAMETERS_COMMON \
-    PARAM_ENTRY(CAT_THROTTLE,potmin,      "dig",     0,      3500,   0,      17  ) \
-    PARAM_ENTRY(CAT_THROTTLE,potmax,      "dig",     0,      3500,   3500,   18  ) \
+    PARAM_ENTRY(CAT_THROTTLE,potmin,      "dig",     0,      4095,   0,      17  ) \
+    PARAM_ENTRY(CAT_THROTTLE,potmax,      "dig",     0,      4095,   4095,   18  ) \
     PARAM_ENTRY(CAT_THROTTLE,pot2min,     "dig",     0,      4095,   4095,   63  ) \
     PARAM_ENTRY(CAT_THROTTLE,pot2max,     "dig",     0,      4095,   4095,   64  ) \
     PARAM_ENTRY(CAT_THROTTLE,potmode,     POTMODES,  0,      6,      0,      82  ) \
@@ -139,7 +139,7 @@
     PARAM_ENTRY(CAT_REGEN,   cruiseregen, "%",       -100,   0,      -30,    124 ) \
     PARAM_ENTRY(CAT_REGEN,   regenrampstr,"Hz",      0,      400,    10,     39  ) \
     PARAM_ENTRY(CAT_REGEN,   maxregentravelhz,"Hz",  0,      1000,   0,      158 ) \
-    PARAM_ENTRY(CAT_REGEN,   brklightout, "%",       -100,   -1,     -50,    67  )
+    PARAM_ENTRY(CAT_REGEN,   brklightout, "m/s²",    -1.3,   -0.7,   -1,     67  )
 
 #define AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
     PARAM_ENTRY(CAT_AUTOM,   idlespeed,   "rpm",     -100,   10000,  -100,   54  ) \
@@ -148,6 +148,7 @@
     PARAM_ENTRY(CAT_AUTOM,   holdkp,      "",        -100,   0,     -0.25,   138 ) \
     PARAM_ENTRY(CAT_AUTOM,   speedkp,     "",        0,      100,    0.25,   53  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedflt,    "",        0,      16,     5,      57  ) \
+    PARAM_ENTRY(CAT_AUTOM,   speedcal,    "rpm/(m/s)",0.001, 100000, 1,      165 ) \
     PARAM_ENTRY(CAT_AUTOM,   cruisemode,  CRUISEMODS,0,      4,      0,      62  ) \
     PARAM_ENTRY(CAT_AUTOM,   cruisethrotlim,"%",     0,      100,    50,     155 ) \
     PARAM_ENTRY(CAT_CONTACT, udcsw,       "V",       0,      1000,   330,    20  ) \
@@ -180,6 +181,8 @@
 #define VALUE_BLOCK2 \
     VALUE_ENTRY(fstat,       "Hz",    2011 ) \
     VALUE_ENTRY(speed,       "rpm",   2012 ) \
+    VALUE_ENTRY(vehiclespeed,"m/s",   2058 ) \
+    VALUE_ENTRY(vehicleaccel,"m/s²",  2059 ) \
     VALUE_ENTRY(cruisespeed, "rpm",   2041 ) \
     VALUE_ENTRY(turns,       "",      2037 ) \
     VALUE_ENTRY(amp,         "dig",   2013 ) \

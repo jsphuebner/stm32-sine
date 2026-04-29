@@ -10,3 +10,4 @@ stm32_sine
 stm32_foc
 test/test_sine
 .vscode
+.codex
