@@ -49,6 +49,7 @@
 #include "sdocommands.h"
 
 #define PRINT_JSON 0
+#define PRINT_JSON_HIDDEN 1
 #define START_COMMAND_SUBINDEX 4
 #define STOP_COMMAND_SUBINDEX 5
 
@@ -473,13 +474,18 @@ extern "C" int main(void)
 
    while(1)
    {
-      char c = 0;
       CanSdo::SdoFrame* sdoFrame = sdo.GetPendingUserspaceSdo();
       t.Run();
 
       if (canSdo->GetPrintRequest() == PRINT_JSON)
       {
+         char c = 0;
          TerminalCommands::PrintParamsJson(canSdo, &c);
+      }
+      if (canSdo->GetPrintRequest() == PRINT_JSON_HIDDEN)
+      {
+         char hidden[] = { 'h', 0 };
+         TerminalCommands::PrintParamsJson(canSdo, hidden);
       }
       if (0 != sdoFrame)
       {
