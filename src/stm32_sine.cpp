@@ -47,11 +47,10 @@
 #include "canmap.h"
 #include "cansdo.h"
 #include "sdocommands.h"
+#include "invertersdo.h"
 
 #define PRINT_JSON 0
 #define PRINT_JSON_HIDDEN 1
-#define START_COMMAND_SUBINDEX 4
-#define STOP_COMMAND_SUBINDEX 5
 
 HWREV hwRev; //Hardware variant of board we are running on
 
@@ -363,32 +362,6 @@ void Param::Change(Param::PARAM_NUM paramNum)
    }
 }
 
-static void ProcessCustomSdoCommands(CanSdo::SdoFrame* sdoFrame)
-{
-   if (sdoFrame->index == SDO_INDEX_COMMANDS && sdoFrame->cmd == SDO_WRITE)
-   {
-      sdoFrame->cmd = SDO_WRITE_REPLY;
-      switch (sdoFrame->subIndex)
-      {
-      case START_COMMAND_SUBINDEX:
-         if (sdoFrame->data < MOD_LAST)
-            Param::SetInt(Param::opmode, sdoFrame->data);
-         else
-         {
-            sdoFrame->cmd = SDO_ABORT;
-            sdoFrame->data = SDO_ERR_RANGE;
-         }
-         break;
-      case STOP_COMMAND_SUBINDEX:
-         Param::SetInt(Param::opmode, 0);
-         break;
-      default:
-         sdoFrame->cmd = SDO_ABORT;
-         sdoFrame->data = SDO_ERR_INVIDX;
-      }
-   }
-}
-
 static void UpgradeParameters()
 {
    Param::SetInt(Param::version, 4); //backward compatibility
@@ -447,13 +420,12 @@ extern "C" int main(void)
    scheduler = &s;
    Stm32Can c(CAN1, (CanHardware::baudrates)Param::GetInt(Param::canspeed));
    CanMap cm(&c);
-   CanSdo sdo(&c, &cm);
+   InverterSdo sdo(&c, &cm);
    can = &c;
    canMap = &cm;
    canSdo = &sdo;
    VehicleControl::SetCan(can);
    TerminalCommands::SetCanMap(canMap);
-   SdoCommands::SetCanMap(canMap);
 
    s.AddTask(Ms100Task, 100);
    s.AddTask(Ms10Task, 10);
@@ -474,7 +446,6 @@ extern "C" int main(void)
 
    while(1)
    {
-      CanSdo::SdoFrame* sdoFrame = sdo.GetPendingUserspaceSdo();
       t.Run();
 
       if (canSdo->GetPrintRequest() == PRINT_JSON)
@@ -486,19 +457,6 @@ extern "C" int main(void)
       {
          char hidden[] = { 'h', 0 };
          TerminalCommands::PrintParamsJson(canSdo, hidden);
-      }
-      if (0 != sdoFrame)
-      {
-         CanSdo::SdoFrame sdoOrig = *sdoFrame;
-         SdoCommands::ProcessStandardCommands(sdoFrame);
-
-         if (sdoFrame->cmd == SDO_ABORT)
-         {
-            *sdoFrame = sdoOrig;
-            ProcessCustomSdoCommands(sdoFrame);
-         }
-
-         sdo.SendSdoReply(sdoFrame);
       }
    }
 
