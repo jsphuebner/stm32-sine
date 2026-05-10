@@ -28,7 +28,7 @@
 class CanStub: public CanHardware
 {
    void SetBaudrate(enum baudrates baudrate) {}
-   void Send(uint32_t canId, uint32_t data[2], uint8_t len)
+   void Send(uint32_t canId, uint32_t data[2], uint8_t len, bool forceExt = false) override
    {
       m_canId = canId;
       memcpy(&m_data[0], &data[0], sizeof(m_data));

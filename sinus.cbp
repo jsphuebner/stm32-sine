@@ -78,6 +78,7 @@
 		<Unit filename="include/hwdefs.h" />
 		<Unit filename="include/hwinit.h" />
 		<Unit filename="include/inc_encoder.h" />
+		<Unit filename="include/invertersdo.h" />
 		<Unit filename="include/param_prj.h" />
 		<Unit filename="include/pwmgeneration.h" />
 		<Unit filename="include/temp_meas.h" />
@@ -174,6 +175,7 @@
 		</Unit>
 		<Unit filename="src/hwinit.cpp" />
 		<Unit filename="src/inc_encoder.cpp" />
+		<Unit filename="src/invertersdo.cpp" />
 		<Unit filename="src/pwmgeneration-foc.cpp" />
 		<Unit filename="src/pwmgeneration-sine.cpp" />
 		<Unit filename="src/pwmgeneration.cpp" />
