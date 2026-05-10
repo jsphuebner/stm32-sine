@@ -164,6 +164,7 @@
 		<Unit filename="libopeninv/test/test_canmap.cpp">
 			<Option target="Test libopeninv" />
 		</Unit>
+		<Unit filename="libopeninv/test/test_cansdo.cpp" />
 		<Unit filename="libopeninv/test/test_fp.cpp">
 			<Option target="Test libopeninv" />
 		</Unit>
