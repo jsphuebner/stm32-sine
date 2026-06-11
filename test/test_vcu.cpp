@@ -175,13 +175,62 @@ static void TestCanBrakeLightHysteresis()
    ASSERT(!Param::GetBool(Param::dout_brake));
 }
 
+static void TestPowerLimitReasonsNone()
+{
+   Param::SetFloat(Param::udc, 500);
+   Param::SetFloat(Param::idc, 0);
+   Param::SetFloat(Param::tmphs, 25);
+   Param::SetFloat(Param::tmpm, 25);
+   Param::SetFloat(Param::fstat, 0);
+   Param::SetFloat(Param::regenrampstr, 0);
+   speed = 0;
+
+   VehicleControl::ProcessThrottle();
+
+   ASSERT(Param::GetInt(Param::acclimreason) == LIMIT_NONE);
+   ASSERT(Param::GetInt(Param::regenlimreason) == LIMIT_NONE);
+}
+
+static void TestPowerLimitReasonsDerated()
+{
+   // 530V exceeds the configured regen UDC limit, while 80°C with an 85°C limit derates accel to 50%.
+   Param::SetFloat(Param::udcmax, 520);
+   Param::SetFloat(Param::tmphsmax, 85);
+   Throttle::udcmax = Param::GetFloat(Param::udcmax) * 1.01f;
+   Param::SetFloat(Param::udc, 530);
+   Param::SetFloat(Param::idc, 0);
+   Param::SetFloat(Param::tmphs, 80);
+   Param::SetFloat(Param::tmpm, 25);
+   Param::SetFloat(Param::fstat, 0);
+   Param::SetFloat(Param::regenrampstr, 0);
+   speed = 0;
+
+   VehicleControl::ProcessThrottle();
+
+   ASSERT(Param::GetInt(Param::acclimreason) == LIMIT_TMPHS);
+   ASSERT(Param::GetInt(Param::regenlimreason) == LIMIT_UDC);
+}
+
 void VCUTest::TestCaseSetup()
 {
    VehicleControl::SetCan(new CanStub());
    Param::LoadDefaults();
+   Throttle::ResetDerateState();
+   Throttle::bmslimhigh = Param::GetInt(Param::bmslimhigh);
+   Throttle::bmslimlow = Param::GetInt(Param::bmslimlow);
+   Throttle::udcmin = Param::GetFloat(Param::udcmin) * 0.99f;
+   Throttle::udcmax = Param::GetFloat(Param::udcmax) * 1.01f;
+   Throttle::idcmin = Param::GetFloat(Param::idcmin);
+   Throttle::idcmax = Param::GetFloat(Param::idcmax);
+   Throttle::idckp = Param::GetFloat(Param::idckp);
+   Throttle::accelflt = Param::GetInt(Param::accelflt);
+   Throttle::accelmax = Param::GetInt(Param::accelmax);
+   Throttle::throtmax = Param::GetFloat(Param::throtmax);
+   Throttle::throtmin = Param::GetFloat(Param::throtmin);
+   Throttle::fmax = Param::GetFloat(Param::fmax);
 }
 
-REGISTER_TEST(VCUTest, CanTest1, CanTest2, CanTest3, TestCanSeqError1, TestCanSeqError2, TestCanBrakeLightHysteresis);
+REGISTER_TEST(VCUTest, CanTest1, CanTest2, CanTest3, TestCanSeqError1, TestCanSeqError2, TestCanBrakeLightHysteresis, TestPowerLimitReasonsNone, TestPowerLimitReasonsDerated);
 
 /* Stub functions */
 extern "C" void crc_reset()

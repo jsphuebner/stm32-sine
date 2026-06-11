@@ -25,7 +25,7 @@
    3. Display values
  */
 //Next param id (increase when adding new parameter!): 164
-//Next value Id: 2058
+//Next value Id: 2060
 /*              category     name         unit       min     max     default id */
 
 #define MOTOR_PARAMETERS_COMMON \
@@ -195,6 +195,8 @@
     VALUE_ENTRY(uaux,        "V",     2021 ) \
     VALUE_ENTRY(pwmio,       "",      2045 ) \
     VALUE_ENTRY(canio,       CANIOS,  2022 ) \
+    VALUE_ENTRY(acclimreason,LIMREASONS, 2058 ) \
+    VALUE_ENTRY(regenlimreason,LIMREASONS, 2059 ) \
     VALUE_ENTRY(din_cruise,  ONOFF,   2023 ) \
     VALUE_ENTRY(din_start,   ONOFF,   2024 ) \
     VALUE_ENTRY(din_brake,   ONOFF,   2025 ) \
@@ -289,6 +291,7 @@
 #define HWREVS       "0=Rev1, 1=Rev2, 2=Rev3, 3=Tesla, 4=BluePill, 5=Prius, 6=MiniMainboard, 7=Leaf2, 8=Leaf3, 9=BMWi3, 10=Zoe"
 #define SWAPS        "0=None, 1=Currents12, 2=SinCos, 4=PWMOutput13, 8=PWMOutput23"
 #define OUTMODES     "0=DcSw, 1=TmpmThresh, 2=TmphsThresh"
+#define LIMREASONS   "0=None, 1=Bms, 2=Udc, 3=Idc, 4=Fmax, 5=Accel, 6=Tmphs, 7=Tmpm, 8=RegenRamp"
 #define STATUS       "0=None, 1=UdcLow, 2=UdcHigh, 4=UdcBelowUdcSw, 8=UdcLim, 16=EmcyStop, 32=MProt, 64=PotPressed, 128=TmpHs, 256=WaitStart, 512=BrakeCheck"
 #define CHECKS       "0=CounterOnly, 1=StmCrc8"
 #define CAT_MOTOR    "Motor"
@@ -424,6 +427,19 @@ enum status
    STAT_TMPHS = 128,
    STAT_WAITSTART = 256,
    STAT_BRAKECHECK = 512
+};
+
+enum limitreasons
+{
+   LIMIT_NONE = 0,
+   LIMIT_BMS,
+   LIMIT_UDC,
+   LIMIT_IDC,
+   LIMIT_FMAX,
+   LIMIT_ACCEL,
+   LIMIT_TMPHS,
+   LIMIT_TMPM,
+   LIMIT_REGENRAMP
 };
 
 //Generated enum-string for possible errors

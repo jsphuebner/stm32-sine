@@ -53,6 +53,69 @@ uint16_t VehicleControl::bmwAdcValues[4];
 uint8_t VehicleControl::canErrors;
 uint8_t VehicleControl::seqCounter;
 
+static void UpdateLimitReason(float previousSpnt, float limitedSpnt, int reason, int& reasonOut)
+{
+   // Keep the reason that produced the currently lowest remaining limit.
+   if (limitedSpnt != previousSpnt)
+      reasonOut = reason;
+}
+
+static int GetPowerLimitReason(float candidateSpnt)
+{
+   int reason = LIMIT_NONE;
+   float limitedSpnt = candidateSpnt;
+   float previousSpnt = limitedSpnt;
+
+   if (hwRev != HW_TESLA)
+   {
+      Throttle::BmsLimitCommand(limitedSpnt, Param::GetBool(Param::din_bms));
+      UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_BMS, reason);
+   }
+
+   previousSpnt = limitedSpnt;
+   Throttle::UdcLimitCommand(limitedSpnt, Param::GetFloat(Param::udc));
+   UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_UDC, reason);
+
+   previousSpnt = limitedSpnt;
+   Throttle::IdcLimitCommand(limitedSpnt, Param::GetFloat(Param::idc));
+   UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_IDC, reason);
+
+   previousSpnt = limitedSpnt;
+   Throttle::ApplyFrequencyLimit(limitedSpnt);
+   UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_FMAX, reason);
+
+   previousSpnt = limitedSpnt;
+   Throttle::ApplyAccelerationLimit(limitedSpnt);
+   UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_ACCEL, reason);
+
+   previousSpnt = limitedSpnt;
+   Throttle::TemperatureDerate(Param::GetFloat(Param::tmphs), Param::GetFloat(Param::tmphsmax), limitedSpnt);
+   UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_TMPHS, reason);
+
+   previousSpnt = limitedSpnt;
+   Throttle::TemperatureDerate(Param::GetFloat(Param::tmpm), Param::GetFloat(Param::tmpmmax), limitedSpnt);
+   UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_TMPM, reason);
+
+   if (limitedSpnt < 0)
+   {
+      float brkrampstr = Param::GetFloat(Param::regenrampstr);
+
+      if (brkrampstr > 0)
+      {
+         float rotorfreq = FP_TOFLOAT(Encoder::GetRotorFrequency());
+
+         if (rotorfreq < brkrampstr)
+         {
+            previousSpnt = limitedSpnt;
+            limitedSpnt = (rotorfreq / brkrampstr) * limitedSpnt;
+            UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_REGENRAMP, reason);
+         }
+      }
+   }
+
+   return reason;
+}
+
 void VehicleControl::SetCan(CanHardware* canHw)
 {
    seqCounter = 0; //Mainly useful for unit tests
@@ -311,6 +374,9 @@ float VehicleControl::ProcessThrottle()
       DigIo::err_out.Set();
       ErrorMessage::Post(ERR_TMPMMAX);
    }
+
+   Param::SetInt(Param::acclimreason, GetPowerLimitReason(Param::GetFloat(Param::throtmax)));
+   Param::SetInt(Param::regenlimreason, GetPowerLimitReason(Param::GetFloat(Param::throtmin)));
 
    Param::SetFloat(Param::potnom, finalSpnt);
 
