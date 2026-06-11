@@ -175,13 +175,45 @@ static void TestCanBrakeLightHysteresis()
    ASSERT(!Param::GetBool(Param::dout_brake));
 }
 
+static void TestPowerLimitReasonsNone()
+{
+   Param::SetFloat(Param::udc, 500);
+   Param::SetFloat(Param::idc, 0);
+   Param::SetFloat(Param::tmphs, 25);
+   Param::SetFloat(Param::tmpm, 25);
+   Param::SetFloat(Param::fstat, 0);
+   Param::SetFloat(Param::regenrampstr, 0);
+   speed = 0;
+
+   VehicleControl::ProcessThrottle();
+
+   ASSERT(Param::GetInt(Param::acclimreason) == LIMIT_NONE);
+   ASSERT(Param::GetInt(Param::regenlimreason) == LIMIT_NONE);
+}
+
+static void TestPowerLimitReasonsDerated()
+{
+   Param::SetFloat(Param::udc, 530);
+   Param::SetFloat(Param::idc, 0);
+   Param::SetFloat(Param::tmphs, 80);
+   Param::SetFloat(Param::tmpm, 25);
+   Param::SetFloat(Param::fstat, 0);
+   Param::SetFloat(Param::regenrampstr, 0);
+   speed = 0;
+
+   VehicleControl::ProcessThrottle();
+
+   ASSERT(Param::GetInt(Param::acclimreason) == LIMIT_TMPHS);
+   ASSERT(Param::GetInt(Param::regenlimreason) == LIMIT_UDC);
+}
+
 void VCUTest::TestCaseSetup()
 {
    VehicleControl::SetCan(new CanStub());
    Param::LoadDefaults();
 }
 
-REGISTER_TEST(VCUTest, CanTest1, CanTest2, CanTest3, TestCanSeqError1, TestCanSeqError2, TestCanBrakeLightHysteresis);
+REGISTER_TEST(VCUTest, CanTest1, CanTest2, CanTest3, TestCanSeqError1, TestCanSeqError2, TestCanBrakeLightHysteresis, TestPowerLimitReasonsNone, TestPowerLimitReasonsDerated);
 
 /* Stub functions */
 extern "C" void crc_reset()

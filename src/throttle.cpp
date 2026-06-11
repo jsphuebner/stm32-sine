@@ -54,6 +54,9 @@ float Throttle::fmax;
 int Throttle::accelmax;
 int Throttle::accelflt;
 float Throttle::maxregentravelhz;
+int Throttle::accelLastSpeed;
+int Throttle::accelSpeedDiff;
+float Throttle::frqFiltered;
 
 bool Throttle::CheckAndLimitRange(int& potval, uint8_t potIdx)
 {
@@ -271,27 +274,31 @@ void Throttle::IdcLimitCommand(float& finalSpnt, float idc)
 
 void Throttle::AccelerationLimitCommand(float& finalSpnt, int speed)
 {
-   static int lastSpeed = 0, speedDiff = 0;
+   accelSpeedDiff = IIRFILTER(accelSpeedDiff, speed - accelLastSpeed, accelflt);
+   accelLastSpeed = speed;
+   ApplyAccelerationLimit(finalSpnt);
+}
 
-   speedDiff = IIRFILTER(speedDiff, speed - lastSpeed, accelflt);
-
-   if (finalSpnt >= 0 && speed > 100)
+void Throttle::ApplyAccelerationLimit(float& finalSpnt)
+{
+   if (finalSpnt >= 0 && accelLastSpeed > 100)
    {
-      int accelErr = accelmax - speedDiff;
+      int accelErr = accelmax - accelSpeedDiff;
       int res = 20 * accelErr;
 
       res = MAX(0, res);
       finalSpnt = MIN(res, finalSpnt);
    }
-   lastSpeed = speed;
 }
 
 void Throttle::FrequencyLimitCommand(float& finalSpnt, float frequency)
 {
-   static float frqFiltered = 0;
-
    frqFiltered = IIRFILTERF(frqFiltered, frequency, 4);
+   ApplyFrequencyLimit(finalSpnt);
+}
 
+void Throttle::ApplyFrequencyLimit(float& finalSpnt)
+{
    if (finalSpnt > 0)
    {
       float frqerr = fmax - frqFiltered;
