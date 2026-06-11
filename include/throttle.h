@@ -40,6 +40,7 @@ class Throttle
       static void FrequencyLimitCommand(float& finalSpnt, float frequency);
       static void ApplyAccelerationLimit(float& finalSpnt);
       static void ApplyFrequencyLimit(float& finalSpnt);
+      static void ResetDerateState();
       static float RampThrottle(float finalSpnt);
       static void UpdateDynamicRegenTravel(float regenTravelMax, float frequency);
       static bool IsThrottlePressed(int pot1);

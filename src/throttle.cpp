@@ -58,6 +58,13 @@ int Throttle::accelLastSpeed;
 int Throttle::accelSpeedDiff;
 float Throttle::frqFiltered;
 
+void Throttle::ResetDerateState()
+{
+   accelLastSpeed = 0;
+   accelSpeedDiff = 0;
+   frqFiltered = 0;
+}
+
 bool Throttle::CheckAndLimitRange(int& potval, uint8_t potIdx)
 {
    int potMin = potmax[potIdx] > potmin[potIdx] ? potmin[potIdx] : potmax[potIdx];

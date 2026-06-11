@@ -211,6 +211,19 @@ void VCUTest::TestCaseSetup()
 {
    VehicleControl::SetCan(new CanStub());
    Param::LoadDefaults();
+   Throttle::ResetDerateState();
+   Throttle::bmslimhigh = Param::GetInt(Param::bmslimhigh);
+   Throttle::bmslimlow = Param::GetInt(Param::bmslimlow);
+   Throttle::udcmin = Param::GetFloat(Param::udcmin) * 0.99f;
+   Throttle::udcmax = Param::GetFloat(Param::udcmax) * 1.01f;
+   Throttle::idcmin = Param::GetFloat(Param::idcmin);
+   Throttle::idcmax = Param::GetFloat(Param::idcmax);
+   Throttle::idckp = Param::GetFloat(Param::idckp);
+   Throttle::accelflt = Param::GetInt(Param::accelflt);
+   Throttle::accelmax = Param::GetInt(Param::accelmax);
+   Throttle::throtmax = Param::GetFloat(Param::throtmax);
+   Throttle::throtmin = Param::GetFloat(Param::throtmin);
+   Throttle::fmax = Param::GetFloat(Param::fmax);
 }
 
 REGISTER_TEST(VCUTest, CanTest1, CanTest2, CanTest3, TestCanSeqError1, TestCanSeqError2, TestCanBrakeLightHysteresis, TestPowerLimitReasonsNone, TestPowerLimitReasonsDerated);

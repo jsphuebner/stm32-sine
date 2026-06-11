@@ -373,8 +373,8 @@ float VehicleControl::ProcessThrottle()
       ErrorMessage::Post(ERR_TMPMMAX);
    }
 
-   Param::SetInt(Param::acclimreason, GetPowerLimitReason(Throttle::throtmax));
-   Param::SetInt(Param::regenlimreason, GetPowerLimitReason(Throttle::throtmin));
+   Param::SetInt(Param::acclimreason, GetPowerLimitReason(Param::GetFloat(Param::throtmax)));
+   Param::SetInt(Param::regenlimreason, GetPowerLimitReason(Param::GetFloat(Param::throtmin)));
 
    Param::SetFloat(Param::potnom, finalSpnt);
 
