@@ -53,10 +53,10 @@ uint16_t VehicleControl::bmwAdcValues[4];
 uint8_t VehicleControl::canErrors;
 uint8_t VehicleControl::seqCounter;
 
-static void UpdateLimitReason(float previousSpnt, float limitedSpnt, int reason, int& activeReason)
+static void UpdateLimitReason(float previousSpnt, float limitedSpnt, int reason, int& reasonOut)
 {
    if (limitedSpnt != previousSpnt)
-      activeReason = reason;
+      reasonOut = reason;
 }
 
 static int GetPowerLimitReason(float spnt)

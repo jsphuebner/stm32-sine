@@ -281,6 +281,7 @@ void Throttle::IdcLimitCommand(float& finalSpnt, float idc)
 
 void Throttle::AccelerationLimitCommand(float& finalSpnt, int speed)
 {
+   // Filter the delta to the previously sampled speed before storing the current sample.
    accelSpeedDiff = IIRFILTER(accelSpeedDiff, speed - accelLastSpeed, accelflt);
    accelLastSpeed = speed;
    ApplyAccelerationLimit(finalSpnt);
