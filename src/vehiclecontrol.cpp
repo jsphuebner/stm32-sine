@@ -55,6 +55,7 @@ uint8_t VehicleControl::seqCounter;
 
 static void UpdateLimitReason(float previousSpnt, float limitedSpnt, int reason, int& reasonOut)
 {
+   // Keep the reason that produced the currently lowest remaining limit.
    if (limitedSpnt != previousSpnt)
       reasonOut = reason;
 }

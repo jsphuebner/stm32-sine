@@ -193,7 +193,10 @@ static void TestPowerLimitReasonsNone()
 
 static void TestPowerLimitReasonsDerated()
 {
-   // 530V exceeds the default regen UDC limit, while 80°C with an 85°C limit derates accel to 50%.
+   // 530V exceeds the configured regen UDC limit, while 80°C with an 85°C limit derates accel to 50%.
+   Param::SetFloat(Param::udcmax, 520);
+   Param::SetFloat(Param::tmphsmax, 85);
+   Throttle::udcmax = Param::GetFloat(Param::udcmax) * 1.01f;
    Param::SetFloat(Param::udc, 530);
    Param::SetFloat(Param::idc, 0);
    Param::SetFloat(Param::tmphs, 80);
