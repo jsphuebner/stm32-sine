@@ -59,42 +59,43 @@ static void UpdateLimitReason(float previousSpnt, float limitedSpnt, int reason,
       reasonOut = reason;
 }
 
-static int GetPowerLimitReason(float spnt)
+static int GetPowerLimitReason(float candidateSpnt)
 {
    int reason = LIMIT_NONE;
-   float previousSpnt = spnt;
+   float limitedSpnt = candidateSpnt;
+   float previousSpnt = limitedSpnt;
 
    if (hwRev != HW_TESLA)
    {
-      Throttle::BmsLimitCommand(spnt, Param::GetBool(Param::din_bms));
-      UpdateLimitReason(previousSpnt, spnt, LIMIT_BMS, reason);
+      Throttle::BmsLimitCommand(limitedSpnt, Param::GetBool(Param::din_bms));
+      UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_BMS, reason);
    }
 
-   previousSpnt = spnt;
-   Throttle::UdcLimitCommand(spnt, Param::GetFloat(Param::udc));
-   UpdateLimitReason(previousSpnt, spnt, LIMIT_UDC, reason);
+   previousSpnt = limitedSpnt;
+   Throttle::UdcLimitCommand(limitedSpnt, Param::GetFloat(Param::udc));
+   UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_UDC, reason);
 
-   previousSpnt = spnt;
-   Throttle::IdcLimitCommand(spnt, Param::GetFloat(Param::idc));
-   UpdateLimitReason(previousSpnt, spnt, LIMIT_IDC, reason);
+   previousSpnt = limitedSpnt;
+   Throttle::IdcLimitCommand(limitedSpnt, Param::GetFloat(Param::idc));
+   UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_IDC, reason);
 
-   previousSpnt = spnt;
-   Throttle::ApplyFrequencyLimit(spnt);
-   UpdateLimitReason(previousSpnt, spnt, LIMIT_FMAX, reason);
+   previousSpnt = limitedSpnt;
+   Throttle::ApplyFrequencyLimit(limitedSpnt);
+   UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_FMAX, reason);
 
-   previousSpnt = spnt;
-   Throttle::ApplyAccelerationLimit(spnt);
-   UpdateLimitReason(previousSpnt, spnt, LIMIT_ACCEL, reason);
+   previousSpnt = limitedSpnt;
+   Throttle::ApplyAccelerationLimit(limitedSpnt);
+   UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_ACCEL, reason);
 
-   previousSpnt = spnt;
-   Throttle::TemperatureDerate(Param::GetFloat(Param::tmphs), Param::GetFloat(Param::tmphsmax), spnt);
-   UpdateLimitReason(previousSpnt, spnt, LIMIT_TMPHS, reason);
+   previousSpnt = limitedSpnt;
+   Throttle::TemperatureDerate(Param::GetFloat(Param::tmphs), Param::GetFloat(Param::tmphsmax), limitedSpnt);
+   UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_TMPHS, reason);
 
-   previousSpnt = spnt;
-   Throttle::TemperatureDerate(Param::GetFloat(Param::tmpm), Param::GetFloat(Param::tmpmmax), spnt);
-   UpdateLimitReason(previousSpnt, spnt, LIMIT_TMPM, reason);
+   previousSpnt = limitedSpnt;
+   Throttle::TemperatureDerate(Param::GetFloat(Param::tmpm), Param::GetFloat(Param::tmpmmax), limitedSpnt);
+   UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_TMPM, reason);
 
-   if (spnt < 0)
+   if (limitedSpnt < 0)
    {
       float brkrampstr = Param::GetFloat(Param::regenrampstr);
 
@@ -104,9 +105,9 @@ static int GetPowerLimitReason(float spnt)
 
          if (rotorfreq < brkrampstr)
          {
-            previousSpnt = spnt;
-            spnt = (rotorfreq / brkrampstr) * spnt;
-            UpdateLimitReason(previousSpnt, spnt, LIMIT_REGENRAMP, reason);
+            previousSpnt = limitedSpnt;
+            limitedSpnt = (rotorfreq / brkrampstr) * limitedSpnt;
+            UpdateLimitReason(previousSpnt, limitedSpnt, LIMIT_REGENRAMP, reason);
          }
       }
    }

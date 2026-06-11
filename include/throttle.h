@@ -79,7 +79,7 @@ class Throttle
       static float potnomFiltered;
       static float brkRamped;
       static float throttleRamped;
-      static int accelLastSpeed;
+      static int accelSpeed;
       static int accelSpeedDiff;
       static float frqFiltered;
 };

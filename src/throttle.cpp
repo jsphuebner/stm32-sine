@@ -54,13 +54,13 @@ float Throttle::fmax;
 int Throttle::accelmax;
 int Throttle::accelflt;
 float Throttle::maxregentravelhz;
-int Throttle::accelLastSpeed;
+int Throttle::accelSpeed;
 int Throttle::accelSpeedDiff;
 float Throttle::frqFiltered;
 
 void Throttle::ResetDerateState()
 {
-   accelLastSpeed = 0;
+   accelSpeed = 0;
    accelSpeedDiff = 0;
    frqFiltered = 0;
 }
@@ -282,14 +282,14 @@ void Throttle::IdcLimitCommand(float& finalSpnt, float idc)
 void Throttle::AccelerationLimitCommand(float& finalSpnt, int speed)
 {
    // Filter the delta to the previously sampled speed before storing the current sample.
-   accelSpeedDiff = IIRFILTER(accelSpeedDiff, speed - accelLastSpeed, accelflt);
-   accelLastSpeed = speed;
+   accelSpeedDiff = IIRFILTER(accelSpeedDiff, speed - accelSpeed, accelflt);
+   accelSpeed = speed;
    ApplyAccelerationLimit(finalSpnt);
 }
 
 void Throttle::ApplyAccelerationLimit(float& finalSpnt)
 {
-   if (finalSpnt >= 0 && accelLastSpeed > 100)
+   if (finalSpnt >= 0 && accelSpeed > 100)
    {
       int accelErr = accelmax - accelSpeedDiff;
       int res = 20 * accelErr;
