@@ -1,0 +1,166 @@
+name: Apply motor power telemetry correction
+
+on:
+  push:
+    branches:
+      - agent/calculate-motor-power-from-pwm
+
+permissions:
+  contents: write
+
+jobs:
+  apply-patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/calculate-motor-power-from-pwm
+          fetch-depth: 0
+
+      - name: Patch motor power telemetry
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          sine = Path('src/pwmgeneration-sine.cpp')
+          text = sine.read_text()
+
+          old = '''   if (edge != NoEdge)
+   {
+      Param::SetFixed(Param::il1rms, rms);
+   }
+   if (CalcRms(il2, lastEdge[1], currentMax[1], rms, samples[1], il2PrevRms))
+   {
+      Param::SetFixed(Param::il2rms, rms);
+   }
+
+   if (opmode != MOD_BOOST && opmode != MOD_BUCK)
+   {
+      /*
+       * Reconstruct the real three-phase terminal power from the commanded
+       * pole-voltage duty cycles and the two measured phase currents:
+       *
+       * p = Udc * ((d1 - d3) * i1 + (d2 - d3) * i2)
+       *
+       * The third phase current is i3 = -i1 - i2. Common-mode voltage drops
+       * out because i1 + i2 + i3 = 0. Dividing terminal power by Udc yields
+       * the equivalent lossless DC current. Unlike the previous RMS/amplitude
+       * approximation, this includes displacement power factor and preserves
+       * the sign naturally during regeneration.
+       */
+      int32_t duty13 = (int32_t)SineCore::DutyCycles[0] - (int32_t)SineCore::DutyCycles[2];
+      int32_t duty23 = (int32_t)SineCore::DutyCycles[1] - (int32_t)SineCore::DutyCycles[2];
+      int64_t weightedCurrent = (int64_t)duty13 * il1 + (int64_t)duty23 * il2;
+      s32fp idc = (s32fp)(weightedCurrent >> SineCore::BITS);
+
+      idcFiltered = IIRFILTER(idcFiltered, idc, Param::GetInt(Param::idcflt));
+      Param::SetFixed(Param::idc, idcFiltered);
+   }
+'''
+
+          new = '''   if (edge != NoEdge)
+   {
+      Param::SetFixed(Param::il1rms, rms);
+
+      if (opmode != MOD_BOOST || opmode != MOD_BUCK)
+      {
+         //rough approximation as we do not take power factor into account
+         s32fp idc = (SineCore::GetAmp() * rms) / SineCore::MAXAMP;
+         idc = FP_MUL(idc, FP_FROMFLT(1.2247)); //multiply by sqrt(3)/sqrt(2)
+         idc *= fslip < 0 ? -1 : 1;
+         idcFiltered = IIRFILTER(idcFiltered, idc, Param::GetInt(Param::idcflt));
+         Param::SetFixed(Param::idc, idcFiltered);
+      }
+   }
+   if (CalcRms(il2, lastEdge[1], currentMax[1], rms, samples[1], il2PrevRms))
+   {
+      Param::SetFixed(Param::il2rms, rms);
+   }
+
+   /*
+    * Average real motor-terminal power over a 100 ms window:
+    *
+    * p = Udc * ((d1 - d3) * i1 + (d2 - d3) * i2)
+    *
+    * with i3 = -i1 - i2. Common-mode voltage cancels because the three
+    * phase currents sum to zero. Positive power is motoring, negative power
+    * is regeneration. Existing idc calculation and filtering stay untouched.
+    */
+   static int64_t motorPowerSum = 0;
+   static uint16_t motorPowerSamples = 0;
+   int32_t duty13 = (int32_t)SineCore::DutyCycles[0] - (int32_t)SineCore::DutyCycles[2];
+   int32_t duty23 = (int32_t)SineCore::DutyCycles[1] - (int32_t)SineCore::DutyCycles[2];
+   int64_t weightedCurrent = (int64_t)duty13 * il1 + (int64_t)duty23 * il2;
+   s32fp equivalentCurrent = (s32fp)(weightedCurrent >> SineCore::BITS);
+   s32fp instantaneousPower = FP_MUL(Param::Get(Param::udc), equivalentCurrent);
+
+   motorPowerSum += instantaneousPower;
+   motorPowerSamples++;
+
+   uint16_t samplesPer100ms = MAX(1, pwmfrq / 10);
+   if (motorPowerSamples >= samplesPer100ms)
+   {
+      Param::SetFixed(Param::motorpower, (s32fp)(motorPowerSum / motorPowerSamples));
+      motorPowerSum = 0;
+      motorPowerSamples = 0;
+   }
+'''
+
+          if old not in text:
+              raise SystemExit('Expected ProcessCurrents block not found')
+          sine.write_text(text.replace(old, new))
+
+          params = Path('include/param_prj.h')
+          text = params.read_text()
+          text = text.replace('//Next value Id: 2058', '//Next value Id: 2059')
+          old_values = '''#define VALUES_SINE \\
+    VALUE_ENTRY(ilmax,       "A",     2005 ) \\
+    VALUE_ENTRY(uac,         "V",     2006 ) \\
+    VALUE_ENTRY(il1rms,      "A",     2007 ) \\
+    VALUE_ENTRY(il2rms,      "A",     2008 ) \\
+    VALUE_ENTRY(boostcalc,   "dig",   2009 ) \\
+    VALUE_ENTRY(fweakcalc,   "Hz",    2010 ) \\
+'''
+          new_values = '''#define VALUES_SINE \\
+    VALUE_ENTRY(ilmax,       "A",     2005 ) \\
+    VALUE_ENTRY(uac,         "V",     2006 ) \\
+    VALUE_ENTRY(il1rms,      "A",     2007 ) \\
+    VALUE_ENTRY(il2rms,      "A",     2008 ) \\
+    VALUE_ENTRY(boostcalc,   "dig",   2009 ) \\
+    VALUE_ENTRY(fweakcalc,   "Hz",    2010 ) \\
+    VALUE_ENTRY(motorpower,  "W",     2058 ) \\
+'''
+          if old_values not in text:
+              raise SystemExit('Expected VALUES_SINE block not found')
+          params.write_text(text.replace(old_values, new_values))
+
+          common = Path('src/pwmgeneration.cpp')
+          text = common.read_text()
+          old_off = '''      case MOD_OFF:
+         DisableOutput();
+         execTicks = 0;
+         break;
+'''
+          new_off = '''      case MOD_OFF:
+         DisableOutput();
+         execTicks = 0;
+#if CONTROL == CTRL_SINE
+         Param::SetInt(Param::motorpower, 0);
+#endif
+         break;
+'''
+          if old_off not in text:
+              raise SystemExit('Expected MOD_OFF block not found')
+          common.write_text(text.replace(old_off, new_off))
+
+          Path('.github/workflows/apply-motorpower-fix.yml').unlink()
+          PY
+
+      - name: Commit corrected implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pwmgeneration-sine.cpp src/pwmgeneration.cpp include/param_prj.h .github/workflows/apply-motorpower-fix.yml
+          git commit -m "Publish motor power as separate 100ms signal"
+          git push origin HEAD:agent/calculate-motor-power-from-pwm
