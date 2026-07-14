@@ -56,7 +56,7 @@
     PARAM_ENTRY(CAT_MOTOR,   exckp,       "",        0,      20000,  3000,   162 ) \
     PARAM_ENTRY(CAT_MOTOR,   cogkp,       "",        -1000,  1000,   0,      159 ) \
     PARAM_ENTRY(CAT_MOTOR,   cogph,       "",        0,      65535,  0,      160 ) \
-    PARAM_ENTRY(CAT_MOTOR,   cogmax,      "",        0,      30000,  0,      161 ) \
+    PARAM_ENTRY(CAT_MOTOR,   cogmax,       "",       0,      30000,  0,      161 ) \
     PARAM_ENTRY(CAT_MOTOR,   vlimflt,     "",        0,      16,     10,     145 ) \
     PARAM_ENTRY(CAT_MOTOR,   vlimmargin,  "dig",     0,      10000,  2500,   141 ) \
     PARAM_ENTRY(CAT_MOTOR,   fwcurmax,    "A",       -1000,  0,     -100,    144 ) \
@@ -88,19 +88,19 @@
     PARAM_ENTRY(CAT_DERATE,  udcmin,      "V",       0,      1000,   450,    42  ) \
     PARAM_ENTRY(CAT_DERATE,  udcmax,      "V",       0,      1000,   520,    43  ) \
     PARAM_ENTRY(CAT_DERATE,  idcmax,      "A",       0,      5000,   5000,   96  ) \
-    PARAM_ENTRY(CAT_DERATE,  idcmin,      "A",       -5000,  0,      -5000,  98  ) \
-    PARAM_ENTRY(CAT_DERATE,  idckp,       "dig",     0.1,    20,     2,      130 ) \
-    PARAM_ENTRY(CAT_DERATE,  idcflt,      "dig",     0,      11,     9,      132 ) \
-    PARAM_ENTRY(CAT_DERATE,  tmphsmax,    "°C",      50,     150,    85,     125 ) \
-    PARAM_ENTRY(CAT_DERATE,  tmpmmax,     "°C",      70,     300,    300,    127 ) \
-    PARAM_ENTRY(CAT_DERATE,  throtmax,    "%",       0,      100,    100,    97  ) \
-    PARAM_ENTRY(CAT_DERATE,  throtmin,    "%",       -100,   0,      -100,   119 ) \
-    PARAM_ENTRY(CAT_DERATE,  accelmax,    "rpm/10ms",1,      1000,   1000,   153 ) \
-    PARAM_ENTRY(CAT_DERATE,  accelflt,    "dig",     1,      5,      3,      154 )
+    PARAM_ENTRY(CAT_DERATE,  idcmin,      "A",       -5000,  0,     -5000,   98  ) \
+    PARAM_ENTRY(CAT_DERATE,  idckp,       "dig",     0.1,    20,    2,       130 ) \
+    PARAM_ENTRY(CAT_DERATE,  idcflt,      "dig",     0,      11,    9,       132 ) \
+    PARAM_ENTRY(CAT_DERATE,  tmphsmax,    "°C",      50,     150,   85,      125 ) \
+    PARAM_ENTRY(CAT_DERATE,  tmpmmax,     "°C",      70,     300,   300,     127 ) \
+    PARAM_ENTRY(CAT_DERATE,  throtmax,    "%",       0,      100,   100,     97  ) \
+    PARAM_ENTRY(CAT_DERATE,  throtmin,    "%",       -100,   0,     -100,    119 ) \
+    PARAM_ENTRY(CAT_DERATE,  accelmax,    "rpm/10ms",1,      1000,  1000,    153 ) \
+    PARAM_ENTRY(CAT_DERATE,  accelflt,    "dig",     1,      5,     3,       154 )
 
 #define DERATE_PARAMETERS_SINE \
     PARAM_ENTRY(CAT_DERATE,  iacmax,      "A",       0,      5000,   5000,   89  ) \
-    PARAM_ENTRY(CAT_DERATE,  ifltrise,    "dig",     0,      32,     10,     91  ) \
+    PARAM_ENTRY(CAT_DERATE,  ifltrise,    "dig",     0,      32,    10,      91  ) \
     PARAM_ENTRY(CAT_DERATE,  ifltfall,    "dig",     0,      32,     3,      92  ) \
 
 #define CHARGER_PARAMETERS \
@@ -119,7 +119,7 @@
     PARAM_ENTRY(CAT_THROTTLE,pot2max,     "dig",     0,      4095,   4095,   64  ) \
     PARAM_ENTRY(CAT_THROTTLE,potmode,     POTMODES,  0,      6,      0,      82  ) \
     PARAM_ENTRY(CAT_THROTTLE,potlinearity,"%",       0,      100,    100,    164 ) \
-    PARAM_ENTRY(CAT_THROTTLE,throtramp,   "%/10ms", 0.1,    100,    100,    81  ) \
+    PARAM_ENTRY(CAT_THROTTLE,throtramp,   "%/10ms",  0.1,    100,    100,    81  ) \
     PARAM_ENTRY(CAT_THROTTLE,throtramprpm,"rpm",     0,      20000,  20000,  85  )
 
 #define THROTTLE_PARAMETERS_SINE \
@@ -145,7 +145,7 @@
     PARAM_ENTRY(CAT_AUTOM,   idlespeed,   "rpm",     -100,   10000,  -100,   54  ) \
     PARAM_ENTRY(CAT_AUTOM,   idlethrotlim,"%",       0,      100,    50,     65  ) \
     PARAM_ENTRY(CAT_AUTOM,   idlemode,    IDLEMODS,  0,      4,      3,      66  ) \
-    PARAM_ENTRY(CAT_AUTOM,   holdkp,      "",        -100,   0,      -0.25,  138 ) \
+    PARAM_ENTRY(CAT_AUTOM,   holdkp,      "",        -100,   0,     -0.25,   138 ) \
     PARAM_ENTRY(CAT_AUTOM,   speedkp,     "",        0,      100,    0.25,   53  ) \
     PARAM_ENTRY(CAT_AUTOM,   speedflt,    "",        0,      16,     5,      57  ) \
     PARAM_ENTRY(CAT_AUTOM,   cruisemode,  CRUISEMODS,0,      4,      0,      62  ) \
