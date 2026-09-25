@@ -113,7 +113,7 @@ static const TEMP_SENSOR sensors[] =
    { -50, 150, 10, TABLEN(kty81m),         PTC, kty81m     },
    { -20, 200, 5,  TABLEN(Toyota),         PTC, Toyota     },
    { -20, 200, 5,  TABLEN(Tesla100k),      PTC, Tesla100k  },
-   { 0,   100, 10, TABLEN(Tesla52k),       PTC, Tesla52k   },
+   { 0,   180, 10, TABLEN(Tesla52k),       PTC, Tesla52k   },
    { 5,   100,  5, TABLEN(TeslaFluid),     PTC, TeslaFluid },
    { -20, 190, 5,  TABLEN(Tesla10k),       PTC, Tesla10k   },
    { -40, 300, 10, TABLEN(OutlanderFront), NTC, OutlanderFront },
